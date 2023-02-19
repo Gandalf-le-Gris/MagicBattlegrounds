@@ -615,6 +615,15 @@ img {
     color: white;
 }
 
+.spell-area {
+    position: absolute;
+    top: 287px;
+    bottom: 139px;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    pointer-events: none;
+}
 
 
 

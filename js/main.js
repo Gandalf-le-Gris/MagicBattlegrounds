@@ -64,9 +64,9 @@ let discountedRefreshes = 0;
 async function startGame() {
     await fadeTransition(() => {
         initCards();
-        shopTier = 1; //!!!
+        shopTier = 6; //!!!
         round = 1;
-        coins = 3; //!!!
+        coins = 1000; //!!!
         players = [];
         for (let i = 0; i < 8; i++) {
             lastFights.push([]);
@@ -251,6 +251,13 @@ async function selectHero(n) {
         filter.style.display = "none";
         filter.id = "cover-filter";
         document.body.appendChild(filter);
+
+        let spellArea = document.createElement('div');
+        spellArea.className = "spell-area";
+        spellArea.id = "spell-area";
+        spellArea.addEventListener('dragover', dragOver);
+        spellArea.addEventListener('drop', dragDrop);
+        document.body.appendChild(spellArea);
 
         /***********************************/
 
@@ -537,6 +544,9 @@ function dragStart() {
         this.style.opacity = "0";
         this.style.pointerEvents = "none";
     });
+
+    if (this.card && this.card.species == "Sortilège" && this.card.validTarget.area == "any")
+        document.getElementById("spell-area").style.pointerEvents = "all";
 }
 
 function dragEnd() {
@@ -545,13 +555,16 @@ function dragEnd() {
         this.style.removeProperty("opacity");
         this.style.removeProperty("pointer-events");
     });
+
+    document.getElementById("spell-area").style.removeProperty("pointer-events");
 }
 
 async function dragDrop() {
     let card = dragItem;
     dragItem = undefined;
-
-    if (document.getElementById("shop").contains(card) && this.className == "hand" && this.children[0].children.length < 6)
+    if (document.getElementById("hand").contains(card) && this.className == "spell-area" && card.card.species == "Sortilège" && card.card.validTarget.area == "any")
+        playSpell(card, null);
+    else if (document.getElementById("shop").contains(card) && this.className == "hand" && this.children[0].children.length < 6)
         buyCard(card);
     else if (!document.getElementById("shop").contains(card) && this.className == "shop")
         sellCard(card);
@@ -803,7 +816,7 @@ async function attack(t1, t2, p1, p2, turn, doAnimate) {
 
     if (doAnimate) {
         o.classList.remove("attacking");
-        findCardPos(attacker).parentElement.style.removeProperty("z-index");
+        o.parentElement.style.removeProperty("z-index");
         await sleep(500);
     }
 
@@ -827,6 +840,7 @@ function findCardPos(c) {
 }
 
 async function broadcastEvent(name, t1, t2, p1, p2, turn, doAnimate, args) {
+    console.log("Broadcasting event " + name);
     let t = turn ? t1[0].concat(t1[1]) : t2[0].concat(t2[1]);
     let tt = turn ? t2[0].concat(t2[1]) : t1[0].concat(t1[1]);
     for (let i = 0; i < 8; i++) {
@@ -902,8 +916,11 @@ function pickTarget(t1, t2, turn, range) {
 function prepareTroops(p) {
     let res = [[undefined, undefined, undefined, undefined], [undefined, undefined, undefined, undefined]];
     for (let i = 0; i < 8; i++)
-        if (troops[p][i])
-            res[Math.floor(i / 4)][i % 4] = copy(troops[p][i]);
+        if (troops[p][i]) {
+            let c = copy(troops[p][i]);
+            c.original = troops[p][i];
+            res[Math.floor(i / 4)][i % 4] = c;
+        }
     return res;
 }
 
@@ -1149,7 +1166,7 @@ async function drawShopScene() {
 
         await sleep(750);
 
-        broadcastShopEvent("turn-start", []);
+        await broadcastShopEvent("turn-start", []);
     }
 }
 
@@ -1183,9 +1200,9 @@ const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machin
 
 const cardList = {
     "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou"],
-    "Sortilège": ["aiguisage"],
-    "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux", "tresor-du-dragon", "recit-des-legendes"],
-    "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant"],
+    "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
+    "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": [],
     "Soldat": ["fantassin-en-armure", "capitaine-d-escouade"],
     "Bandit": ["archere-aux-traits-de-feu"],
@@ -1206,18 +1223,21 @@ function initCards() {
         if (!species.includes(s))
             species.push(s);
     }
-    //species = ["Gobelin"]; //!!!
+    species = ["Gobelin"]; //!!!
 
     for (let s of species.concat("Sortilège")) {
         for (let c of cardList[s])
-            for (let i = 0; i < 15; i++)
-                cards.push(createCard(c));
+            for (let i = 0; i < 15; i++) {
+                let card = createCard(c);
+                if (!card.requirement || species.includes(card.requirement))
+                    cards.push(createCard(c));
+            }
     }
 
     commanders = [];
     for (let c of cardList["Commandant"]) {
         let card = createCard(c);
-        if (!card.requirement || species.includes(card.requirement)) //!!!
+        //if (!card.requirement || species.includes(card.requirement)) //!!!
             commanders.push(card);
     }
 
@@ -1310,6 +1330,34 @@ function createCard(card) {
             return new DuoDeGobelins();
         case "agitateur-gobelin":
             return new AgitateurGobelin();
+        case "batailleur-frenetique":
+            return new BatailleurFrenetique();
+        case "specialiste-en-explosions":
+            return new SpecialisteEnExplosions();
+        case "artilleur-vicieux":
+            return new ArtilleurVicieux();
+        case "commandant-des-artilleurs":
+            return new CommandantDesArtilleurs();
+        case "chef-de-guerre-gobelin":
+            return new ChefDeGuerreGobelin();
+        case "artisan-forgemalice":
+            return new ArtisanForgemalice();
+        case "gobelin-approvisionneur":
+            return new GobelinApprovisionneur();
+        case "chef-de-gang":
+            return new ChefDeGang();
+        case "guide-gobelin":
+            return new GuideGobelin();
+        case "mercenaires-gobelins":
+            return new MercenairesGobelins();
+        case "champion-de-fracassecrane":
+            return new ChampionDeFracassecrane();
+        case "escouade-hargneuse":
+            return new EscouadeHargneuse();
+        case "horde-infinie":
+            return new HordeInfinie();
+        case "gobelin-bondissant":
+            return new GobelinBondissant();
 
         case "archere-aux-traits-de-feu":
             return new ArchereAuxTraitsDeFeu();
@@ -1785,6 +1833,7 @@ function TresorDuDragon() {
     this.hp = -1;
     this.src = "dragons/tresor-du-dragon.jpg";
     this.tier = 2;
+    this.requirement = "Dragon";
     this.effects = [
         {
             trigger: "",
@@ -1807,6 +1856,7 @@ function RecitDesLegendes() {
     this.hp = -1;
     this.src = "dragons/recit-des-legendes.jpg";
     this.tier = 1;
+    this.requirement = "Dragon";
     this.effects = [
         {
             trigger: "",
@@ -1837,21 +1887,6 @@ function EclaireurGobelin() {
     ];
 }
 
-function DuoDeGobelins() {
-    this.name = "Duo de gobelins";
-    this.species = "Gobelin";
-    this.attack = 3;
-    this.hp = 1;
-    this.src = "gobelins/duo-de-gobelins.jpg";
-    this.tier = 2;
-    this.effects = [
-        {
-            trigger: "ko",
-            id: 203
-        }
-    ];
-}
-
 function AgitateurGobelin() {
     this.name = "Agitateur gobelin";
     this.species = "Gobelin";
@@ -1867,31 +1902,239 @@ function AgitateurGobelin() {
     ];
 }
 
-function GuerrierGobelin() {
-    this.name = "Guerrier gobelin";
+function BatailleurFrenetique() {
+    this.name = "Batailleur frénétique";
     this.species = "Gobelin";
-    this.attack = 1;
-    this.hp = 1;
-    this.src = "gobelins/guerrier-gobelin.jpg";
-    this.tier = 7;
+    this.attack = 2;
+    this.hp = 2;
+    this.src = "gobelins/batailleur-frenetique.jpg";
+    this.tier = 1;
     this.effects = [
-
+        {
+            trigger: "ko",
+            id: 205
+        }
     ];
 }
 
-function ArtificierGobelin() {
-    this.name = "Artificier gobelin";
+function DuoDeGobelins() {
+    this.name = "Duo de gobelins";
     this.species = "Gobelin";
-    this.attack = 1;
+    this.attack = 3;
     this.hp = 1;
-    this.src = "gobelins/artificier-gobelin.jpg";
-    this.tier = 7;
+    this.src = "gobelins/duo-de-gobelins.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 203
+        }
+    ];
+}
+
+function GobelinApprovisionneur() {
+    this.name = "Gobelin approvisionneur";
+    this.species = "Gobelin";
+    this.attack = 2;
+    this.hp = 3;
+    this.src = "gobelins/gobelin-approvisionneur.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 211
+        }
+    ];
+}
+
+function ArtilleurVicieux() {
+    this.name = "Artilleur vicieux";
+    this.species = "Gobelin";
+    this.attack = 4;
+    this.hp = 3;
+    this.src = "gobelins/artilleur-vicieux.jpg";
+    this.tier = 3;
+    this.range = true;
+    this.effects = [
+        {
+            trigger: "attack",
+            id: 207
+        }
+    ];
+}
+
+function ArtisanForgemalice() {
+    this.name = "Artisan Forgemalice";
+    this.species = "Gobelin";
+    this.attack = 3;
+    this.hp = 2;
+    this.src = "gobelins/artisan-forgemalice.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 210
+        }
+    ];
+}
+
+function ChampionDeFracassecrane() {
+    this.name = "Champion de Fracassecrâne";
+    this.species = "Gobelin";
+    this.attack = 3;
+    this.hp = 6;
+    this.src = "gobelins/champion-de-fracassecrane.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 215
+        }
+    ];
+}
+
+function SpecialisteEnExplosions() {
+    this.name = "Spécialiste en explosions";
+    this.species = "Gobelin";
+    this.attack = 5;
+    this.hp = 3;
+    this.src = "gobelins/specialiste-en-explosions.jpg";
+    this.tier = 4;
     this.effects = [
         {
             trigger: "tookdamage",
-            id: 204
+            id: 206
         }
     ];
+}
+
+function ChefDeGang() {
+    this.name = "Chef de gang";
+    this.species = "Gobelin";
+    this.attack = 4;
+    this.hp = 5;
+    this.src = "gobelins/chef-de-gang.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 212
+        }
+    ];
+}
+
+function MercenairesGobelins() {
+    this.name = "Mercenaires gobelins";
+    this.species = "Gobelin";
+    this.attack = 3;
+    this.hp = 3;
+    this.src = "gobelins/mercenaires-gobelins.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 214
+        }
+    ];
+}
+
+function CommandantDesArtilleurs() {
+    this.name = "Commandant des artilleurs";
+    this.species = "Gobelin";
+    this.attack = 5;
+    this.hp = 6;
+    this.src = "gobelins/commandant-des-artilleurs.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 208
+        }
+    ];
+}
+
+function EscouadeHargneuse() {
+    this.name = "Escouade hargneuse";
+    this.species = "Gobelin";
+    this.attack = 5;
+    this.hp = 6;
+    this.src = "gobelins/escouade-hargneuse.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 216
+        }
+    ];
+}
+
+function GuideGobelin() {
+    this.name = "Guide gobelin";
+    this.species = "Gobelin";
+    this.attack = 4;
+    this.hp = 3;
+    this.src = "gobelins/guide-gobelin.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 213
+        }
+    ];
+}
+
+function ChefDeGuerreGobelin() {
+    this.name = "Chef de guerre gobelin";
+    this.species = "Gobelin";
+    this.attack = 8;
+    this.hp = 3;
+    this.src = "gobelins/chef-de-guerre-gobelin.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "attack",
+            id: 209
+        }
+    ];
+}
+
+function HordeInfinie() {
+    this.name = "Horde infinie";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "gobelins/horde-infinie.jpg";
+    this.tier = 4;
+    this.requirement = "Gobelin";
+    this.effects = [
+        {
+            trigger: "",
+            id: 217
+        }
+    ];
+    this.validTarget = {
+        area: "board",
+        species: "Gobelin"
+    };
+}
+
+function GobelinBondissant() {
+    this.name = "Gobelin bondissant";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "gobelins/gobelin-bondissant.jpg";
+    this.tier = 3;
+    this.requirement = "Gobelin";
+    this.effects = [
+        {
+            trigger: "",
+            id: 218
+        }
+    ];
+    this.validTarget = {
+        area: "any"
+    };
 }
 
 
@@ -2055,6 +2298,33 @@ function ScionAspirame() {
         {
             trigger: "ko",
             id: 2001
+        }
+    ];
+}
+
+function GuerrierGobelin() {
+    this.name = "Guerrier gobelin";
+    this.species = "Gobelin";
+    this.attack = 1;
+    this.hp = 1;
+    this.src = "gobelins/guerrier-gobelin.jpg";
+    this.tier = 7;
+    this.effects = [
+
+    ];
+}
+
+function ArtificierGobelin() {
+    this.name = "Artificier gobelin";
+    this.species = "Gobelin";
+    this.attack = 1;
+    this.hp = 1;
+    this.src = "gobelins/artificier-gobelin.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 204
         }
     ];
 }
@@ -2240,6 +2510,14 @@ function showCardTooltip(c) {
     let card = drawCard(c, 300, true);
     tooltip.appendChild(card);
 
+    let desc = card.children[2];
+    let maxY = desc.clientHeight;
+    let text = desc.children[0];
+    while (text.clientHeight > maxY) {
+        let size = parseInt(window.getComputedStyle(text).fontSize);
+        text.style.fontSize = (size - 1).toString() + "px";
+    }
+
     let tips = document.createElement('div');
     tips.className = "tips";
     tooltip.appendChild(tips);
@@ -2412,6 +2690,34 @@ function createEffect(id) {
             return new Effect203();
         case 204:
             return new Effect204();
+        case 205:
+            return new Effect205();
+        case 206:
+            return new Effect206();
+        case 207:
+            return new Effect207();
+        case 208:
+            return new Effect208();
+        case 209:
+            return new Effect209();
+        case 210:
+            return new Effect210();
+        case 211:
+            return new Effect211();
+        case 212:
+            return new Effect212();
+        case 213:
+            return new Effect213();
+        case 214:
+            return new Effect214();
+        case 215:
+            return new Effect215();
+        case 216:
+            return new Effect216();
+        case 217:
+            return new Effect217();
+        case 218:
+            return new Effect218();
         case 401:
             return new Effect401();
         case 601:
@@ -2472,10 +2778,10 @@ function Effect4() {
                 await effectProcGlow(sender);
             let target = pickRandomTarget(args[1] ? args[3][0].concat(args[3][1]) : args[2][0].concat(args[2][0]))
             if (target)
-                await dealDamage(target, 2, doAnimate, args[5]);
+                await dealDamage(target, 1, doAnimate, args[5]);
         }
     };
-    this.desc = "Lorsqu'un Gobelin allié meurt, inflige 2 dégâts à une créature adverse aléatoire.";
+    this.desc = "Lorsqu'un Gobelin allié meurt, inflige 1 dégât à une créature adverse aléatoire.";
 }
 
 function Effect5() {
@@ -2792,15 +3098,9 @@ function Effect114() {
             if (doAnimate)
                 await effectProcGlow(sender);
             let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
-            let p = args[2][0].concat(args[2][1]).includes(sender) ? args[4] : args[5];
-            for (let i = 0; i < 8; i++) {
-                let c = t[i];
-                if (c && c.species == "Dragon") {
-                    await boostStats(c, 2, 1, doAnimate);
-                    troops[p][i].attack += 2;
-                    troops[p][i].hp += 1;
-                }
-            }
+            for (let c of t)
+                if (c && c.species == "Dragon")
+                    await boostStats(c, 2, 1, doAnimate, false, true);
         }
     };
     this.desc = "Lorsque cette créature est attaquée, elle confère définitivement +2/+1 aux Dragons alliés.";
@@ -2910,6 +3210,211 @@ function Effect204() {
     this.desc = "<em>Dernière volonté :</em> Inflige 3 dégâts à une créature ennemie aléatoire.";
 }
 
+function Effect205() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].species == "Gobelin" && args[0] !== sender && sender.hp > 0) {
+            let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            if (t.includes(sender))
+                await boostStats(sender, 2, 1, doAnimate);
+        }
+    };
+    this.desc = "Lorsqu'un Gobelin allié meurt, gagne +2/+1.";
+}
+
+function Effect206() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.hp <= 0) {
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[3][0].concat(args[3][1]) : args[2][0].concat(args[2][1]);
+            for (let i = 0; i < 5; i++) {
+                t = args[2][0].concat(args[2][1]).includes(sender) ? args[3][0].concat(args[3][1]) : args[2][0].concat(args[2][1]);
+                let target = pickRandomTarget(t);
+                if (target) {
+                    if (doAnimate && i == 0)
+                        await effectProcGlow(sender);
+                    await dealDamage(target, 2, doAnimate, [args[2], args[3], args[4], args[5], args[6]]);
+                }
+            }
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Inflige 2 dégâts à une créature ennemie aléatoire 5 fois.";
+}
+
+function Effect207() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[3][0].concat(args[3][1]) : args[2][0].concat(args[2][1]);
+            let target = pickRandomTarget(t);
+            if (target) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await dealDamage(target, 5, doAnimate, [args[2], args[3], args[4], args[5], args[6]]);
+            }
+        }
+    };
+    this.desc = "Lorsque cette créature attaque, elle inflige 5 dégâts à une créature adverse aléatoire.";
+}
+
+function Effect208() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] !== sender) {
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            if (!t.includes(args[0])) {
+                let options = [];
+                for (let c of t)
+                    if (c && c !== sender && c.species == "Gobelin")
+                        options.push(c);
+                if (options.length > 0) {
+                    let p = args[2][0].concat(args[2][1]).includes(sender) ? args[4] : args[5];
+                    let c = choice(options);
+                    if (doAnimate)
+                        await effectProcGlow(sender);
+                    await boostStats(c, 1, 0, doAnimate, false, true);
+                }
+            }
+        }
+    };
+    this.desc = "Lorsqu'une créature adverse subit des dégâts, confère définitivement +1/+0 à un autre gobelin allié.";
+}
+
+function Effect209() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+        if (t.includes(args[0])) {
+            if (args[1]) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await dealDamage(args[1], 2, doAnimate, [args[2], args[3], args[4], args[5], args[6]]);
+            }
+        }
+    };
+    this.desc = "Lorsqu'un Gobelin allié attaque, inflige 2 dégâts à sa cible avant qu'il ne combatte.";
+}
+
+function Effect210() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let d of document.getElementById("board").children)
+                if (d.children[0] && d.children[0].card.species == "Gobelin" && d.children[0].card !== sender)
+                    await boostStats(d.children[0].card, 0, 2, doAnimate);
+        }
+    };
+    this.desc = "<em>Recrue :</em> Vos autres Gobelins gagnent +0/+2.";
+}
+
+function Effect211() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card !== sender && containsKeyword(args[0].card, "Dernière volonté") && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            await boostStats(sender, 1, 2, doAnimate);
+        }
+    };
+    this.desc = "Lorsque vous jouez une carte avec <em>Dernière volonté</em>, gagne +1/+2.";
+}
+
+function Effect212() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.hp <= 0) {
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            for (let c of t) {
+                if (c && c !== sender && c.species == "Gobelin")
+                    await boostStats(c, 1, 1, doAnimate, false, true);
+            }
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Confère définitivement +1/+1 à tous les autres Gobelins alliés.";
+}
+
+function Effect213() {
+    this.run = async (sender, args, doAnimate) => {
+        if (doAnimate)
+            await effectProcGlow(sender);
+        let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+        let i = t.findIndex(e => e === sender);
+        if (i % 4 > 0 && t[i - 1]) {
+            for (let e of t[i - 1].effects)
+                if ((createEffect(e.id)).desc.startsWith("<em>Dernière volonté :</em>"))
+                    t[i].effects.push(e);
+        }
+        if (i % 4 < 3 && t[i + 1]) {
+            for (let e of t[i + 1].effects)
+                if ((createEffect(e.id)).desc.startsWith("<em>Dernière volonté :</em>"))
+                    t[i].effects.push(e);
+        }
+    };
+    this.desc = "<em>Frappe préventive :</em> Copie les effets de <em>Dernière volonté</em> de ses voisins latéraux.";
+}
+
+function Effect214() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate);
+            await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate);
+            await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate);
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Invoque trois Artificiers gobelins.";
+}
+
+function Effect215() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+        let i = t.findIndex(e => e === sender);
+        let vals = [];
+        if (i % 4 > 0 && t[i - 1] && t[i - 1].species == "Gobelin")
+            vals.push(t[i - 1].attack);
+        if (i % 4 < 3 && t[i + 1] && t[i + 1].species == "Gobelin")
+            vals.push(t[i + 1].attack);
+        if (t[(i + 4) % 8] && t[(i + 4) % 8].species == "Gobelin")
+            vals.push(t[(i + 4) % 8].attack);
+        if (vals.length > 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, Math.max(...vals), 0, doAnimate);
+        }
+    };
+    this.desc = "<em>Frappe préventive :</em> Gagne de l'attaque équivalente à l'attaque du Gobelin voisin le plus fort.";
+}
+
+function Effect216() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            for (let i = 0; i < 3; i++) {
+                let name;
+                let card;
+                while (!card || card.tier > 3) {
+                    name = choice(cardList["Gobelin"]);
+                    card = createCard(name);
+                }
+                await battleSummon(name, args[1] ? args[2] : args[3], args[4], doAnimate);
+            }
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Invoque trois Gobelins aléatoires de niveau inférieur ou égal à 3.";
+}
+
+function Effect217() {
+    this.run = async (sender, args, doAnimate) => {
+        args[0].card.effects.push({
+            trigger: "ko",
+            id: 203
+        });
+        boostStats(args[0].card, 0, 0, doAnimate);
+    };
+    this.desc = "Confère \"<em>Dernière volonté :</em> Invoque un Artificier gobelin.\" au Gobelin allié ciblé.";
+}
+
+function Effect218() {
+    this.run = async (sender, args, doAnimate) => {
+        let card = getCard(shopTier, "Gobelin");
+        card.created = true;
+        card.range = true;
+        addToHand(drawCard(card, 176));
+        boostStats(card, 0, 0, doAnimate);
+    };
+    this.desc = "Ajoute un Gobelin aléatoire à votre main et lui confère <em>Portée</em>.";
+}
+
 function Effect401() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0].card === sender) {
@@ -2989,29 +3494,31 @@ function Effect2001() {
 
 async function effectProcGlow(card) {
     let c = findDOMCard(card);
-    let oldGlow = c.style.boxShadow;
-    let oldTransition = c.style.transition;
-    let oldFilter = c.style.filter;
-    c.style.transition = ".4s";
-    c.style.boxShadow = "0 0 30px white";
-    c.style.filter = "brightness(1.8)";
-    await sleep(400);
-    if (oldTransition)
-        c.style.transition = oldTransition;
-    else
-        c.style.removeProperty("transition");
-    if (oldGlow)
-        c.style.boxShadow = oldGlow;
-    else
-        c.style.removeProperty("box-shadow");
-    if (oldFilter)
-        c.style.filter = oldFilter;
-    else
-        c.style.removeProperty("filter");
-    await sleep(400);
+    if (c) {
+        let oldGlow = c.style.boxShadow;
+        let oldTransition = c.style.transition;
+        let oldFilter = c.style.filter;
+        c.style.transition = ".4s";
+        c.style.boxShadow = "0 0 30px white";
+        c.style.filter = "brightness(1.8)";
+        await sleep(400);
+        if (oldTransition)
+            c.style.transition = oldTransition;
+        else
+            c.style.removeProperty("transition");
+        if (oldGlow)
+            c.style.boxShadow = oldGlow;
+        else
+            c.style.removeProperty("box-shadow");
+        if (oldFilter)
+            c.style.filter = oldFilter;
+        else
+            c.style.removeProperty("filter");
+        await sleep(400);
+    }
 }
 
-async function boostStats(card, atk, hp, doAnimate, preserveHP) {
+async function boostStats(card, atk, hp, doAnimate, preserveHP, permanent) {
     let oldTransition;
     let oldFilter;
     let c;
@@ -3028,6 +3535,12 @@ async function boostStats(card, atk, hp, doAnimate, preserveHP) {
     card.hp += hp;
     if (preserveHP && card.hp <= 0)
         card.hp = 1;
+    if (permanent && card.original) {
+        card.original.attack += atk;
+        card.original.hp += hp;
+        if (preserveHP && card.original.hp <= 0)
+            card.original.hp = 1;
+    }
 
     if (doAnimate) {
         updateCardStats(c);
@@ -3044,7 +3557,6 @@ async function boostStats(card, atk, hp, doAnimate, preserveHP) {
 }
 
 async function dealDamage(card, damage, doAnimate, state) {
-    console.log(state)
     let oldTransition;
     let oldFilter;
     let c;
@@ -3057,10 +3569,10 @@ async function dealDamage(card, damage, doAnimate, state) {
         await sleep(200);
     }
 
-    if (!card.shield) {
+    let s = card.shield;
+    if (!s)
         card.hp -= damage;
-        await broadcastEvent("tookdamage", state[0], state[1], state[2], state[3], state[4], doAnimate, [card, damage, state[0], state[1], state[2], state[3], state[4]]);
-    } else
+    else
         delete card.shield;
 
     if (doAnimate) {
@@ -3075,6 +3587,8 @@ async function dealDamage(card, damage, doAnimate, state) {
             c.style.removeProperty("filter");
         await sleep(200);
     }
+    if (!s)
+        await broadcastEvent("tookdamage", state[0], state[1], state[2], state[3], state[4], doAnimate, [card, damage, state[0], state[1], state[2], state[3], state[4]]);
 }
 
 function findDOMCard(card) {
@@ -3174,15 +3688,17 @@ async function battleSummon(name, t, p, doAnimate) {
     let card = createCard(name);
     card.created = true;
     let i = t[0].concat(t[1]).findIndex(e => e == undefined);
-    t[Math.floor(i / 4)][i % 4] = card;
+    if (i != -1) {
+        t[Math.floor(i / 4)][i % 4] = card;
 
-    if (doAnimate) {
-        let board = p == 0 ? document.getElementById("board") : document.getElementById("enemy-board");
-        if (p != 0)
-            i = (i + 4) % 8;
-        let c = drawSmallCard(card, 200);
-        board.children[i].appendChild(c);
-        await sleep(500);
+        if (doAnimate) {
+            let board = p == 0 ? document.getElementById("board") : document.getElementById("enemy-board");
+            if (p != 0)
+                i = (i + 4) % 8;
+            let c = drawSmallCard(card, 200);
+            board.children[i].appendChild(c);
+            await sleep(500);
+        }
     }
 }
 
