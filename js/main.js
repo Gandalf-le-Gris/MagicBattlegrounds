@@ -246,6 +246,12 @@ async function selectHero(n) {
         fight.appendChild(fightIcon);
         fight.onclick = async () => await startBattle();
 
+        let filter = document.createElement('div');
+        filter.className = "filter";
+        filter.style.display = "none";
+        filter.id = "cover-filter";
+        document.body.appendChild(filter);
+
         /***********************************/
 
         let battleBG = document.createElement('div');
@@ -492,6 +498,9 @@ let animating = 0;
 
 async function broadcastShopEvent(name, args) {
     animating++;
+    document.getElementById("cover-filter").style.removeProperty("display");
+    hideCardTooltip();
+
     if (name == "card-sell")
         await consumeEvent(cardSold.card, name, args, true);
     for (let d of document.getElementById("board").children)
@@ -504,6 +513,8 @@ async function broadcastShopEvent(name, args) {
         if (c.classList.contains("card"))
             await consumeEvent(c.card, name, args, true);
     animating--;
+    if (animating == 0)
+        document.getElementById("cover-filter").style.display = "none";
 }
 
 async function consumeEvent(c, name, args, doAnimate) {
@@ -1034,55 +1045,112 @@ async function drawBattleScene(t1, t2, p) {
 async function drawShopScene() {
     await sleep(1500);
 
-    let board = document.getElementById("board");
+    let nAlive = 0;
+    for (let p of players)
+        if (p.hp > 0)
+            nAlive++;
 
-    for (let i = 0; i < 8; i++) {
-        let d = board.children[i];
-        if (d.children[0])
-            d.children[0].style.opacity = "0";
-    }
+    if (players[0].hp <= 0) {
+        let filter = document.createElement('div');
+        filter.className = "semi-black-filter";
+        document.body.appendChild(filter);
 
-    document.getElementById("battle-bg").style.opacity = "0";
-    document.getElementById("enemy-board").style.top = "-363px";
-    document.getElementById("board").style.removeProperty("top");
-    document.getElementById("board").style.removeProperty("left");
-    document.getElementById("commander").style.removeProperty("transform");
-    document.getElementById("commander").style.removeProperty("left");
-    document.getElementById("commander").style.removeProperty("top");
-    document.getElementById("enemy-commander").style.removeProperty("bottom");
+        let banner = document.createElement('div');
+        banner.className = "end-banner";
+        banner.innerHTML = "Défaite";
+        filter.appendChild(banner);
 
-    round++;
-    if (round % 3 == 1)
-        increaseShopTier();
-    spendCoins(-Math.min(10, round + 2), true);
-    refreshShop(true);
-    drawPlayers();
+        let players2 = copy(players);
+        players2.sort((a, b) => { if (a.hp > b.hp) return -1; else if (a.hp < b.hp) return 1; else return 0; });
+        let n = players2.findIndex(e => e.name == players[0].name) + 1;
 
-    await sleep(750);
+        let place = document.createElement('div');
+        place.className = "end-position";
+        place.innerHTML = "Votre place : " + n + "<sup>ème</sup>";
+        filter.appendChild(place);
 
-    for (let i = 0; i < 8; i++) {
-        let d = board.children[i];
-        d.innerHTML = "";
-        if (troops[0][i]) {
-            let c = drawSmallCard(troops[0][i], 200);
-            c.draggable = true;
-            c.addEventListener('dragstart', dragStart);
-            c.addEventListener('dragend', dragEnd);
-            d.appendChild(c);
+        let cont = document.createElement('div');
+        cont.className = "end-click";
+        cont.innerHTML = "(Cliquez pour continuer)";
+        filter.appendChild(cont);
+
+        filter.onclick = () => {
+            fadeTransition(drawHomeScreen);
+        };
+    } else if (nAlive == 1) {
+        let filter = document.createElement('div');
+        filter.className = "semi-black-filter";
+        document.body.appendChild(filter);
+
+        let banner = document.createElement('div');
+        banner.className = "end-banner";
+        banner.innerHTML = "Victoire";
+        filter.appendChild(banner);
+
+        let place = document.createElement('div');
+        place.className = "end-position";
+        place.innerHTML = "Victoire en " + round + " tours";
+        filter.appendChild(place);
+
+        let cont = document.createElement('div');
+        cont.className = "end-click";
+        cont.innerHTML = "(Cliquez pour continuer)";
+        filter.appendChild(cont);
+
+        filter.onclick = () => {
+            fadeTransition(drawHomeScreen);
+        };
+    } else {
+        let board = document.getElementById("board");
+
+        for (let i = 0; i < 8; i++) {
+            let d = board.children[i];
+            if (d.children[0])
+                d.children[0].style.opacity = "0";
         }
+
+        document.getElementById("battle-bg").style.opacity = "0";
+        document.getElementById("enemy-board").style.top = "-363px";
+        document.getElementById("board").style.removeProperty("top");
+        document.getElementById("board").style.removeProperty("left");
+        document.getElementById("commander").style.removeProperty("transform");
+        document.getElementById("commander").style.removeProperty("left");
+        document.getElementById("commander").style.removeProperty("top");
+        document.getElementById("enemy-commander").style.removeProperty("bottom");
+
+        round++;
+        if (round % 3 == 1)
+            increaseShopTier();
+        spendCoins(-Math.min(10, round + 2), true);
+        refreshShop(true);
+        drawPlayers();
+
+        await sleep(750);
+
+        for (let i = 0; i < 8; i++) {
+            let d = board.children[i];
+            d.innerHTML = "";
+            if (troops[0][i]) {
+                let c = drawSmallCard(troops[0][i], 200);
+                c.draggable = true;
+                c.addEventListener('dragstart', dragStart);
+                c.addEventListener('dragend', dragEnd);
+                d.appendChild(c);
+            }
+        }
+
+        document.getElementById("shop").style.removeProperty("transform");
+        document.getElementById("freeze").style.removeProperty("transform");
+        document.getElementById("refresh").style.removeProperty("transform");
+        document.getElementById("money").style.removeProperty("transform");
+        document.getElementById("players").style.removeProperty("transform");
+        document.getElementById("fight").style.removeProperty("transform");
+        document.getElementById("hand-area").style.removeProperty("transform");
+
+        await sleep(750);
+
+        broadcastShopEvent("turn-start", []);
     }
-
-    document.getElementById("shop").style.removeProperty("transform");
-    document.getElementById("freeze").style.removeProperty("transform");
-    document.getElementById("refresh").style.removeProperty("transform");
-    document.getElementById("money").style.removeProperty("transform");
-    document.getElementById("players").style.removeProperty("transform");
-    document.getElementById("fight").style.removeProperty("transform");
-    document.getElementById("hand-area").style.removeProperty("transform");
-
-    await sleep(750);
-
-    broadcastShopEvent("turn-start", [])
 }
 
 

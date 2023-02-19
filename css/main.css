@@ -541,6 +541,19 @@ img {
     z-index: 99;
 }
 
+.semi-black-filter {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    background: rgba(0, 0, 0, .8);
+    opacity: 0;
+    transition: 1s;
+    animation: fadeIn 1s ease forwards;
+}
+
 .casting {
     position: absolute;
     top: 400px;
@@ -565,6 +578,42 @@ img {
     z-index: 10;
 }
 
+.end-banner {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    font-size: var(--font-very-large);
+    font-family: var(--global-font);
+    font-weight: bold;
+    padding: 10px 70px 30px 60px;
+    background-image: url("../resources/ui/parchment.png");
+    background-size: 100% 100%;
+    transform: translate(-50%, -50%);
+}
+
+.end-position {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: calc(var(--font-very-large) * 1.2);
+    font-family: var(--global-font);
+    font-weight: bold;
+    text-align: center;
+    color: white;
+}
+
+.end-click {
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: var(--font-large);
+    font-family: var(--global-font);
+    font-weight: bold;
+    text-align: center;
+    color: white;
+}
 
 
 
