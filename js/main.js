@@ -10,7 +10,7 @@ function drawHomeScreen() {
 
     let title = document.createElement('div');
     title.className = "home-screen-title";
-    title.innerHTML = "Autobattler";
+    title.innerHTML = "Magic Battlegrounds";
     document.body.appendChild(title);
 
     let homeMenu = document.createElement('ul');

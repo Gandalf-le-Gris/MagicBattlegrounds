@@ -44,7 +44,7 @@ img {
 
 .home-screen-title {
     font-family: var(--global-font);
-    font-size: calc(var(--font-very-large) * 2.5);
+    font-size: calc(var(--font-very-large) * 2);
     font-weight: bold;
     position: absolute;
     top: 200px;
