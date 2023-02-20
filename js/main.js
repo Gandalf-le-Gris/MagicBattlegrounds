@@ -441,6 +441,8 @@ async function summonCard(c) {
 
         updateTroops();
 
+        await sleep(500);
+
         await broadcastShopEvent("card-summon", [c]);
     }
 }
@@ -563,7 +565,7 @@ async function dragDrop() {
     let card = dragItem;
     dragItem = undefined;
     if (document.getElementById("hand").contains(card) && this.className == "spell-area" && card.card.species == "Sortilège" && card.card.validTarget.area == "any")
-        playSpell(card, null);
+        playSpell(card, undefined);
     else if (document.getElementById("shop").contains(card) && this.className == "hand" && this.children[0].children.length < 6)
         buyCard(card);
     else if (!document.getElementById("shop").contains(card) && this.className == "shop")
@@ -590,9 +592,14 @@ function canPlaySpell(card, target, area) {
 }
 
 async function playSpell(c, t) {
+    console.log(c)
+    console.log(t)
+    if (c.parentElement)
+        c.parentElement.removeChild(c);
     for (let e of c.card.effects)
         await createEffect(e.id).run(c.card, [t], true);
-    c.parentElement.removeChild(c);
+
+    await broadcastShopEvent("spell-play", [c.card, t ? t.card : undefined]);
 }
 
 
@@ -1200,15 +1207,16 @@ const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machin
 
 const cardList = {
     "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
-    "Sorcier": [],
+    "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
     "Soldat": ["fantassin-en-armure", "capitaine-d-escouade"],
     "Bandit": ["archere-aux-traits-de-feu"],
     "Machine": ["planeur-de-fortune"],
     "Bête": ["predateur-en-chasse"],
     "Mort-Vivant": ["serviteur-exhume"],
+    "Autre": []
 };
 
 let species = [];
@@ -1223,9 +1231,9 @@ function initCards() {
         if (!species.includes(s))
             species.push(s);
     }
-    species = ["Gobelin"]; //!!!
+    species = ["Sorcier"]; //!!!
 
-    for (let s of species.concat("Sortilège")) {
+    for (let s of species.concat(["Sortilège", "Autre"])) {
         for (let c of cardList[s])
             for (let i = 0; i < 15; i++) {
                 let card = createCard(c);
@@ -1358,6 +1366,49 @@ function createCard(card) {
             return new HordeInfinie();
         case "gobelin-bondissant":
             return new GobelinBondissant();
+        case "echo-arcanique":
+            return new EchoArcanique();
+        case "javelot-de-feu":
+            return new JavelotDeFeu();
+
+        case "apprentie-magicienne":
+            return new ApprentieMagicienne();
+        case "connaissances-arcaniques":
+            return new ConnaissancesArcaniques();
+        case "mage-reflecteur":
+            return new MageReflecteur();
+        case "canaliseuse-de-mana":
+            return new CanaliseuseDeMana();
+        case "maitresse-des-illusions":
+            return new MaitresseDesIllusions();
+        case "amasseur-de-puissance":
+            return new AmasseurDePuissance();
+        case "catalyseur-de-puissance":
+            return new CatalyseurDePuissance();
+        case "doyenne-des-oracles":
+            return new DoyenneDesOracles();
+        case "archimage-omnipotent":
+            return new ArchimageOmnipotent();
+        case "portail-d-invocation":
+            return new PortailDInvocation();
+        case "precheur-de-l-equilibre":
+            return new PrecheurDeLEquilibre();
+        case "equilibre-naturel":
+            return new EquilibreNaturel();
+        case "secrets-de-la-bibliotheque":
+            return new SecretsDeLaBibliotheque();
+        case "arcaniste-astral":
+            return new ArcanisteAstral();
+        case "dephasage":
+            return new Dephasage();
+        case "creation-de-foudre":
+            return new CreationDeFoudre();
+        case "invocation-mineure":
+            return new InvocationMineure();
+        case "pyromancienne-novice":
+            return new PyromancienneNovice();
+        case "reservoir-de-puissance":
+            return new ReservoirDePuissance();
 
         case "archere-aux-traits-de-feu":
             return new ArchereAuxTraitsDeFeu();
@@ -2138,6 +2189,303 @@ function GobelinBondissant() {
 }
 
 
+// Sorciers
+
+function ApprentieMagicienne() {
+    this.name = "Apprentie magicienne";
+    this.species = "Sorcier";
+    this.attack = 1;
+    this.hp = 3;
+    this.src = "sorciers/apprentie-magicienne.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 301
+        }
+    ];
+}
+
+function PyromancienneNovice() {
+    this.name = "Pyromancienne novice";
+    this.species = "Sorcier";
+    this.attack = 3;
+    this.hp = 2;
+    this.src = "sorciers/pyromancienne-novice.jpg";
+    this.tier = 1;
+    this.range = true;
+    this.effects = [
+
+    ];
+}
+
+function InvocationMineure() {
+    this.name = "Invocation mineure";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "sorciers/invocation-mineure.jpg";
+    this.tier = 1;
+    this.requirement = "Sorcier";
+    this.effects = [
+        {
+            trigger: "",
+            id: 303
+        }
+    ];
+    this.validTarget = {
+        area: "any"
+    };
+}
+
+function PrecheurDeLEquilibre() {
+    this.name = "Prêcheur de l'Équilibre";
+    this.species = "Sorcier";
+    this.attack = 3;
+    this.hp = 3;
+    this.src = "sorciers/precheur-de-l-equilibre.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 315
+        }
+    ];
+}
+
+function MageReflecteur() {
+    this.name = "Mage réflecteur";
+    this.species = "Sorcier";
+    this.attack = 2;
+    this.hp = 3;
+    this.src = "sorciers/mage-reflecteur.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "spell-play",
+            id: 304
+        },
+        {
+            trigger: "turn-start",
+            id: 305
+        }
+    ];
+}
+
+function JavelotDeFeu() {
+    this.name = "Javelot de feu";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "sorciers/javelot-de-feu.jpg";
+    this.tier = 2;
+    this.requirement = "Sorcier";
+    this.effects = [
+        {
+            trigger: "",
+            id: 327
+        }
+    ];
+    this.validTarget = {
+        area: "board",
+        species: "Sorcier"
+    };
+}
+
+function CanaliseuseDeMana() {
+    this.name = "Canaliseuse de mana";
+    this.species = "Sorcier";
+    this.attack = 3;
+    this.hp = 3;
+    this.src = "sorciers/canaliseuse-de-mana.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "spell-play",
+            id: 306
+        }
+    ];
+}
+
+function AmasseurDePuissance() {
+    this.name = "Amasseur de puissance";
+    this.species = "Sorcier";
+    this.attack = 2;
+    this.hp = 5;
+    this.src = "sorciers/amasseur-de-puissance.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 308
+        }
+    ];
+}
+
+function EchoArcanique() {
+    this.name = "Écho arcanique";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "sorciers/echo-arcanique.jpg";
+    this.tier = 3;
+    this.requirement = "Sorcier";
+    this.effects = [
+        {
+            trigger: "",
+            id: 324
+        }
+    ];
+    this.validTarget = {
+        area: "any"
+    };
+}
+
+function MaitresseDesIllusions() {
+    this.name = "Maîtresse des illusions";
+    this.species = "Sorcier";
+    this.attack = 4;
+    this.hp = 6;
+    this.src = "sorciers/maitresse-des-illusions.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 307
+        }
+    ];
+}
+
+function CreationDeFoudre() {
+    this.name = "Création de foudre";
+    this.species = "Sorcier";
+    this.attack = 6;
+    this.hp = 3;
+    this.src = "sorciers/creation-de-foudre.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 320
+        },
+        {
+            trigger: "spell-play",
+            id: 321
+        }
+    ];
+}
+
+function ReservoirDePuissance() {
+    this.name = "Réservoir de puissance";
+    this.species = "Autre";
+    this.attack = 0;
+    this.hp = 2;
+    this.src = "sorciers/reservoir-de-puissance.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 322
+        },
+        {
+            trigger: "",
+            id: 323
+        }
+    ];
+}
+
+function PortailDInvocation() {
+    this.name = "Portail d'invocation";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "sorciers/portail-d-invocation.jpg";
+    this.tier = 4;
+    this.requirement = "Sorcier";
+    this.effects = [
+        {
+            trigger: "",
+            id: 314
+        }
+    ];
+    this.validTarget = {
+        area: "any"
+    };
+}
+
+function DoyenneDesOracles() {
+    this.name = "Doyenne des Oracles";
+    this.species = "Sorcier";
+    this.attack = 4;
+    this.hp = 6;
+    this.src = "sorciers/doyenne-des-oracles.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "spell-play",
+            id: 310
+        }
+    ];
+}
+
+function ArcanisteAstral() {
+    this.name = "Arcaniste astral";
+    this.species = "Sorcier";
+    this.attack = 4;
+    this.hp = 6;
+    this.src = "sorciers/arcaniste-astral.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 318
+        }
+    ];
+}
+
+function ArchimageOmnipotent() {
+    this.name = "Archimage omnipotent";
+    this.species = "Sorcier";
+    this.attack = 6;
+    this.hp = 6;
+    this.src = "sorciers/archimage-omnipotent.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "spell-play",
+            id: 311
+        },
+        {
+            trigger: "turn-end",
+            id: 312
+        },
+        {
+            trigger: "turn-start",
+            id: 313
+        }
+    ];
+}
+
+function SecretsDeLaBibliotheque() {
+    this.name = "Secrets de la bibliothèque";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "sorciers/secrets-de-la-bibliotheque.jpg";
+    this.tier = 6;
+    this.requirement = "Sorcier";
+    this.effects = [
+        {
+            trigger: "",
+            id: 317
+        }
+    ];
+    this.validTarget = {
+        area: "any"
+    };
+}
+
+
 // Bandits
 
 function ArchereAuxTraitsDeFeu() {
@@ -2327,6 +2675,78 @@ function ArtificierGobelin() {
             id: 204
         }
     ];
+}
+
+function ConnaissancesArcaniques() {
+    this.name = "Connaissances arcaniques";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "sorciers/connaissances-arcaniques.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "",
+            id: 302
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function CatalyseurDePuissance() {
+    this.name = "Catalyseur de puissance";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "sorciers/catalyseur-de-puissance.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "",
+            id: 309
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function EquilibreNaturel() {
+    this.name = "Équilibre naturel";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "sorciers/equilibre-naturel.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "",
+            id: 316
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function Dephasage() {
+    this.name = "Déphasage";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "sorciers/dephasage.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "",
+            id: 319
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
 }
 
 
@@ -2718,6 +3138,60 @@ function createEffect(id) {
             return new Effect217();
         case 218:
             return new Effect218();
+        case 301:
+            return new Effect301();
+        case 302:
+            return new Effect302();
+        case 303:
+            return new Effect303();
+        case 304:
+            return new Effect304();
+        case 305:
+            return new Effect305();
+        case 306:
+            return new Effect306();
+        case 307:
+            return new Effect307();
+        case 308:
+            return new Effect308();
+        case 309:
+            return new Effect309();
+        case 310:
+            return new Effect310();
+        case 311:
+            return new Effect311();
+        case 312:
+            return new Effect312();
+        case 313:
+            return new Effect313();
+        case 314:
+            return new Effect314();
+        case 315:
+            return new Effect315();
+        case 316:
+            return new Effect316();
+        case 317:
+            return new Effect317();
+        case 318:
+            return new Effect318();
+        case 319:
+            return new Effect319();
+        case 320:
+            return new Effect320();
+        case 321:
+            return new Effect321();
+        case 322:
+            return new Effect322();
+        case 323:
+            return new Effect323();
+        case 324:
+            return new Effect324();
+        case 325:
+            return new Effect325();
+        case 326:
+            return new Effect326();
+        case 327:
+            return new Effect327();
         case 401:
             return new Effect401();
         case 601:
@@ -3010,7 +3484,7 @@ function Effect107() {
             await addToHand(drawCard(card, 176));
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Ajoute 1 Pièce d'or dans votre main.";
+    this.desc = "<em>Dernière volonté :</em> Ajoute 1 Pièce d'or à votre main.";
 }
 
 function Effect108() {
@@ -3157,7 +3631,7 @@ function Effect118() {
 function Effect119() {
     this.run = async (sender, args, doAnimate) => {
         let n = lastResult == 1 ? 5 : 1;
-        boostStats(args[0].card, n, n, doAnimate);
+        await boostStats(args[0].card, n, n, doAnimate);
     };
     this.desc = "Confère +1/+1 au Dragon allié ciblé, ou +5/+5 si vous avez gagné le dernier combat.";
 }
@@ -3399,7 +3873,7 @@ function Effect217() {
             trigger: "ko",
             id: 203
         });
-        boostStats(args[0].card, 0, 0, doAnimate);
+        await boostStats(args[0].card, 0, 0, doAnimate);
     };
     this.desc = "Confère \"<em>Dernière volonté :</em> Invoque un Artificier gobelin.\" au Gobelin allié ciblé.";
 }
@@ -3410,9 +3884,327 @@ function Effect218() {
         card.created = true;
         card.range = true;
         addToHand(drawCard(card, 176));
-        boostStats(card, 0, 0, doAnimate);
+        await boostStats(card, 0, 0, doAnimate);
     };
     this.desc = "Ajoute un Gobelin aléatoire à votre main et lui confère <em>Portée</em>.";
+}
+
+function Effect301() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                effectProcGlow(sender);
+            let card = new ConnaissancesArcaniques();
+            card.created = true;
+            await addToHand(drawCard(card, 176));
+        }
+    };
+    this.desc = "<em>Recrue :</em> Ajoute une Connaissances arcaniques à votre main.";
+}
+
+function Effect302() {
+    this.run = async (sender, args, doAnimate) => {
+        await boostStats(args[0].card, 1, 1, doAnimate);
+    };
+    this.desc = "Confère +1/+1 à la créature alliée ciblée.";
+}
+
+function Effect303() {
+    this.run = async (sender, args, doAnimate) => {
+        let card = getCard(1);
+        while (card.species == "Sortilège")
+            card = getCard(1);
+        card.created = true;
+        card.attack = 3;
+        card.hp = 3;
+        await summonCard(card);
+    };
+    this.desc = "Invoque une créature de niveau 1 aléatoire et fixe ses statistiques à 3/3.";
+}
+
+function Effect304() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[1] === sender && (!sender.effect304 || sender.effect304 == 0)) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let e of args[0].effects)
+                await createEffect(e.id).run(args[0], [findDOMCard(args[1])], true);
+            sender.effect304 = 1;
+        }
+    };
+    this.desc = "Le premier sort joué sur cette créature chaque tour prend effet deux fois.";
+}
+
+function Effect305() {
+    this.run = async (sender, args, doAnimate) => {
+        sender.effect304 = 0;
+    };
+    this.desc = "";
+}
+
+function Effect306() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board"))
+            await boostStats(sender, 1, 1, doAnimate);
+    };
+    this.desc = "Gagne +1/+1 lorsque que vous jouez un Sortilège.";
+}
+
+function Effect307() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            let card = getCard(shopTier);
+            while (card.species == "Sortilège" || (card.tier < 3 && shopTier >= 3) || card.effects.findIndex(e => e.id == 307) != -1)
+                card = getCard(shopTier);
+            card.created = true;
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await summonCard(card);
+        }
+    };
+    this.desc = "A la fin de votre tour, invoque une créature de niveau supérieur ou égal à 3.";
+}
+
+function Effect308() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.hp <= 0 && args[6] && args[4] == 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let card = new CatalyseurDePuissance();
+            card.created = true;
+            await addToHand(drawCard(card, 176));
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Ajoute un Catalyseur de puissance à votre main.";
+}
+
+function Effect309() {
+    this.run = async (sender, args, doAnimate) => {
+        await boostStats(args[0].card, 2, 1, doAnimate);
+    };
+    this.desc = "Confère +2/+1 à la créature alliée ciblée.";
+}
+
+function Effect310() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board") && args[1]) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(args[1], 2, 2, doAnimate);
+        }
+    };
+    this.desc = "Lorsque vous jouez un Sortilège sur une créature alliée, lui confère +2/+2.";
+}
+
+function Effect311() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (!sender.effect311)
+                sender.effect311 = [];
+            sender.effect311.push(copy(args[0]));
+        }
+    };
+    this.desc = "";
+}
+
+function Effect312() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (sender.effect311) {
+                let spells = sender.effect311.slice(-3);
+                if (spells.length > 0 && doAnimate)
+                    await effectProcGlow(sender);
+                for (let s of spells) {
+                    if (s.validTarget.area == "any")
+                        await playSpell(drawCard(s, 0));
+                    else {
+                        let options = [];
+                        for (let d of document.getElementById("board").children)
+                            if (d.children[0])
+                                options.push(d.children[0]);
+                        if (options.length > 0)
+                            await playSpell(drawCard(s, 0), choice(options));
+                    }
+                }
+            }
+        }
+    };
+    this.desc = "A la fin de votre tour, rejoue les 3 derniers Sortilèges joués ce tour-ci sur des cibles aléatoires.";
+}
+
+function Effect313() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (sender.effect311)
+                sender.effect311 = [];
+        }
+    };
+    this.desc = "";
+}
+
+function Effect314() {
+    this.run = async (sender, args, doAnimate) => {
+        let card = getCard(Math.min(6, shopTier + 1));
+        while (card.species == "Sortilège" || card.tier != Math.min(6, shopTier + 1))
+            card = getCard(Math.min(6, shopTier + 1));
+        card.created = true;
+        await summonCard(card);
+    };
+    this.desc = "Invoque une créature du niveau supérieur à votre niveau de recrutement.";
+}
+
+function Effect315() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                effectProcGlow(sender);
+            let card = new EquilibreNaturel();
+            card.created = true;
+            await addToHand(drawCard(card, 176));
+        }
+    };
+    this.desc = "<em>Recrue :</em> Ajoute un Équilibre naturel à votre main.";
+}
+
+function Effect316() {
+    this.run = async (sender, args, doAnimate) => {
+        let atk = args[0].card.attack;
+        let hp = args[0].card.hp;
+        let datk = Math.floor((hp - atk) / 2);
+        let dhp = Math.floor((atk - hp) / 2);
+        await boostStats(args[0].card, datk + 1, dhp + 1, doAnimate);
+    };
+    this.desc = "Confère +1/+1 à la créature alliée ciblée, puis équilibre ses statistiques.";
+}
+
+function Effect317() {
+    this.run = async (sender, args, doAnimate) => {
+        for (let i = 0; i < 5; i++) {
+            let options = [];
+            for (let d of document.getElementById("board").children)
+                if (d.children[0])
+                    options.push(d.children[0]);
+            if (options.length > 0)
+                await playSpell(drawCard(new ConnaissancesArcaniques(), 0), choice(options));
+        }
+    };
+    this.desc = "Joue 5 Connaissances arcaniques sur des cibles aléatoires.";
+}
+
+function Effect318() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                effectProcGlow(sender);
+            let card = new Dephasage();
+            card.created = true;
+            await addToHand(drawCard(card, 176));
+        }
+    };
+    this.desc = "<em>Recrue :</em> Ajoute un Déphasage à votre main.";
+}
+
+function Effect319() {
+    this.run = async (sender, args, doAnimate) => {
+        args[0].card.shield = true;
+        await boostStats(args[0].card, 0, 0, doAnimate);
+    };
+    this.desc = "Confère <em>Bouclier</em> au Sorcier allié ciblé.";
+}
+
+function Effect320() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.effect320 && sender.effect320 > 0) {
+            let t = args[0][0].concat(args[0][1]).includes(sender) ? args[1][0].concat(args[1][1]) : args[0][0].concat(args[0][1]);
+            let target = pickRandomTarget(t);
+            if (target) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                dealDamage(target, sender.effect320, doAnimate, args);
+            }
+        }
+    };
+    this.desc = "<em>Frappe préventive :</em> Inflige 1 dégât à une cible adverse aléatoire pour chaque Sortilège joué depuis que cette carte est en jeu.";
+}
+
+function Effect321() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (!sender.effect320)
+                sender.effect320 = 0;
+            sender.effect320++;
+        }
+    };
+    this.desc = "";
+}
+
+function Effect322() {
+    this.run = async (sender, args, doAnimate) => {
+        if (doAnimate)
+            effectProcGlow(sender);
+        let card = new CatalyseurDePuissance();
+        card.created = true;
+        await addToHand(drawCard(card, 176));
+        if (lastResult && lastResult == 2) {
+            let card = new CatalyseurDePuissance();
+            card.created = true;
+            await addToHand(drawCard(card, 176));
+        }
+    };
+    this.desc = "Au début de votre tour, ajoute un Catalyseur de puissance à votre main, ou deux si vous avez perdu le dernier combat.";
+}
+
+function Effect323() {
+    this.run = async (sender, args, doAnimate) => {
+        
+    };
+    this.desc = "Ne peut pas gagner d'attaque.";
+}
+
+function Effect324() {
+    this.run = async (sender, args, doAnimate) => {
+        players[0].effects.push({
+            trigger: "spell-play",
+            id: 325
+        });
+        players[0].effects.push({
+            trigger: "turn-start",
+            id: 326
+        });
+    };
+    this.desc = "Jusqu'au prochain tour, confère +1/+2 à une créature alliée aléatoire lorsque vous jouez un Sortilège.";
+}
+
+function Effect325() {
+    this.run = async (sender, args, doAnimate) => {
+        let options = [];
+        for (let d of document.getElementById("board").children)
+            if (d.children[0])
+                options.push(d.children[0].card);
+        if (options.length > 0)
+            await boostStats(choice(options), 1, 2, doAnimate);
+    };
+    this.desc = "";
+}
+
+function Effect326() {
+    this.run = async (sender, args, doAnimate) => {
+        let i = sender.effects.findIndex(e => e.id == 325);
+        if (i != -1)
+            sender.effects.splice(i, 1);
+        i = sender.effects.findIndex(e => e.id == 326);
+        if (i != -1)
+            sender.effects.splice(i, 1);
+    };
+    this.desc = "";
+}
+
+function Effect327() {
+    this.run = async (sender, args, doAnimate) => {
+        args[0].card.range = true;
+        await boostStats(args[0].card, 0, 0, doAnimate);
+    };
+    this.desc = "Confère <em>Portée</em> au Sorcier allié ciblé.";
 }
 
 function Effect401() {
@@ -3467,9 +4259,9 @@ function Effect1001() {
 
 function Effect1002() {
     this.run = async (sender, args, doAnimate) => {
-        boostStats(args[0].card, 2, 2, doAnimate);
+        await boostStats(args[0].card, 2, 1, doAnimate);
     };
-    this.desc = "Confère +2/+2 à la créature alliée ciblée.";
+    this.desc = "Confère +2/+1 à la créature alliée ciblée.";
 }
 
 function Effect2001() {
@@ -3531,12 +4323,14 @@ async function boostStats(card, atk, hp, doAnimate, preserveHP, permanent) {
         await sleep(200);
     }
 
-    card.attack += atk;
+    if (card.effects.findIndex(e => e.id == 323) == -1)
+        card.attack += atk;
     card.hp += hp;
     if (preserveHP && card.hp <= 0)
         card.hp = 1;
     if (permanent && card.original) {
-        card.original.attack += atk;
+        if (card.effects.findIndex(e => e.id == 323) == -1)
+            card.original.attack += atk;
         card.original.hp += hp;
         if (preserveHP && card.original.hp <= 0)
             card.original.hp = 1;
