@@ -508,6 +508,7 @@ let animating = 0;
 async function broadcastShopEvent(name, args) {
     animating++;
     document.getElementById("cover-filter").style.removeProperty("display");
+    await sleep(1)
     hideCardTooltip();
 
     if (name == "card-sell")
@@ -803,11 +804,11 @@ async function attack(t1, t2, p1, p2, turn, doAnimate) {
         if (!s1)
             attacked.hp -= d1;
         else
-            delete attacked.shield;
+            attacked.shield = false;
         if (!s2)
             attacker.hp -= d2;
         else
-            delete attacker.shield;
+            attacker.shield = false;
 
         if (doAnimate) {
             updateCardStats(findCardPos(attacker).children[0]);
@@ -847,6 +848,11 @@ function findCardPos(c) {
 }
 
 async function broadcastEvent(name, t1, t2, p1, p2, turn, doAnimate, args) {
+    if (doAnimate) {
+        hideCardTooltip();
+        await sleep(1);
+    }
+
     console.log("Broadcasting event " + name);
     let t = turn ? t1[0].concat(t1[1]) : t2[0].concat(t2[1]);
     let tt = turn ? t2[0].concat(t2[1]) : t1[0].concat(t1[1]);
@@ -1207,11 +1213,11 @@ const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machin
 
 const cardList = {
     "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
-    "Soldat": ["fantassin-en-armure", "capitaine-d-escouade"],
+    "Soldat": ["fantassin-en-armure", "capitaine-d-escouade", "protectrice-devouee", "ecraseuse-au-bouclier", "veteran-sylvebouclier", "general-ethere", "chevalier-loyal", "baliste-de-la-legion", "tacticien-de-la-legion", "commandante-sylvelame", "mentor-chevaleresque", "recrue-peureuse", "recruteur-de-la-legion", "paladin-inspirateur", "heroine-de-la-legion"],
     "Bandit": ["archere-aux-traits-de-feu"],
     "Machine": ["planeur-de-fortune"],
     "Bête": ["predateur-en-chasse"],
@@ -1231,7 +1237,7 @@ function initCards() {
         if (!species.includes(s))
             species.push(s);
     }
-    species = ["Sorcier"]; //!!!
+    species = ["Soldat"]; //!!!
 
     for (let s of species.concat(["Sortilège", "Autre"])) {
         for (let c of cardList[s])
@@ -1410,6 +1416,41 @@ function createCard(card) {
         case "reservoir-de-puissance":
             return new ReservoirDePuissance();
 
+        case "fantassin-en-armure":
+            return new FantassinEnArmure();
+        case "capitaine-d-escouade":
+            return new CapitaineDEscouade();
+        case "protectrice-devouee":
+            return new ProtectriceDevouee();
+        case "ecraseuse-au-bouclier":
+            return new EcraseuseAuBouclier();
+        case "veteran-sylvebouclier":
+            return new VeteranSylvebouclier();
+        case "general-ethere":
+            return new GeneralEthere();
+        case "chevalier-loyal":
+            return new ChevalierLoyal();
+        case "baliste-de-la-legion":
+            return new BalisteDeLaLegion();
+        case "tacticien-de-la-legion":
+            return new TacticienDeLaLegion();
+        case "commandante-sylvelame":
+            return new CommandanteSylvelame();
+        case "mentor-chevaleresque":
+            return new MentorChevaleresque();
+        case "recrue-peureuse":
+            return new RecruePeureuse();
+        case "recruteur-de-la-legion":
+            return new RecruteurDeLaLegion();
+        case "paladin-inspirateur":
+            return new PaladinInspirateur();
+        case "heroine-de-la-legion":
+            return new HeroineDeLaLegion();
+        case "noble-camaraderie":
+            return new NobleCamaraderie();
+        case "protection-d-urgence":
+            return new ProtectionDUrgence();
+
         case "archere-aux-traits-de-feu":
             return new ArchereAuxTraitsDeFeu();
 
@@ -1418,11 +1459,6 @@ function createCard(card) {
 
         case "serviteur-exhume":
             return new ServiteurExhume();
-
-        case "fantassin-en-armure":
-            return new FantassinEnArmure();
-        case "capitaine-d-escouade":
-            return new CapitaineDEscouade();
 
         case "predateur-en-chasse":
             return new PredateurEnChasse();
@@ -2486,6 +2522,282 @@ function SecretsDeLaBibliotheque() {
 }
 
 
+// Soldats
+
+function FantassinEnArmure() {
+    this.name = "Fantassin en armure";
+    this.species = "Soldat";
+    this.attack = 2;
+    this.hp = 1;
+    this.src = "soldats/fantassin-en-armure.jpg";
+    this.shield = true;
+    this.tier = 1;
+    this.effects = [
+
+    ];
+}
+
+function RecruePeureuse() {
+    this.name = "Recrue peureuse";
+    this.species = "Soldat";
+    this.attack = 5;
+    this.hp = 2;
+    this.src = "soldats/recrue-peureuse.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 413
+        }
+    ];
+}
+
+function CapitaineDEscouade() {
+    this.name = "Capitaine d'escouade";
+    this.species = "Soldat";
+    this.attack = 2;
+    this.hp = 3;
+    this.src = "soldats/capitaine-d-escouade.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 401
+        }
+    ];
+}
+
+function RecruteurDeLaLegion() {
+    this.name = "Recruteur de la Légion";
+    this.species = "Soldat";
+    this.attack = 4;
+    this.hp = 3;
+    this.src = "soldats/recruteur-de-la-legion.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 414
+        }
+    ];
+}
+
+function NobleCamaraderie() {
+    this.name = "Noble camaraderie";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "soldats/noble-camaraderie.jpg";
+    this.tier = 2;
+    this.requirement = "Soldat";
+    this.effects = [
+        {
+            trigger: "",
+            id: 417
+        }
+    ];
+    this.validTarget = {
+        area: "board",
+        species: "Soldat"
+    };
+}
+
+function EcraseuseAuBouclier() {
+    this.name = "Écraseuse au bouclier";
+    this.species = "Soldat";
+    this.attack = 5;
+    this.hp = 3;
+    this.src = "soldats/ecraseuse-au-bouclier.jpg";
+    this.shield = true;
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "attack",
+            id: 403
+        },
+        {
+            trigger: "attacked",
+            id: 404
+        }
+    ];
+}
+function BalisteDeLaLegion() {
+    this.name = "Baliste de la Légion";
+    this.species = "Soldat";
+    this.attack = 6;
+    this.hp = 2;
+    this.src = "soldats/baliste-de-la-legion.jpg";
+    this.range = true;
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 409
+        }
+    ];
+}
+
+function CommandanteSylvelame() {
+    this.name = "Commandante Sylvelame";
+    this.species = "Soldat";
+    this.attack = 3;
+    this.hp = 3;
+    this.src = "soldats/commandante-sylvelame.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 410
+        }
+    ];
+}
+
+function ProtectionDUrgence() {
+    this.name = "Protection d'urgence";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "soldats/protection-d-urgence.jpg";
+    this.tier = 3;
+    this.requirement = "Soldat";
+    this.effects = [
+        {
+            trigger: "",
+            id: 418
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function ProtectriceDevouee() {
+    this.name = "Protectrice dévouée";
+    this.species = "Soldat";
+    this.attack = 4;
+    this.hp = 4;
+    this.src = "soldats/protectrice-devouee.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 402
+        }
+    ];
+}
+
+function TacticienDeLaLegion() {
+    this.name = "Tacticien de la Légion";
+    this.species = "Soldat";
+    this.attack = 3;
+    this.hp = 5;
+    this.src = "soldats/tacticien-de-la-legion.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 411
+        }
+    ];
+}
+
+function MentorChevaleresque() {
+    this.name = "Mentor chevaleresque";
+    this.species = "Soldat";
+    this.attack = 5;
+    this.hp = 5;
+    this.src = "soldats/mentor-chevaleresque.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 412
+        }
+    ];
+}
+
+function VeteranSylvebouclier() {
+    this.name = "Vétéran Sylvebouclier";
+    this.species = "Soldat";
+    this.attack = 1;
+    this.hp = 7;
+    this.src = "soldats/veteran-sylvebouclier.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 405
+        }
+    ];
+}
+
+function ChevalierLoyal() {
+    this.name = "Chevalier loyal";
+    this.species = "Soldat";
+    this.attack = 4;
+    this.hp = 5;
+    this.src = "soldats/chevalier-loyal.jpg";
+    this.tier = 5;
+    this.shield = true;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 408
+        }
+    ];
+}
+
+function HeroineDeLaLegion() {
+    this.name = "Héroïne de la Légion";
+    this.species = "Soldat";
+    this.attack = 5;
+    this.hp = 7;
+    this.src = "soldats/heroine-de-la-legion.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "attack",
+            id: 416
+        }
+    ];
+}
+
+function GeneralEthere() {
+    this.name = "Général étheré";
+    this.species = "Soldat";
+    this.attack = 3;
+    this.hp = 7;
+    this.src = "soldats/general-ethere.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "attack",
+            id: 406
+        },
+        {
+            trigger: "attacked",
+            id: 407
+        }
+    ];
+}
+
+function PaladinInspirateur() {
+    this.name = "Paladin inspirateur";
+    this.species = "Soldat";
+    this.attack = 8;
+    this.hp = 6;
+    this.src = "soldats/paladin-inspirateur.jpg";
+    this.tier = 6;
+    this.shield = true;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 415
+        }
+    ];
+}
+
+
 // Bandits
 
 function ArchereAuxTraitsDeFeu() {
@@ -2529,37 +2841,6 @@ function ServiteurExhume() {
     this.tier = 1;
     this.effects = [
 
-    ];
-}
-
-
-// Soldats
-
-function FantassinEnArmure() {
-    this.name = "Fantassin en armure";
-    this.species = "Soldat";
-    this.attack = 2;
-    this.hp = 1;
-    this.src = "soldats/fantassin-en-armure.jpg";
-    this.shield = true;
-    this.tier = 1;
-    this.effects = [
-
-    ];
-}
-
-function CapitaineDEscouade() {
-    this.name = "Capitaine d'escouade";
-    this.species = "Soldat";
-    this.attack = 2;
-    this.hp = 3;
-    this.src = "soldats/capitaine-d-escouade.jpg";
-    this.tier = 2;
-    this.effects = [
-        {
-            trigger: "card-place",
-            id: 401
-        }
     ];
 }
 
@@ -3194,6 +3475,42 @@ function createEffect(id) {
             return new Effect327();
         case 401:
             return new Effect401();
+        case 402:
+            return new Effect402();
+        case 403:
+            return new Effect403();
+        case 404:
+            return new Effect404();
+        case 405:
+            return new Effect405();
+        case 406:
+            return new Effect406();
+        case 407:
+            return new Effect407();
+        case 408:
+            return new Effect408();
+        case 409:
+            return new Effect409();
+        case 410:
+            return new Effect410();
+        case 411:
+            return new Effect411();
+        case 412:
+            return new Effect412();
+        case 413:
+            return new Effect413();
+        case 414:
+            return new Effect414();
+        case 415:
+            return new Effect415();
+        case 416:
+            return new Effect416();
+        case 417:
+            return new Effect417();
+        case 418:
+            return new Effect418();
+        case 419:
+            return new Effect419();
         case 601:
             return new Effect601();
         case 701:
@@ -4224,6 +4541,288 @@ function Effect401() {
     this.desc = "<em>Recrue :</em> Confère +2/+2 à un autre Soldat allié ciblé.";
 }
 
+function Effect402() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.hp <= 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            let i = t.findIndex(e => e === sender);
+            if (i % 4 > 0 && t[i - 1] && t[i - 1].species == "Soldat") {
+                t[i - 1].shield = true;
+                await boostStats(t[i - 1], 0, 0, doAnimate);
+            }
+            if (t[(i + 4) % 8] && t[(i + 4) % 8].species == "Soldat") {
+                t[(i + 4) % 8].shield = true;
+                await boostStats(t[(i + 4) % 8], 0, 0, doAnimate);
+            }
+            if (i % 4 < 3 && t[i + 1] && t[i + 1].species == "Soldat") {
+                t[i + 1].shield = true;
+                await boostStats(t[i + 1], 0, 0, doAnimate);
+            }
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Confère <em>Bouclier</em> aux Soldats voisins.";
+}
+
+function Effect403() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.shield) {
+            await boostStats(sender, 5, 0, doAnimate);
+        }
+    };
+    this.desc = "Lorsque cette créature attaque ou est attaquée, si elle a le <em>Bouclier</em>, elle gagne +5/+0.";
+}
+
+function Effect404() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.shield) {
+            await boostStats(sender, 5, 0, doAnimate);
+        }
+    };
+    this.desc = "";
+}
+
+function Effect405() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                effectProcGlow(sender);
+            chooseTarget((target) => {
+                target.shield = true;
+                boostStats(target, 0, 0, doAnimate);
+            }, {
+                area: "board",
+                species: "Soldat",
+                notself: true
+            }, sender);
+        }
+    };
+    this.desc = "<em>Recrue :</em> Confère <em>Bouclier</em> à un autre Soldat allié ciblé.";
+}
+
+function Effect406() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+        if (t.includes(args[0]) && args[0].shield) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(args[0], 3, 3, doAnimate, false, true);
+        }
+    };
+    this.desc = "Lorsqu'une créature alliée avec <em>Bouclier</em> attaque ou est attaquée, elle gagne définitivement +3/+3.";
+}
+
+function Effect407() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+        if (t.includes(args[0]) && args[0].shield) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(args[0], 3, 3, doAnimate, false, true);
+        }
+    };
+    this.desc = "";
+}
+
+function Effect408() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+        console.log(args[0].shield != undefined)
+        console.log(sender.hp > 0)
+        if (t.includes(sender) && args[0].shield != undefined && sender.hp > 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            sender.shield = true;
+            await boostStats(sender, 0, 0, doAnimate, false, true);
+        }
+    };
+    this.desc = "Lorsqu'une créature alliée qui a eu <em>Bouclier</em> meurt, gagne <em>Bouclier</em>.";
+}
+
+function Effect409() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+        let i = t.findIndex(e => e === sender);
+        if (doAnimate)
+            await effectProcGlow(sender);
+        if (i % 4 > 0 && t[i - 1] && t[i - 1].species == "Soldat") {
+            t[i - 1].range = true;
+            await boostStats(t[i - 1], 0, 0, doAnimate);
+        }
+        if (t[(i + 4) % 8] && t[(i + 4) % 8].species == "Soldat") {
+            t[(i + 4) % 8].range = true;
+            await boostStats(t[(i + 4) % 8], 0, 0, doAnimate);
+        }
+        if (i % 4 < 3 && t[i + 1] && t[i + 1].species == "Soldat") {
+            t[i + 1].range = true;
+            await boostStats(t[i + 1], 0, 0, doAnimate);
+        }
+    };
+    this.desc = "<em>Frappe préventive :</em> Confère <em>Portée</em> aux Soldats voisins.";
+}
+
+function Effect410() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let d of document.getElementById("board").children)
+                if (d.children[0])
+                    await boostStats(d.children[0].card, 1, 1, doAnimate);
+        }
+    };
+    this.desc = "A la fin de chaque tour, confère +1/+1 à tous les Soldats alliés.";
+}
+
+function Effect411() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+        if (doAnimate)
+            await effectProcGlow(sender);
+        for (let i = 0; i < 8; i++) {
+            if (t[i] && t[i].species == "Soldat") {
+                let neighbors = [];
+                if (i % 4 > 0 && t[i - 1] && t[i - 1].species == "Soldat")
+                    neighbors.push(t[i - 1].name);
+                if (t[(i + 4) % 8] && t[(i + 4) % 8].species == "Soldat" && neighbors.findIndex(e => e.name == t[(i + 4) % 8].name) == -1)
+                    neighbors.push(t[(i + 4) % 8].name);
+                if (i % 4 < 3 && t[i + 1] && t[i + 1].species == "Soldat" && neighbors.findIndex(e => e.name == t[i + 1].name) == -1)
+                    neighbors.push(t[i + 1].name);
+                let n = neighbors.length;
+                await boostStats(t[i], n, 2 * n, doAnimate);
+            }
+        }
+    };
+    this.desc = "<em>Frappe préventive :</em> Confère +1/+2 aux Soldats alliés pour chacun de leurs voisins différents.";
+}
+
+function Effect412() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+        let i = t.findIndex(e => e === sender);
+        if (i % 4 > 0 && t[i - 1].species == "Soldat") {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(t[i - 1], 10, 10, doAnimate);
+        }
+    };
+    this.desc = "<em>Frappe préventive :</em> Confère +10/+10 au Soldat à sa gauche.";
+}
+
+function Effect413() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+        if (t.includes(sender) && sender.hp > 0) {
+            await boostStats(sender, -1, 0, doAnimate);
+        }
+    };
+    this.desc = "Lorsqu'une créature alliée meurt, gagne -1/-0.";
+}
+
+function Effect414() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card !== sender && args[0].card.species == "Soldat" && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let options = [];
+            for (let d of document.getElementById("board").children)
+                if (d.children[0] && d.children[0].card.species == "Soldat")
+                    options.push(d.children[0].card);
+            let target = choice(options);
+            if (target)
+                await boostStats(target, 1, 1, doAnimate);
+        }
+    };
+    this.desc = "Lorsque vous jouez un Soldat, confère +1/+1 à un Soldat allié aléatoire.";
+}
+
+function Effect415() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            let names = [];
+            for (let d of document.getElementById("board").children)
+                if (d.children[0] && d.children[0].card.species == "Soldat" && d.children[0].card.name != sender.name)
+                    names.push(d.children[0].card.name);
+
+            if (names.length > 0) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                let card;
+
+                while (!card || names.findIndex(e => e == card.name) == -1)
+                    card = getCard();
+                card.created = true;
+                addToHand(drawCard(card, 176));
+            }
+        }
+    };
+    this.desc = "Au début de votre tour, ajoute à votre main une copie de base d'un autre Soldat allié aléatoire.";
+}
+
+function Effect416() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            let target = args[1];
+            if (target.shield || target.revive || target.range) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                target.shield = false;
+                target.revive = false;
+                target.range = false;
+                await dealDamage(target, 0, doAnimate, args.slice(2));
+            }
+        }
+    };
+    this.desc = "Lorsque cette créature attaque, elle fait perdre le <em>Bouclier</em>, la <em>Résurrection</em> et la <em>Portée</em> à la créature attaquée avant de combattre.";
+}
+
+function Effect417() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = [];
+        for (let d of document.getElementById("board").children)
+            t.push(d.children[0] ? d.children[0].card : undefined);
+        let i = t.findIndex(e => e === args[0].card);
+        boostStats(t[i], 1, 1, doAnimate);
+        if (i % 4 > 0 && t[i - 1])
+            boostStats(t[i - 1], 1, 1, doAnimate);
+        if (t[(i + 4) % 8])
+            boostStats(t[(i + 4) % 8], 1, 1, doAnimate);
+        if (i % 4 < 3 && t[i + 1])
+            boostStats(t[i + 1], 1, 1, doAnimate);
+    };
+    this.desc = "Confère +1/+1 à un Soldat allié et à ses voisins.";
+}
+
+function Effect418() {
+    this.run = async (sender, args, doAnimate) => {
+        args[0].card.effects.push({
+            trigger: "ko",
+            id: 419
+        });
+    };
+    this.desc = "Confère \"Lorsque le dernier allié de cette créature meurt, elle acquiert <em>Bouclier</em>.\" à une créature alliée.";
+}
+
+function Effect419() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+        if (t.includes(sender)) {
+            let n = 0;
+            for (let c of t)
+                if (c && c !== sender)
+                    n++;
+            if (n == 0) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                sender.shield = true;
+                await boostStats(sender, 0, 0, doAnimate);
+            }
+        }
+    };
+    this.desc = "Lorsque le dernier allié de cette créature meurt, elle acquiert <em>Bouclier</em>.";
+}
+
 function Effect601() {
     this.run = async (sender, args, doAnimate) => {
         if (!sender.effect601 || sender.effect601 == 0) {
@@ -4325,12 +4924,16 @@ async function boostStats(card, atk, hp, doAnimate, preserveHP, permanent) {
 
     if (card.effects.findIndex(e => e.id == 323) == -1)
         card.attack += atk;
+    if (card.attack < 0)
+        card.attack = 0;
     card.hp += hp;
     if (preserveHP && card.hp <= 0)
         card.hp = 1;
     if (permanent && card.original) {
         if (card.effects.findIndex(e => e.id == 323) == -1)
             card.original.attack += atk;
+        if (card.original.attack < 0)
+            card.original.attack = 0;
         card.original.hp += hp;
         if (preserveHP && card.original.hp <= 0)
             card.original.hp = 1;
@@ -4366,8 +4969,8 @@ async function dealDamage(card, damage, doAnimate, state) {
     let s = card.shield;
     if (!s)
         card.hp -= damage;
-    else
-        delete card.shield;
+    else if (damage > 0)
+        card.shield = false;
 
     if (doAnimate) {
         updateCardStats(c);
@@ -4381,7 +4984,7 @@ async function dealDamage(card, damage, doAnimate, state) {
             c.style.removeProperty("filter");
         await sleep(200);
     }
-    if (!s)
+    if (!s && damage > 0)
         await broadcastEvent("tookdamage", state[0], state[1], state[2], state[3], state[4], doAnimate, [card, damage, state[0], state[1], state[2], state[3], state[4]]);
 }
 
