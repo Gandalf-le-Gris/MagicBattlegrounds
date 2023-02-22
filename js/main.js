@@ -377,13 +377,15 @@ function freezeShop() {
     }
 }
 
-async function buyCard(c) {
-    await spendCoins(3, false);
+async function buyCard(c, free) {
+    if (!free)
+        await spendCoins(3, false);
     let shop = document.getElementById("shop");
     shop.removeChild(c);
     shop.style.setProperty("--shop-size", parseInt(shop.style.getPropertyValue("--shop-size")) - 1);
     addToHand(c);
-    await broadcastShopEvent("card-buy", [c]);
+    if (!free)
+        await broadcastShopEvent("card-buy", [c]);
 }
 
 let cardSold;
@@ -528,7 +530,7 @@ async function broadcastShopEvent(name, args) {
 }
 
 async function consumeEvent(c, name, args, doAnimate) {
-    for (let e of c.effects) {
+    for (let e of copy(c.effects)) {
         if (e.trigger == name)
             await resolveEvent(e.id, c, args, doAnimate);
     }
@@ -593,8 +595,6 @@ function canPlaySpell(card, target, area) {
 }
 
 async function playSpell(c, t) {
-    console.log(c)
-    console.log(t)
     if (c.parentElement)
         c.parentElement.removeChild(c);
     for (let e of c.card.effects)
@@ -797,8 +797,8 @@ async function attack(t1, t2, p1, p2, turn, doAnimate) {
         }
 
 
-        d1 = attacker.attack;
-        d2 = attacked.attack;
+        d1 = (attacker.deathtouch && attacker.attack > 0) ? attacked.hp : attacker.attack;
+        d2 = (attacked.deathtouch && attacked.attack > 0) ? attacker.hp : attacked.attack;
         s1 = attacked.shield;
         s2 = attacker.shield;
         if (!s1)
@@ -1213,12 +1213,12 @@ const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machin
 
 const cardList = {
     "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
     "Soldat": ["fantassin-en-armure", "capitaine-d-escouade", "protectrice-devouee", "ecraseuse-au-bouclier", "veteran-sylvebouclier", "general-ethere", "chevalier-loyal", "baliste-de-la-legion", "tacticien-de-la-legion", "commandante-sylvelame", "mentor-chevaleresque", "recrue-peureuse", "recruteur-de-la-legion", "paladin-inspirateur", "heroine-de-la-legion"],
-    "Bandit": ["archere-aux-traits-de-feu"],
+    "Bandit": ["archere-aux-traits-de-feu", "voleuse-a-la-tire", "gredin-agile", "pilleur-de-bibliotheque", "siphonneuse-de-mana", "voleur-audacieux", "saboteur-masque", "passe-muraille", "ombre-sans-visage", "pillarde-inconsciente", "lanceuse-de-dagues", "piegeuse-d-ames", "receleur-de-tresors", "assassin-silencieux", "voleur-de-pensees"],
     "Machine": ["planeur-de-fortune"],
     "Bête": ["predateur-en-chasse"],
     "Mort-Vivant": ["serviteur-exhume"],
@@ -1237,7 +1237,7 @@ function initCards() {
         if (!species.includes(s))
             species.push(s);
     }
-    species = ["Soldat"]; //!!!
+    species = ["Bandit"]; //!!!
 
     for (let s of species.concat(["Sortilège", "Autre"])) {
         for (let c of cardList[s])
@@ -1453,6 +1453,38 @@ function createCard(card) {
 
         case "archere-aux-traits-de-feu":
             return new ArchereAuxTraitsDeFeu();
+        case "voleuse-a-la-tire":
+            return new VoleuseALaTire();
+        case "gredin-agile":
+            return new GredinAgile();
+        case "pilleur-de-bibliotheque":
+            return new PilleurDeBibliotheque();
+        case "siphonneuse-de-mana":
+            return new SiphonneuseDeMana();
+        case "voleur-audacieux":
+            return new VoleurAudacieux();
+        case "saboteur-masque":
+            return new SaboteurMasque();
+        case "passe-muraille":
+            return new PasseMuraille();
+        case "ombre-sans-visage":
+            return new OmbreSansVisage();
+        case "pillarde-inconsciente":
+            return new PillardeInconsciente();
+        case "lanceuse-de-dagues":
+            return new LanceuseDeDagues();
+        case "piegeuse-d-ames":
+            return new PiegeuseDAmes();
+        case "receleur-de-tresors":
+            return new ReceleurDeTresors();
+        case "assassin-silencieux":
+            return new AssassinSilencieux();
+        case "voleur-de-pensees":
+            return new VoleurDePensees();
+        case "corruption":
+            return new Corruption();
+        case "bon-tuyau":
+            return new BonTuyau();
 
         case "planeur-de-fortune":
             return new PlaneurDeFortune();
@@ -2813,6 +2845,262 @@ function ArchereAuxTraitsDeFeu() {
     this.range = true;
 }
 
+function GredinAgile() {
+    this.name = "Gredin agile";
+    this.species = "Bandit";
+    this.attack = 3;
+    this.hp = 1;
+    this.src = "bandits/gredin-agile.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 502
+        }
+    ];
+}
+
+function VoleuseALaTire() {
+    this.name = "Voleuse à la tire";
+    this.species = "Bandit";
+    this.attack = 1;
+    this.hp = 1;
+    this.src = "bandits/voleuse-a-la-tire.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 501
+        }
+    ];
+}
+
+function PilleurDeBibliotheque() {
+    this.name = "Pilleur de bibliothèque";
+    this.species = "Bandit";
+    this.attack = 2;
+    this.hp = 2;
+    this.src = "bandits/pilleur-de-bibliotheque.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 503
+        }
+    ];
+}
+
+function SiphonneuseDeMana() {
+    this.name = "Siphonneuse de mana";
+    this.species = "Bandit";
+    this.attack = 2;
+    this.hp = 4;
+    this.src = "bandits/siphonneuse-de-mana.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 504
+        },
+        {
+            trigger: "spell-play",
+            id: 505
+        }
+    ];
+}
+
+function VoleurAudacieux() {
+    this.name = "Voleur audacieux";
+    this.species = "Bandit";
+    this.attack = 5;
+    this.hp = 3;
+    this.src = "bandits/voleur-audacieux.jpg";
+    this.tier = 3;
+    this.range = true;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 506
+        }
+    ];
+}
+
+function OmbreSansVisage() {
+    this.name = "Ombre sans visage";
+    this.species = "Bandit";
+    this.attack = 3;
+    this.hp = 3;
+    this.src = "bandits/ombre-sans-visage.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 509
+        }
+    ];
+}
+
+function LanceuseDeDagues() {
+    this.name = "Lanceuse de dagues";
+    this.species = "Bandit";
+    this.attack = 4;
+    this.hp = 3;
+    this.src = "bandits/lanceuse-de-dagues.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 511
+        }
+    ];
+}
+
+function Corruption() {
+    this.name = "Corruption";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "bandits/corruption.jpg";
+    this.tier = 3;
+    this.requirement = "Bandit";
+    this.effects = [
+        {
+            trigger: "",
+            id: 516
+        }
+    ];
+    this.validTarget = {
+        area: "any"
+    };
+}
+
+function PasseMuraille() {
+    this.name = "Passe-muraille";
+    this.species = "Bandit";
+    this.attack = 5;
+    this.hp = 5;
+    this.src = "bandits/passe-muraille.jpg";
+    this.tier = 4;
+    this.range = true;
+    this.effects = [
+        {
+            trigger: "attack",
+            id: 508
+        }
+    ];
+}
+
+function PiegeuseDAmes() {
+    this.name = "Piégeuse d'âmes";
+    this.species = "Bandit";
+    this.attack = 6;
+    this.hp = 5;
+    this.src = "bandits/piegeuse-d-ames.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 512
+        }
+    ];
+}
+
+function VoleurDePensees() {
+    this.name = "Voleur de pensées";
+    this.species = "Bandit";
+    this.attack = 4;
+    this.hp = 4;
+    this.src = "bandits/voleur-de-pensees.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 515
+        }
+    ];
+}
+
+function BonTuyau() {
+    this.name = "Bon tuyau";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "bandits/bon-tuyau.jpg";
+    this.tier = 4;
+    this.requirement = "Bandit";
+    this.effects = [
+        {
+            trigger: "",
+            id: 517
+        }
+    ];
+    this.validTarget = {
+        area: "any"
+    };
+}
+
+function SaboteurMasque() {
+    this.name = "Saboteur masqué";
+    this.species = "Bandit";
+    this.attack = 1;
+    this.hp = 2;
+    this.src = "bandits/saboteur-masque.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 507
+        }
+    ];
+}
+
+function PillardeInconsciente() {
+    this.name = "Pillarde inconsciente";
+    this.species = "Bandit";
+    this.attack = 4;
+    this.hp = 6;
+    this.src = "bandits/pillarde-inconsciente.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "card-sell",
+            id: 510
+        }
+    ];
+}
+
+function ReceleurDeTresors() {
+    this.name = "Receleur de trésors";
+    this.species = "Bandit";
+    this.attack = 5;
+    this.hp = 8;
+    this.src = "bandits/receleur-de-tresors.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 513
+        },
+        {
+            trigger: "spell-play",
+            id: 514
+        }
+    ];
+}
+
+function AssassinSilencieux() {
+    this.name = "Assassin silencieux";
+    this.species = "Bandit";
+    this.attack = 1;
+    this.hp = 9;
+    this.src = "bandits/assassin-silencieux.jpg";
+    this.tier = 6;
+    this.deathtouch = true;
+    this.effects = [
+
+    ];
+}
+
 
 // Machines
 
@@ -3182,6 +3470,12 @@ function fillSmallCardEffects(c, effects) {
         range.alt = "";
         effects.appendChild(range);
     }
+    if (c.deathtouch) {
+        let deathtouch = document.createElement('img');
+        deathtouch.src = "./resources/ui/deathtouch.png";
+        deathtouch.alt = "";
+        effects.appendChild(deathtouch);
+    }
 }
 
 function updateCardStats(c) {
@@ -3197,6 +3491,7 @@ function updateCardStats(c) {
         let footer = c.children[3];
         if (footer.children[0].classList.contains("attack"))
             footer.children[0].children[0].innerHTML = c.card.attack;
+        footer.children[1].children[0].innerHTML = c.card.species;
         if (footer.children[2].classList.contains("hp"))
             footer.children[2].children[0].innerHTML = c.card.hp;
     }
@@ -3236,6 +3531,11 @@ function showCardTooltip(c) {
     if (c.range || containsKeyword(c, "Portée")) {
         let shield = document.createElement('div');
         shield.innerHTML = "<em>Portée :</em> Peut attaquer la ligne arrière.";
+        tips.appendChild(shield);
+    }
+    if (c.deathtouch || containsKeyword(c, "Contact mortel")) {
+        let shield = document.createElement('div');
+        shield.innerHTML = "<em>Contact mortel :</em> Tue instantanément les créatures qu'elle blesse.";
         tips.appendChild(shield);
     }
     if (containsKeyword(c, "Recrue")) {
@@ -3289,6 +3589,8 @@ function getDescription(c) {
         res += "<em>Résurrection</em>.</br>";
     if (c.range)
         res += "<em>Portée</em>.</br>";
+    if (c.deathtouch)
+        res += "<em>Contact mortel</em>.</br>";
     for (let e of c.effects)
         if (createEffect(e.id).desc != "")
             res += createEffect(e.id).desc + "</br>";
@@ -3511,6 +3813,42 @@ function createEffect(id) {
             return new Effect418();
         case 419:
             return new Effect419();
+        case 501:
+            return new Effect501();
+        case 502:
+            return new Effect502();
+        case 503:
+            return new Effect503();
+        case 504:
+            return new Effect504();
+        case 505:
+            return new Effect505();
+        case 506:
+            return new Effect506();
+        case 507:
+            return new Effect507();
+        case 508:
+            return new Effect508();
+        case 509:
+            return new Effect509();
+        case 510:
+            return new Effect510();
+        case 511:
+            return new Effect511();
+        case 512:
+            return new Effect512();
+        case 513:
+            return new Effect513();
+        case 514:
+            return new Effect514();
+        case 515:
+            return new Effect515();
+        case 516:
+            return new Effect516();
+        case 517:
+            return new Effect517();
+        case 518:
+            return new Effect518();
         case 601:
             return new Effect601();
         case 701:
@@ -4628,8 +4966,6 @@ function Effect407() {
 function Effect408() {
     this.run = async (sender, args, doAnimate) => {
         let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
-        console.log(args[0].shield != undefined)
-        console.log(sender.hp > 0)
         if (t.includes(sender) && args[0].shield != undefined && sender.hp > 0) {
             if (doAnimate)
                 await effectProcGlow(sender);
@@ -4770,11 +5106,12 @@ function Effect416() {
                 target.shield = false;
                 target.revive = false;
                 target.range = false;
+                target.deathtouch = false;
                 await dealDamage(target, 0, doAnimate, args.slice(2));
             }
         }
     };
-    this.desc = "Lorsque cette créature attaque, elle fait perdre le <em>Bouclier</em>, la <em>Résurrection</em> et la <em>Portée</em> à la créature attaquée avant de combattre.";
+    this.desc = "Lorsque cette créature attaque, elle fait perdre le <em>Bouclier</em>, la <em>Résurrection</em>, la <em>Portée</em> et le <em>Contact mortel</em> à la créature attaquée avant de combattre.";
 }
 
 function Effect417() {
@@ -4821,6 +5158,286 @@ function Effect419() {
         }
     };
     this.desc = "Lorsque le dernier allié de cette créature meurt, elle acquiert <em>Bouclier</em>.";
+}
+
+function Effect501() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            let options = [];
+            for (let c of document.getElementById("shop").children)
+                if (c.classList.contains("card"))
+                    options.push(c);
+            if (options.length > 0) {
+                let card = choice(options);
+                card.card.created = true;
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await buyCard(card, true);
+            }
+        }
+    };
+    this.desc = "<em>Recrue :</em> Déplace une carte aléatoire disponible au recrutement dans votre main.";
+}
+
+function Effect502() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[0][0].concat(args[0][1]).includes(sender) ? args[1][0].concat(args[1][1]) : args[0][0].concat(args[0][1]);
+        let target = pickRandomTarget(t);
+        if (target) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await dealDamage(target, 2, doAnimate, args);
+        }
+    };
+    this.desc = "<em>Frappe préventive :</em> Inflige 2 dégâts à une cible adverse aléatoire.";
+}
+
+function Effect503() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let card = getCard(shopTier, "Sortilège");
+            card.created = true;
+            addToHand(drawCard(card, 176));
+        }
+    };
+    this.desc = "<em>Recrue :</em> Ajoute un Sortilège aléatoire à votre main.";
+}
+
+function Effect504() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card !== sender && args[0].card.created && findDOMCard(sender).parentElement.parentElement.classList.contains("board"))
+            await boostStats(sender, 2, 1, doAnimate);
+    };
+    this.desc = "Gagne +2/+1 lorsque vous jouez une carte que vous n'avez pas achetée.";
+}
+
+function Effect505() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] !== sender && args[0].created && findDOMCard(sender).parentElement.parentElement.classList.contains("board"))
+            await boostStats(sender, 2, 1, doAnimate);
+    };
+    this.desc = "";
+}
+
+function Effect506() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            let lastP;
+            for (let d of nextFights) {
+                if (d[0] == 0)
+                    lastP = d[1];
+                else if (d[1] == 0)
+                    lastP = d[0];
+            }
+            if (lastP) {
+                let target = pickRandomTarget(troops[lastP]);
+                if (target) {
+                    if (doAnimate)
+                        await effectProcGlow(sender);
+                    let card = copy(target);
+                    card.species = "Bandit";
+                    card.created = true;
+                    addToHand(drawCard(card, 176));
+                }
+            }
+        }
+    };
+    this.desc = "<em>Recrue :</em> Ajoute une copie de base d'une créature de votre dernier adversaire à votre main. Elle devient un Bandit.";
+}
+
+function Effect507() {
+    this.run = async (sender, args, doAnimate) => {
+        let t1 = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+        let n = 0;
+        for (let c of t1)
+            if (c && c.species == "Bandit" && c !== sender)
+                n++;
+
+        if (n > 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let t2 = args[0][0].concat(args[0][1]).includes(sender) ? args[1][0].concat(args[1][1]) : args[0][0].concat(args[0][1]);
+            for (let c of t2) {
+                if (c && c.attack > 0)
+                    await boostStats(c, -n, 0, doAnimate);
+            }
+        }
+    };
+    this.desc = "<em>Frappe préventive :</em> Réduit l'attaque des créatures ennemies de 1 pour chaque autre Bandit allié.";
+}
+
+function Effect508() {
+    this.run = async (sender, args, doAnimate) => {
+        let t1 = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+        let t2 = args[2][0].concat(args[2][1]).includes(sender) ? args[3][1] : args[2][1];
+        if (t1.includes(args[0]) && t2.includes(args[1])) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(args[0], 4, 2, doAnimate);
+        }
+    };
+    this.desc = "Lorsqu'une créature alliée attaque la ligne arrière, elle gagne +4/+2.";
+}
+
+function Effect509() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card !== sender && args[0].card.species == "Bandit" && findDOMCard(sender).parentElement.parentElement.classList.contains("board"))
+            await boostStats(sender, 1, 1, doAnimate);
+    };
+    this.desc = "Gagne +1/+1 lorsque vous jouez un autre Bandit.";
+}
+
+function Effect510() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card.created && args[0].card !== sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await spendCoins(-1, false);
+        }
+    };
+    this.desc = "Lorsque vous revendez une carte que vous n'avez pas achetée, obtenez une pièce d'or supplémentaire.";
+}
+
+function Effect511() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                effectProcGlow(sender);
+            chooseTarget((target) => {
+                target.range = true;
+                boostStats(target, 0, 0, doAnimate);
+            }, {
+                area: "board",
+                species: "Bandit",
+                notself: true
+            }, sender);
+        }
+    };
+    this.desc = "<em>Recrue :</em> Confère <em>Portée</em> à un autre Bandit allié ciblé.";
+}
+
+function Effect512() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.hp <= 0 && args[6] && args[4] == 0) {
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[3][0].concat(args[3][1]) : args[2][0].concat(args[2][1]);
+            let target = pickRandomTarget(t);
+            if (target) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                let card = copy(target);
+                card.created = true;
+                await addToHand(drawCard(card, 176));
+            }
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Ajoute une copie de base d'une créature adverse aléatoire à votre main.";
+}
+
+function Effect513() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card !== sender && args[0].card.created && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let i = 0; i < 3; i++) {
+                let target = pickRandomTarget(troops[0]);
+                if (target)
+                    await boostStats(target, 2, 2, doAnimate);
+            }
+        }
+    };
+    this.desc = "Lorsque vous jouez une carte que vous n'avez pas achetée, confère +2/+2 à 3 créatures alliées aléatoires.";
+}
+
+function Effect514() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] !== sender && args[0].created && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let i = 0; i < 3; i++) {
+                let target = pickRandomTarget(troops[0]);
+                if (target)
+                    await boostStats(target, 2, 2, doAnimate);
+            }
+        }
+    };
+    this.desc = "";
+}
+
+function Effect515() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            let options = [];
+            for (let c of document.getElementById("shop").children)
+                if (c.classList.contains("card"))
+                    options.push(c);
+            if (options.length > 0) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                options.sort((a, b) => { if (a.card.tier > b.card.tier) return -1; else if (a.card.tier < b.card.tier) return 1; else return 0; });
+                let card = options[0];
+                card.card.created = true;
+                await buyCard(card, true);
+                if (doAnimate)
+                    await sleep(500);
+            }
+        }
+    };
+    this.desc = "A la fin de votre tour, déplace la carte de plus haut niveau disponible au recrutement dans votre main.";
+}
+
+function Effect516() {
+    this.run = async (sender, args, doAnimate) => {
+        await spendCoins(-1, false);
+        for (let c of document.getElementsByClassName("small-card"))
+            if (c.parentElement.parentElement.classList.contains("board") && c.card.created && c.card.species != "Bandit" && c.card.species != "Sortilège") {
+                c.card.species = "Bandit";
+                boostStats(c.card, 0, 0, doAnimate);
+            }
+        for (let c of document.getElementsByClassName("card"))
+            if (c.parentElement.parentElement.classList.contains("hand") && c.card.created && c.card.species != "Bandit" && c.card.species != "Sortilège") {
+                c.card.species = "Bandit";
+                boostStats(c.card, 0, 0, doAnimate);
+            }
+    };
+    this.desc = "Gagnez une pièce d'or. Toutes les créatures en jeu et dans votre main que vous n'avez pas achetées deviennent des Bandits.";
+}
+
+function Effect517() {
+    this.run = async (sender, args, doAnimate) => {
+        players[0].effects.push({
+            trigger: "turn-start",
+            id: 518
+        });
+    };
+    this.desc = "Au début de votre prochain tour, ajoute 2 copies de base de créatures de votre prochain adversaire à votre main.";
+}
+
+function Effect518() {
+    this.run = async (sender, args, doAnimate) => {
+        let lastP;
+        for (let d of nextFights) {
+            if (d[0] == 0)
+                lastP = d[1];
+            else if (d[1] == 0)
+                lastP = d[0];
+        }
+        if (lastP) {
+            for (let i = 0; i < 2; i++) {
+                let target = pickRandomTarget(troops[lastP]);
+                if (target) {
+                    if (doAnimate)
+                        await effectProcGlow(sender);
+                    let card = copy(target);
+                    card.created = true;
+                    addToHand(drawCard(card, 176));
+                }
+            }
+        }
+        sender.effects.splice(sender.effects.findIndex(e => e.id == 518), 1);
+    };
+    this.desc = "";
 }
 
 function Effect601() {
