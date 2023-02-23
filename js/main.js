@@ -60,6 +60,7 @@ let lastDead;
 let troops = [];
 let round = 0;
 let discountedRefreshes = 0;
+let currentScene;
 
 async function startGame() {
     await fadeTransition(() => {
@@ -282,6 +283,8 @@ async function selectHero(n) {
         document.body.appendChild(enemyCommander);
 
 
+
+        currentScene = "shop";
 
         await broadcastShopEvent("game-start", []);
     }, 4000);
@@ -854,6 +857,13 @@ async function broadcastEvent(name, t1, t2, p1, p2, turn, doAnimate, args) {
     }
 
     console.log("Broadcasting event " + name);
+    if (turn) {
+        await consumeEvent(players[p1], name, args, doAnimate);
+        await consumeEvent(players[p2], name, args, doAnimate);
+    } else {
+        await consumeEvent(players[p2], name, args, doAnimate);
+        await consumeEvent(players[p1], name, args, doAnimate);
+    }
     let t = turn ? t1[0].concat(t1[1]) : t2[0].concat(t2[1]);
     let tt = turn ? t2[0].concat(t2[1]) : t1[0].concat(t1[1]);
     for (let i = 0; i < 8; i++) {
@@ -861,13 +871,6 @@ async function broadcastEvent(name, t1, t2, p1, p2, turn, doAnimate, args) {
             await consumeEvent(t[i], name, args, doAnimate);
         if (tt[i])
             await consumeEvent(tt[i], name, args, doAnimate);
-    }
-    if (turn) {
-        await consumeEvent(players[p1], name, args, doAnimate);
-        await consumeEvent(players[p2], name, args, doAnimate);
-    } else {
-        await consumeEvent(players[p2], name, args, doAnimate);
-        await consumeEvent(players[p1], name, args, doAnimate);
     }
 
     switch (name) {
@@ -1070,6 +1073,8 @@ async function drawBattleScene(t1, t2, p) {
     document.getElementById("enemy-commander").style.bottom = "415px";
 
     await sleep(1500);
+
+    currentScene = "battle";
 }
 
 async function drawShopScene() {
@@ -1179,6 +1184,8 @@ async function drawShopScene() {
 
         await sleep(750);
 
+        currentScene = "shop";
+
         await broadcastShopEvent("turn-start", []);
     }
 }
@@ -1213,13 +1220,13 @@ const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machin
 
 const cardList = {
     "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
     "Soldat": ["fantassin-en-armure", "capitaine-d-escouade", "protectrice-devouee", "ecraseuse-au-bouclier", "veteran-sylvebouclier", "general-ethere", "chevalier-loyal", "baliste-de-la-legion", "tacticien-de-la-legion", "commandante-sylvelame", "mentor-chevaleresque", "recrue-peureuse", "recruteur-de-la-legion", "paladin-inspirateur", "heroine-de-la-legion"],
     "Bandit": ["archere-aux-traits-de-feu", "voleuse-a-la-tire", "gredin-agile", "pilleur-de-bibliotheque", "siphonneuse-de-mana", "voleur-audacieux", "saboteur-masque", "passe-muraille", "ombre-sans-visage", "pillarde-inconsciente", "lanceuse-de-dagues", "piegeuse-d-ames", "receleur-de-tresors", "assassin-silencieux", "voleur-de-pensees"],
-    "Machine": ["planeur-de-fortune"],
+    "Machine": ["planeur-de-fortune", "renard-mecanique", "colosse-adaptatif", "protecteur-de-la-cite", "golem-cinetique", "carcasse-mecanophage", "automate-replicateur", "artisan-gadgetiste", "baliste-ambulante", "automate-manaforme", "auto-duplicateur", "chef-de-la-proliferation", "ouvrier-assembleur", "garde-de-fer", "robot-astiqueur"],
     "Bête": ["predateur-en-chasse"],
     "Mort-Vivant": ["serviteur-exhume"],
     "Autre": []
@@ -1237,7 +1244,7 @@ function initCards() {
         if (!species.includes(s))
             species.push(s);
     }
-    species = ["Bandit"]; //!!!
+    species = ["Machine"]; //!!!
 
     for (let s of species.concat(["Sortilège", "Autre"])) {
         for (let c of cardList[s])
@@ -1488,6 +1495,44 @@ function createCard(card) {
 
         case "planeur-de-fortune":
             return new PlaneurDeFortune();
+        case "renard-mecanique":
+            return new RenardMecanique();
+        case "colosse-adaptatif":
+            return new ColosseAdaptatif();
+        case "protecteur-de-la-cite":
+            return new ProtecteurDeLaCite();
+        case "golem-cinetique":
+            return new GolemCinetique();
+        case "carcasse-mecanophage":
+            return new CarcasseMecanophage();
+        case "automate-replicateur":
+            return new AutomateReplicateur();
+        case "automate-replicateur-mod":
+            return new AutomateReplicateurMod();
+        case "artisan-gadgetiste":
+            return new ArtisanGadgetiste();
+        case "baliste-ambulante":
+            return new BalisteAmbulante();
+        case "automate-manaforme":
+            return new AutomateManaforme();
+        case "auto-duplicateur":
+            return new AutoDuplicateur();
+        case "auto-duplicateur-mod":
+            return new AutoDuplicateurMod();
+        case "chef-de-la-proliferation":
+            return new ChefDeLaProliferation();
+        case "ouvrier-assembleur":
+            return new OuvrierAssembleur();
+        case "ouvrier-assemble":
+            return new OuvrierAssemble();
+        case "garde-de-fer":
+            return new GardeDeFer();
+        case "robot-astiqueur":
+            return new RobotAstiqueur();
+        case "replication-mecanique":
+            return new ReplicationMecanique();
+        case "revisions-mecaniques":
+            return new RevisionsMecaniques();
 
         case "serviteur-exhume":
             return new ServiteurExhume();
@@ -3112,8 +3157,266 @@ function PlaneurDeFortune() {
     this.src = "machines/planeur-de-fortune.jpg";
     this.tier = 1;
     this.effects = [
-
+        {
+            trigger: "card-place",
+            id: 603
+        }
     ];
+}
+
+function RenardMecanique() {
+    this.name = "Renard mécanique";
+    this.species = "Machine";
+    this.attack = 2;
+    this.hp = 3;
+    this.src = "machines/renard-mecanique.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 602
+        }
+    ];
+}
+
+function GardeDeFer() {
+    this.name = "Garde de fer";
+    this.species = "Machine";
+    this.attack = 4;
+    this.hp = 1;
+    this.src = "machines/garde-de-fer.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 616
+        }
+    ];
+}
+
+function ProtecteurDeLaCite() {
+    this.name = "Protecteur de la cité";
+    this.species = "Machine";
+    this.attack = 3;
+    this.hp = 4;
+    this.src = "machines/protecteur-de-la-cite.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 605
+        }
+    ];
+}
+
+function AutoDuplicateur() {
+    this.name = "Auto-duplicateur";
+    this.species = "Machine";
+    this.attack = 2;
+    this.hp = 2;
+    this.src = "machines/auto-duplicateur.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 613
+        }
+    ];
+}
+
+function RobotAstiqueur() {
+    this.name = "Robot astiqueur";
+    this.species = "Machine";
+    this.attack = 3;
+    this.hp = 3;
+    this.src = "machines/robot-astiqueur.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "shop-refresh",
+            id: 617
+        },
+        {
+            trigger: "card-place",
+            id: 618
+        }
+    ];
+}
+
+function ReplicationMecanique() {
+    this.name = "Réplication mécanique";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "machines/replication-mecanique.jpg";
+    this.tier = 2;
+    this.requirement = "Machine";
+    this.effects = [
+        {
+            trigger: "",
+            id: 620
+        }
+    ];
+    this.validTarget = {
+        area: "board",
+        species: "Machine"
+    };
+}
+
+function ColosseAdaptatif() {
+    this.name = "Colosse adaptatif";
+    this.species = "Machine";
+    this.attack = 2;
+    this.hp = 5;
+    this.src = "machines/colosse-adaptatif.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 604
+        }
+    ];
+}
+
+function GolemCinetique() {
+    this.name = "Golem cinétique";
+    this.species = "Machine";
+    this.attack = 5;
+    this.hp = 4;
+    this.src = "machines/golem-cinetique.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "",
+            id: 606
+        }
+    ];
+}
+
+function CarcasseMecanophage() {
+    this.name = "Carcasse mécanophage";
+    this.species = "Machine";
+    this.attack = 6;
+    this.hp = 4;
+    this.src = "machines/carcasse-mecanophage.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 607
+        }
+    ];
+}
+
+function AutomateManaforme() {
+    this.name = "Automate manaforme";
+    this.species = "Machine";
+    this.attack = 5;
+    this.hp = 4;
+    this.src = "machines/automate-manaforme.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 612
+        }
+    ];
+}
+
+function ChefDeLaProliferation() {
+    this.name = "Chef de la Prolifération";
+    this.species = "Machine";
+    this.attack = 4;
+    this.hp = 6;
+    this.src = "machines/chef-de-la-proliferation.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "battle-summon",
+            id: 614
+        }
+    ];
+}
+
+function BalisteAmbulante() {
+    this.name = "Baliste ambulante";
+    this.species = "Machine";
+    this.attack = 7;
+    this.hp = 3;
+    this.src = "machines/baliste-ambulante.jpg";
+    this.tier = 5;
+    this.range = true;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 611
+        }
+    ];
+}
+
+function OuvrierAssembleur() {
+    this.name = "Ouvrier assembleur";
+    this.species = "Machine";
+    this.attack = 7;
+    this.hp = 3;
+    this.src = "machines/ouvrier-assembleur.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 615
+        }
+    ];
+}
+
+function ArtisanGadgetiste() {
+    this.name = "Artisan gadgétiste";
+    this.species = "Autre";
+    this.attack = 5;
+    this.hp = 5;
+    this.src = "machines/artisan-gadgetiste.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 610
+        }
+    ];
+}
+
+function AutomateReplicateur() {
+    this.name = "Automate réplicateur";
+    this.species = "Machine";
+    this.attack = 6;
+    this.hp = 6;
+    this.src = "machines/automate-replicateur.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 608
+        }
+    ];
+}
+
+function RevisionsMecaniques() {
+    this.name = "Révisions mécaniques";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "machines/revisions-mecaniques.jpg";
+    this.tier = 6;
+    this.requirement = "Machine";
+    this.effects = [
+        {
+            trigger: "",
+            id: 621
+        }
+    ];
+    this.validTarget = {
+        area: "board",
+        species: "Machine"
+    };
 }
 
 
@@ -3316,6 +3619,45 @@ function Dephasage() {
     this.validTarget = {
         area: "board"
     };
+}
+
+function AutomateReplicateurMod() {
+    this.name = "Automate réplicateur";
+    this.species = "Machine";
+    this.attack = 6;
+    this.hp = 6;
+    this.src = "machines/automate-replicateur.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 609
+        }
+    ];
+}
+
+function AutoDuplicateurMod() {
+    this.name = "Auto-duplicateur";
+    this.species = "Machine";
+    this.attack = 2;
+    this.hp = 2;
+    this.src = "machines/auto-duplicateur.jpg";
+    this.tier = 7;
+    this.effects = [
+
+    ];
+}
+
+function OuvrierAssemble() {
+    this.name = "Ouvrier assemblé";
+    this.species = "Machine";
+    this.attack = 2;
+    this.hp = 3;
+    this.src = "machines/ouvrier-assemble.jpg";
+    this.tier = 7;
+    this.effects = [
+
+    ];
 }
 
 
@@ -3560,7 +3902,7 @@ function showCardTooltip(c) {
     }
     if (containsKeyword(c, "Reconfiguration")) {
         let shield = document.createElement('div');
-        shield.innerHTML = "<em>Reconfiguration :</em> Alterne entre plusieurs effets chaque tour.";
+        shield.innerHTML = "<em>Reconfiguration :</em> Alterne entre plusieurs effets chaque début de tour.";
         tips.appendChild(shield);
     }
     if (containsKeyword(c, "Injouable")) {
@@ -3851,6 +4193,46 @@ function createEffect(id) {
             return new Effect518();
         case 601:
             return new Effect601();
+        case 602:
+            return new Effect602();
+        case 603:
+            return new Effect603();
+        case 604:
+            return new Effect604();
+        case 605:
+            return new Effect605();
+        case 606:
+            return new Effect606();
+        case 607:
+            return new Effect607();
+        case 608:
+            return new Effect608();
+        case 609:
+            return new Effect609();
+        case 610:
+            return new Effect610();
+        case 611:
+            return new Effect611();
+        case 612:
+            return new Effect612();
+        case 613:
+            return new Effect613();
+        case 614:
+            return new Effect614();
+        case 615:
+            return new Effect615();
+        case 616:
+            return new Effect616();
+        case 617:
+            return new Effect617();
+        case 618:
+            return new Effect618();
+        case 619:
+            return new Effect619();
+        case 620:
+            return new Effect620();
+        case 621:
+            return new Effect621();
         case 701:
             return new Effect701();
         case 1001:
@@ -3915,15 +4297,17 @@ function Effect4() {
 
 function Effect5() {
     this.run = async (sender, args, doAnimate) => {
-        if (doAnimate)
-            await effectProcGlow(sender);
-        let t = (players[args[2]] === sender ? args[0] : args[1]);
-        for (let c of t[0].concat(t[1])) {
-            if (c) {
-                c.revive = true;
-                if (doAnimate)
-                    await boostStats(c, 0, 0, doAnimate);
-                break;
+        if (sender.hp > 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let t = (players[args[2]] === sender ? args[0] : args[1]);
+            for (let c of t[0].concat(t[1])) {
+                if (c) {
+                    c.revive = true;
+                    if (doAnimate)
+                        await boostStats(c, 0, 0, doAnimate);
+                    break;
+                }
             }
         }
     };
@@ -4319,7 +4703,7 @@ function Effect202() {
 function Effect203() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0] === sender)
-            await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate);
+            await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate, args);
     };
     this.desc = "<em>Dernière volonté :</em> Invoque un Artificier gobelin.";
 }
@@ -4456,19 +4840,21 @@ function Effect212() {
 
 function Effect213() {
     this.run = async (sender, args, doAnimate) => {
-        if (doAnimate)
-            await effectProcGlow(sender);
-        let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
-        let i = t.findIndex(e => e === sender);
-        if (i % 4 > 0 && t[i - 1]) {
-            for (let e of t[i - 1].effects)
-                if ((createEffect(e.id)).desc.startsWith("<em>Dernière volonté :</em>"))
-                    t[i].effects.push(e);
-        }
-        if (i % 4 < 3 && t[i + 1]) {
-            for (let e of t[i + 1].effects)
-                if ((createEffect(e.id)).desc.startsWith("<em>Dernière volonté :</em>"))
-                    t[i].effects.push(e);
+        if (sender.hp > 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+            let i = t.findIndex(e => e === sender);
+            if (i % 4 > 0 && t[i - 1]) {
+                for (let e of t[i - 1].effects)
+                    if ((createEffect(e.id)).desc.startsWith("<em>Dernière volonté :</em>"))
+                        t[i].effects.push(e);
+            }
+            if (i % 4 < 3 && t[i + 1]) {
+                for (let e of t[i + 1].effects)
+                    if ((createEffect(e.id)).desc.startsWith("<em>Dernière volonté :</em>"))
+                        t[i].effects.push(e);
+            }
         }
     };
     this.desc = "<em>Frappe préventive :</em> Copie les effets de <em>Dernière volonté</em> de ses voisins latéraux.";
@@ -4477,9 +4863,9 @@ function Effect213() {
 function Effect214() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0] === sender) {
-            await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate);
-            await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate);
-            await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate);
+            await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+            await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+            await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate, args);
         }
     };
     this.desc = "<em>Dernière volonté :</em> Invoque trois Artificiers gobelins.";
@@ -4487,19 +4873,21 @@ function Effect214() {
 
 function Effect215() {
     this.run = async (sender, args, doAnimate) => {
-        let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
-        let i = t.findIndex(e => e === sender);
-        let vals = [];
-        if (i % 4 > 0 && t[i - 1] && t[i - 1].species == "Gobelin")
-            vals.push(t[i - 1].attack);
-        if (i % 4 < 3 && t[i + 1] && t[i + 1].species == "Gobelin")
-            vals.push(t[i + 1].attack);
-        if (t[(i + 4) % 8] && t[(i + 4) % 8].species == "Gobelin")
-            vals.push(t[(i + 4) % 8].attack);
-        if (vals.length > 0) {
-            if (doAnimate)
-                await effectProcGlow(sender);
-            await boostStats(sender, Math.max(...vals), 0, doAnimate);
+        if (sender.hp > 0) {
+            let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+            let i = t.findIndex(e => e === sender);
+            let vals = [];
+            if (i % 4 > 0 && t[i - 1] && t[i - 1].species == "Gobelin")
+                vals.push(t[i - 1].attack);
+            if (i % 4 < 3 && t[i + 1] && t[i + 1].species == "Gobelin")
+                vals.push(t[i + 1].attack);
+            if (t[(i + 4) % 8] && t[(i + 4) % 8].species == "Gobelin")
+                vals.push(t[(i + 4) % 8].attack);
+            if (vals.length > 0) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await boostStats(sender, Math.max(...vals), 0, doAnimate);
+            }
         }
     };
     this.desc = "<em>Frappe préventive :</em> Gagne de l'attaque équivalente à l'attaque du Gobelin voisin le plus fort.";
@@ -4515,7 +4903,7 @@ function Effect216() {
                     name = choice(cardList["Gobelin"]);
                     card = createCard(name);
                 }
-                await battleSummon(name, args[1] ? args[2] : args[3], args[4], doAnimate);
+                await battleSummon(name, args[1] ? args[2] : args[3], args[4], doAnimate, args);
             }
         }
     };
@@ -4769,7 +5157,7 @@ function Effect319() {
 
 function Effect320() {
     this.run = async (sender, args, doAnimate) => {
-        if (sender.effect320 && sender.effect320 > 0) {
+        if (sender.effect320 && sender.effect320 > 0 && sender.hp > 0) {
             let t = args[0][0].concat(args[0][1]).includes(sender) ? args[1][0].concat(args[1][1]) : args[0][0].concat(args[0][1]);
             let target = pickRandomTarget(t);
             if (target) {
@@ -4978,21 +5366,23 @@ function Effect408() {
 
 function Effect409() {
     this.run = async (sender, args, doAnimate) => {
-        let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
-        let i = t.findIndex(e => e === sender);
-        if (doAnimate)
-            await effectProcGlow(sender);
-        if (i % 4 > 0 && t[i - 1] && t[i - 1].species == "Soldat") {
-            t[i - 1].range = true;
-            await boostStats(t[i - 1], 0, 0, doAnimate);
-        }
-        if (t[(i + 4) % 8] && t[(i + 4) % 8].species == "Soldat") {
-            t[(i + 4) % 8].range = true;
-            await boostStats(t[(i + 4) % 8], 0, 0, doAnimate);
-        }
-        if (i % 4 < 3 && t[i + 1] && t[i + 1].species == "Soldat") {
-            t[i + 1].range = true;
-            await boostStats(t[i + 1], 0, 0, doAnimate);
+        if (sender.hp > 0) {
+            let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+            let i = t.findIndex(e => e === sender);
+            if (doAnimate)
+                await effectProcGlow(sender);
+            if (i % 4 > 0 && t[i - 1] && t[i - 1].species == "Soldat") {
+                t[i - 1].range = true;
+                await boostStats(t[i - 1], 0, 0, doAnimate);
+            }
+            if (t[(i + 4) % 8] && t[(i + 4) % 8].species == "Soldat") {
+                t[(i + 4) % 8].range = true;
+                await boostStats(t[(i + 4) % 8], 0, 0, doAnimate);
+            }
+            if (i % 4 < 3 && t[i + 1] && t[i + 1].species == "Soldat") {
+                t[i + 1].range = true;
+                await boostStats(t[i + 1], 0, 0, doAnimate);
+            }
         }
     };
     this.desc = "<em>Frappe préventive :</em> Confère <em>Portée</em> aux Soldats voisins.";
@@ -5013,20 +5403,22 @@ function Effect410() {
 
 function Effect411() {
     this.run = async (sender, args, doAnimate) => {
-        let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
-        if (doAnimate)
-            await effectProcGlow(sender);
-        for (let i = 0; i < 8; i++) {
-            if (t[i] && t[i].species == "Soldat") {
-                let neighbors = [];
-                if (i % 4 > 0 && t[i - 1] && t[i - 1].species == "Soldat")
-                    neighbors.push(t[i - 1].name);
-                if (t[(i + 4) % 8] && t[(i + 4) % 8].species == "Soldat" && neighbors.findIndex(e => e.name == t[(i + 4) % 8].name) == -1)
-                    neighbors.push(t[(i + 4) % 8].name);
-                if (i % 4 < 3 && t[i + 1] && t[i + 1].species == "Soldat" && neighbors.findIndex(e => e.name == t[i + 1].name) == -1)
-                    neighbors.push(t[i + 1].name);
-                let n = neighbors.length;
-                await boostStats(t[i], n, 2 * n, doAnimate);
+        if (sender.hp > 0) {
+            let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let i = 0; i < 8; i++) {
+                if (t[i] && t[i].species == "Soldat") {
+                    let neighbors = [];
+                    if (i % 4 > 0 && t[i - 1] && t[i - 1].species == "Soldat")
+                        neighbors.push(t[i - 1].name);
+                    if (t[(i + 4) % 8] && t[(i + 4) % 8].species == "Soldat" && neighbors.findIndex(e => e.name == t[(i + 4) % 8].name) == -1)
+                        neighbors.push(t[(i + 4) % 8].name);
+                    if (i % 4 < 3 && t[i + 1] && t[i + 1].species == "Soldat" && neighbors.findIndex(e => e.name == t[i + 1].name) == -1)
+                        neighbors.push(t[i + 1].name);
+                    let n = neighbors.length;
+                    await boostStats(t[i], n, 2 * n, doAnimate);
+                }
             }
         }
     };
@@ -5035,12 +5427,14 @@ function Effect411() {
 
 function Effect412() {
     this.run = async (sender, args, doAnimate) => {
-        let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
-        let i = t.findIndex(e => e === sender);
-        if (i % 4 > 0 && t[i - 1].species == "Soldat") {
-            if (doAnimate)
-                await effectProcGlow(sender);
-            await boostStats(t[i - 1], 10, 10, doAnimate);
+        if (sender.hp > 0) {
+            let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+            let i = t.findIndex(e => e === sender);
+            if (i % 4 > 0 && t[i - 1].species == "Soldat") {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await boostStats(t[i - 1], 10, 10, doAnimate);
+            }
         }
     };
     this.desc = "<em>Frappe préventive :</em> Confère +10/+10 au Soldat à sa gauche.";
@@ -5181,12 +5575,14 @@ function Effect501() {
 
 function Effect502() {
     this.run = async (sender, args, doAnimate) => {
-        let t = args[0][0].concat(args[0][1]).includes(sender) ? args[1][0].concat(args[1][1]) : args[0][0].concat(args[0][1]);
-        let target = pickRandomTarget(t);
-        if (target) {
-            if (doAnimate)
-                await effectProcGlow(sender);
-            await dealDamage(target, 2, doAnimate, args);
+        if (sender.hp > 0) {
+            let t = args[0][0].concat(args[0][1]).includes(sender) ? args[1][0].concat(args[1][1]) : args[0][0].concat(args[0][1]);
+            let target = pickRandomTarget(t);
+            if (target) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await dealDamage(target, 2, doAnimate, args);
+            }
         }
     };
     this.desc = "<em>Frappe préventive :</em> Inflige 2 dégâts à une cible adverse aléatoire.";
@@ -5249,19 +5645,21 @@ function Effect506() {
 
 function Effect507() {
     this.run = async (sender, args, doAnimate) => {
-        let t1 = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
-        let n = 0;
-        for (let c of t1)
-            if (c && c.species == "Bandit" && c !== sender)
-                n++;
+        if (sender.hp > 0) {
+            let t1 = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+            let n = 0;
+            for (let c of t1)
+                if (c && c.species == "Bandit" && c !== sender)
+                    n++;
 
-        if (n > 0) {
-            if (doAnimate)
-                await effectProcGlow(sender);
-            let t2 = args[0][0].concat(args[0][1]).includes(sender) ? args[1][0].concat(args[1][1]) : args[0][0].concat(args[0][1]);
-            for (let c of t2) {
-                if (c && c.attack > 0)
-                    await boostStats(c, -n, 0, doAnimate);
+            if (n > 0) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                let t2 = args[0][0].concat(args[0][1]).includes(sender) ? args[1][0].concat(args[1][1]) : args[0][0].concat(args[0][1]);
+                for (let c of t2) {
+                    if (c && c.attack > 0)
+                        await boostStats(c, -n, 0, doAnimate);
+                }
             }
         }
     };
@@ -5442,17 +5840,308 @@ function Effect518() {
 
 function Effect601() {
     this.run = async (sender, args, doAnimate) => {
-        if (!sender.effect601 || sender.effect601 == 0) {
-            sender.effect601 = 1;
-            sender.attack++;
-        } else {
-            sender.effect601 = 0;
-            sender.hp++;
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (!sender.effect601 || sender.effect601 == 0) {
+                sender.effect601 = 1;
+                sender.attack++;
+            } else {
+                sender.effect601 = 0;
+                sender.hp++;
+            }
+            if (doAnimate)
+                await boostStats(sender, 0, 0, doAnimate);
         }
-        if (doAnimate)
-            await boostStats(sender, 0, 0, doAnimate);
     };
     this.desc = "<em>Reconfiguration :</em> Gagne +1/+0 <em>ou</em> Gagne +0/+1.";
+}
+
+function Effect602() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await boostStats(sender, 0, 0, doAnimate);
+            if (!sender.effect602 || sender.effect602 == 0) {
+                sender.effect602 = 1;
+                await boostStats(pickRandomTarget(troops[0]), 1, 0, doAnimate);
+            } else {
+                sender.effect601 = 0;
+                await boostStats(pickRandomTarget(troops[0]), 0, 1, doAnimate);
+            }
+        }
+    };
+    this.desc = "<em>Reconfiguration :</em> Confère +1/+0 à une créature alliée aléatoire <em>ou</em> Confère +0/+1 à une créature alliée aléatoire.";
+}
+
+function Effect603() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let d of document.getElementById("shop").children)
+                if (d.classList.contains("card") && d.card.species != "Sortilège")
+                    await boostStats(d.card, 1, 1, doAnimate);
+        }
+    };
+    this.desc = "<em>Recrue :</em> Confère +1/+1 aux créatures disponibles au recrutement.";
+}
+
+function Effect604() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (!sender.effect604 || sender.effect604 == 0) {
+                sender.effect604 = 1;
+                await boostStats(sender, 7, -4, doAnimate, true);
+            } else {
+                sender.effect604 = 0;
+                await boostStats(sender, -4, 7, doAnimate, true);
+            }
+        }
+    };
+    this.desc = "<em>Reconfiguration :</em> Gagne +7/-4 <em>ou</em> Gagne -4/+7.";
+}
+
+function Effect605() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (!sender.effect605 || sender.effect605 == 0) {
+                sender.effect605 = 1;
+                sender.shield = true;
+                delete sender.range;
+                await boostStats(sender, 0, 0, doAnimate, true);
+            } else {
+                sender.effect605 = 0;
+                sender.range = true;
+                delete sender.shield;
+                await boostStats(sender, 0, 0, doAnimate, true);
+            }
+        }
+    };
+    this.desc = "<em>Reconfiguration :</em> Gagne <em>Bouclier</em> et perd <em>Portée</em> <em>ou</em> Gagne <em>Portée</em> et perd <em>Bouclier</em>.";
+}
+
+function Effect606() {
+    this.run = async (sender, args, doAnimate) => {
+
+    };
+    this.desc = "Pendant la phase de recrutement, les statistiques de vos créatures ne peuvent pas baisser.";
+}
+
+function Effect607() {
+    this.run = async (sender, args, doAnimate) => {
+        let i = troops[0].findIndex(e => e === sender);
+        let target = troops[0][(i + 4) % 8];
+        if (target && target.species == "Machine" && (target.hp > 1 || target.attack > 0)) {
+            let atk = Math.min(6, target.attack);
+            let hp = Math.min(6, target.hp - 1);
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(target, -atk, -hp, doAnimate);
+            await boostStats(sender, atk, hp, doAnimate);
+        }
+    };
+    this.desc = "A la fin de chaque tour, cette créature vole jusqu'à 6/6 à la Machine derrière elle, si possible.";
+}
+
+function Effect608() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            for (let c of t)
+                if (c && c.species == "Machine")
+                    await boostStats(c, 2, 2, doAnimate);
+            await battleSummon("automate-replicateur-mod", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+            await battleSummon("automate-replicateur-mod", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Confère +2/+2 à toutes les autres Machines alliées, puis invoque deux copies de base de cette créature sans réinvocation.";
+}
+
+function Effect609() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            for (let c of t)
+                if (c && c.species == "Machine")
+                    await boostStats(c, 2, 2, doAnimate);
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Confère +2/+2 à toutes les autres Machines alliées.";
+}
+
+function Effect610() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let t = troops[0];
+            let i = t.findIndex(e => e === sender);
+            let cards = [];
+            if (i % 4 > 0 && t[i - 1])
+                cards.push(t[i - 1]);
+            if (t[(i + 4) % 8])
+                cards.push(t[(i + 4) % 8]);
+            if (i % 4 < 3 && t[i + 1])
+                cards.push(t[i + 1]);
+            for (let c of cards)
+                for (let e of c.effects) {
+                    let eff = createEffect(e.id);
+                    if (eff.desc.startsWith("<em>Reconfiguration"))
+                        await eff.run(c, [], true);
+                }
+        }
+    };
+    this.desc = "A la fin de votre tour, redéclenche les <em>Reconfigurations</em> des Machines voisines.";
+}
+
+function Effect611() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0) {
+            let t = (args[0][0].concat(args[0][1]).includes(sender) ? args[1][0].concat(args[1][1]) : args[0][0].concat(args[0][1])).filter(x => x);
+            console.log(t);
+            console.log(args[1]);
+            if (t.length > 0) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                t.sort((a, b) => a.hp - b.hp);
+                await dealDamage(t[0], 8, doAnimate, args);
+            }
+        }
+    };
+    this.desc = "<em>Frappe préventive :</em> Inflige 8 dégâts à la créature adverse avec les PV les plus faibles.";
+}
+
+function Effect612() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            let t = troops[0];
+            let n = 0;
+            for (let c of t)
+                if (c && c.species == "Machine")
+                    n++;
+            let i = t.findIndex(e => e === sender);
+            let cards = [];
+            if (i % 4 > 0 && t[i - 1])
+                cards.push(t[i - 1]);
+            if (t[(i + 4) % 8])
+                cards.push(t[(i + 4) % 8]);
+            if (i % 4 < 3 && t[i + 1])
+                cards.push(t[i + 1]);
+
+            if (!sender.effect612 || sender.effect612 == 0) {
+                sender.effect612 = 1;
+                for (let c of cards)
+                    await boostStats(c, n, -3, doAnimate, true);
+            } else {
+                sender.effect612 = 0;
+                for (let c of cards)
+                    await boostStats(c, -3, n, doAnimate, true);
+            }
+        }
+    };
+    this.desc = "<em>Reconfiguration :</em> Confère +X/-3 <em>ou</em> Confère -3/+X à ses voisins latéraux, X étant le nombre de Machines alliées.";
+}
+
+function Effect613() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            await battleSummon("auto-duplicateur-mod", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Invoque une copie de base de cette créature sans réinvocation.";
+}
+
+function Effect614() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[1][0].concat(args[1][1]);
+        if (t.includes(sender)) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, 3, 2, doAnimate);
+        }
+    };
+    this.desc = "Lorsqu'une créature alliée est invoquée en combat, gagne +3/+2.";
+}
+
+function Effect615() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            await battleSummon("ouvrier-assemble", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+            await battleSummon("ouvrier-assemble", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+            await battleSummon("ouvrier-assemble", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Invoque trois Ouvriers assemblés.";
+}
+
+function Effect616() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card !== sender && args[0].card.species == "Machine" && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, 0, 1, doAnimate);
+        }
+    };
+    this.desc = "Lorsque vous jouez une autre Machine, gagne +0/+1.";
+}
+
+function Effect617() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let c of document.getElementById("shop").children)
+                if (c.card && c.card.species == "Machine")
+                    await boostStats(c.card, 2, 2, doAnimate);
+        }
+    };
+    this.desc = "Les Machines disponibles au recrutement ont +2/+2.";
+}
+
+function Effect618() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let c of document.getElementById("shop").children)
+                if (c.card && c.card.species == "Machine")
+                    await boostStats(c.card, 2, 2, doAnimate);
+        }
+    };
+    this.desc = "";
+}
+
+function Effect619() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            await battleSummon("ouvrier-assemble", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Invoque un Ouvrier assemblé.";
+}
+
+function Effect620() {
+    this.run = async (sender, args, doAnimate) => {
+        args[0].card.effects.push({
+            trigger: "ko",
+            id: 619
+        });
+        boostStats(args[0].card, 0, 0, doAnimate);
+    };
+    this.desc = "Confère \"<em>Dernière volonté :</em> Invoque un Ouvrier assemblé.\" à la Machine alliée ciblée.";
+}
+
+function Effect621() {
+    this.run = async (sender, args, doAnimate) => {
+        let c = args[0].card;
+        for (let i = 0; i < 3; i++) {
+            for (let e of c.effects) {
+                let eff = createEffect(e.id);
+                if (eff.desc.startsWith("<em>Reconfiguration"))
+                    await eff.run(c, [], true);
+            }
+        }
+    };
+    this.desc = "Déclenche 3 fois les <em>Reconfigurations</em> de la Machine alliée ciblée.";
 }
 
 function Effect701() {
@@ -5539,6 +6228,11 @@ async function boostStats(card, atk, hp, doAnimate, preserveHP, permanent) {
         await sleep(200);
     }
 
+    if (currentScene == "shop" && effect606active()) {
+        atk = Math.max(0, atk);
+        hp = Math.max(0, hp);
+    }
+
     if (card.effects.findIndex(e => e.id == 323) == -1)
         card.attack += atk;
     if (card.attack < 0)
@@ -5568,6 +6262,13 @@ async function boostStats(card, atk, hp, doAnimate, preserveHP, permanent) {
             c.style.removeProperty("filter");
         await sleep(200);
     }
+}
+
+function effect606active() {
+    for (let c of troops[0])
+        if (c && c.effects.findIndex(e => e.id == 606) != -1)
+            return true;
+    return false;
 }
 
 async function dealDamage(card, damage, doAnimate, state) {
@@ -5698,7 +6399,7 @@ function isValidEffectTarget(card, param, sender) {
     return true;
 }
 
-async function battleSummon(name, t, p, doAnimate) {
+async function battleSummon(name, t, p, doAnimate, args) {
     let card = createCard(name);
     card.created = true;
     let i = t[0].concat(t[1]).findIndex(e => e == undefined);
@@ -5713,6 +6414,9 @@ async function battleSummon(name, t, p, doAnimate) {
             board.children[i].appendChild(c);
             await sleep(500);
         }
+
+        console.log(args[5])
+        await broadcastEvent("battle-summon", args[5][0], args[5][1], args[5][2], args[5][3], args[5][4], doAnimate, [card, t].concat(args[5]));
     }
 }
 
