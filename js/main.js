@@ -1220,14 +1220,14 @@ const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machin
 
 const cardList = {
     "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
     "Soldat": ["fantassin-en-armure", "capitaine-d-escouade", "protectrice-devouee", "ecraseuse-au-bouclier", "veteran-sylvebouclier", "general-ethere", "chevalier-loyal", "baliste-de-la-legion", "tacticien-de-la-legion", "commandante-sylvelame", "mentor-chevaleresque", "recrue-peureuse", "recruteur-de-la-legion", "paladin-inspirateur", "heroine-de-la-legion"],
     "Bandit": ["archere-aux-traits-de-feu", "voleuse-a-la-tire", "gredin-agile", "pilleur-de-bibliotheque", "siphonneuse-de-mana", "voleur-audacieux", "saboteur-masque", "passe-muraille", "ombre-sans-visage", "pillarde-inconsciente", "lanceuse-de-dagues", "piegeuse-d-ames", "receleur-de-tresors", "assassin-silencieux", "voleur-de-pensees"],
     "Machine": ["planeur-de-fortune", "renard-mecanique", "colosse-adaptatif", "protecteur-de-la-cite", "golem-cinetique", "carcasse-mecanophage", "automate-replicateur", "artisan-gadgetiste", "baliste-ambulante", "automate-manaforme", "auto-duplicateur", "chef-de-la-proliferation", "ouvrier-assembleur", "garde-de-fer", "robot-astiqueur"],
-    "Bête": ["predateur-en-chasse"],
+    "Bête": ["predateur-en-chasse", "devoreur-sauvage", "chasseur-bondissant", "guivre-colossale", "gardien-de-la-foret", "ame-rugissante", "colonie-de-rats", "hydre-vorace", "hydre-enragee", "avatar-de-la-predation", "alligator-charognard", "meneuse-de-betes", "hurleur-des-sylves", "chargeur-cuirasse", "mastodonte-galopant"],
     "Mort-Vivant": ["serviteur-exhume"],
     "Autre": []
 };
@@ -1244,7 +1244,7 @@ function initCards() {
         if (!species.includes(s))
             species.push(s);
     }
-    species = ["Machine"]; //!!!
+    species = ["Bête"]; //!!!
 
     for (let s of species.concat(["Sortilège", "Autre"])) {
         for (let c of cardList[s])
@@ -1534,11 +1534,43 @@ function createCard(card) {
         case "revisions-mecaniques":
             return new RevisionsMecaniques();
 
-        case "serviteur-exhume":
-            return new ServiteurExhume();
-
         case "predateur-en-chasse":
             return new PredateurEnChasse();
+        case "devoreur-sauvage":
+            return new DevoreurSauvage();
+        case "chasseur-bondissant":
+            return new ChasseurBondissant();
+        case "guivre-colossale":
+            return new GuivreColossale();
+        case "gardien-de-la-foret":
+            return new GardienDeLaForet();
+        case "ame-rugissante":
+            return new AmeRugissante();
+        case "colonie-de-rats":
+            return new ColonieDeRats();
+        case "hydre-vorace":
+            return new HydreVorace();
+        case "hydre-enragee":
+            return new HydreEnragee();
+        case "avatar-de-la-predation":
+            return new AvatarDeLaPredation();
+        case "alligator-charognard":
+            return new AlligatorCharognard();
+        case "meneuse-de-betes":
+            return new MeneuseDeBetes();
+        case "hurleur-des-sylves":
+            return new HurleurDesSylves();
+        case "chargeur-cuirasse":
+            return new ChargeurCuirasse();
+        case "mastodonte-galopant":
+            return new MastodonteGalopant();
+        case "chasse-benie":
+            return new ChasseBenie();
+        case "traque":
+            return new Traque();
+
+        case "serviteur-exhume":
+            return new ServiteurExhume();
 
         case "aiguisage":
             return new Aiguisage();
@@ -3420,22 +3452,6 @@ function RevisionsMecaniques() {
 }
 
 
-// Morts-vivants
-
-function ServiteurExhume() {
-    this.name = "Serviteur exhumé";
-    this.species = "Mort-Vivant";
-    this.attack = 2;
-    this.hp = 1;
-    this.src = "morts-vivants/serviteur-exhume.jpg";
-    this.revive = true;
-    this.tier = 1;
-    this.effects = [
-
-    ];
-}
-
-
 // Bêtes
 
 function PredateurEnChasse() {
@@ -3450,6 +3466,271 @@ function PredateurEnChasse() {
             trigger: "card-place",
             id: 701
         }
+    ];
+}
+
+function DevoreurSauvage() {
+    this.name = "Dévoreur sauvage";
+    this.species = "Bête";
+    this.attack = 1;
+    this.hp = 1;
+    this.src = "betes/devoreur-sauvage.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 702
+        }
+    ];
+}
+
+function ChasseurBondissant() {
+    this.name = "Chasseur bondissant";
+    this.species = "Bête";
+    this.attack = 2;
+    this.hp = 2;
+    this.src = "betes/chasseur-bondissant.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 703
+        }
+    ];
+}
+
+function AmeRugissante() {
+    this.name = "Âme rugissante";
+    this.species = "Bête";
+    this.attack = 2;
+    this.hp = 3;
+    this.src = "betes/ame-rugissante.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 706
+        }
+    ];
+}
+
+function ChasseBenie() {
+    this.name = "Bénédiction de chasse";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "betes/chasse-benie.jpg";
+    this.tier = 2;
+    this.requirement = "Bête";
+    this.effects = [
+        {
+            trigger: "",
+            id: 716
+        }
+    ];
+    this.validTarget = {
+        area: "any"
+    };
+}
+
+function HurleurDesSylves() {
+    this.name = "Hurleur des sylves";
+    this.species = "Bête";
+    this.attack = 4;
+    this.hp = 3;
+    this.src = "betes/hurleur-des-sylves.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 713
+        }
+    ];
+}
+
+function ColonieDeRats() {
+    this.name = "Colonie de rats";
+    this.species = "Bête";
+    this.attack = 5;
+    this.hp = 3;
+    this.src = "betes/colonie-de-rats.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 707
+        }
+    ];
+}
+
+function HydreVorace() {
+    this.name = "Hydre vorace";
+    this.species = "Bête";
+    this.attack = 4;
+    this.hp = 4;
+    this.src = "betes/hydre-vorace.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 708
+        }
+    ];
+}
+
+function ChargeurCuirasse() {
+    this.name = "Chargeur cuirassé";
+    this.species = "Bête";
+    this.attack = 1;
+    this.hp = 1;
+    this.src = "betes/chargeur-cuirasse.jpg";
+    this.tier = 3;
+    this.shield = true;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 714
+        }
+    ];
+}
+
+function GuivreColossale() {
+    this.name = "Guivre colossale";
+    this.species = "Bête";
+    this.attack = 4;
+    this.hp = 4;
+    this.src = "betes/guivre-colossale.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 704
+        }
+    ];
+}
+
+function AlligatorCharognard() {
+    this.name = "Alligator charognard";
+    this.species = "Bête";
+    this.attack = 5;
+    this.hp = 6;
+    this.src = "betes/alligator-charognard.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "card-sell",
+            id: 712
+        }
+    ];
+}
+
+function Traque() {
+    this.name = "Traque";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "betes/traque.jpg";
+    this.tier = 4;
+    this.requirement = "Bête";
+    this.effects = [
+        {
+            trigger: "",
+            id: 717
+        }
+    ];
+    this.validTarget = {
+        area: "any"
+    };
+}
+
+function GardienDeLaForet() {
+    this.name = "Gardien de la forêt";
+    this.species = "Bête";
+    this.attack = 4;
+    this.hp = 6;
+    this.src = "betes/gardien-de-la-foret.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "attacked",
+            id: 705
+        }
+    ];
+}
+
+function HydreEnragee() {
+    this.name = "Hydre enragée";
+    this.species = "Bête";
+    this.attack = 7;
+    this.hp = 7;
+    this.src = "betes/hydre-enragee.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 709
+        }
+    ];
+}
+
+function MastodonteGalopant() {
+    this.name = "Mastodonte galopant";
+    this.species = "Autre";
+    this.attack = 8;
+    this.hp = 8;
+    this.src = "betes/mastodonte-galopant.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "attack",
+            id: 715
+        }
+    ];
+}
+
+function AvatarDeLaPredation() {
+    this.name = "Avatar de la prédation";
+    this.species = "Bête";
+    this.attack = 8;
+    this.hp = 6;
+    this.src = "betes/avatar-de-la-predation.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 710
+        }
+    ];
+}
+
+function MeneuseDeBetes() {
+    this.name = "Meneuse de bêtes";
+    this.species = "Autre";
+    this.attack = 4;
+    this.hp = 9;
+    this.src = "betes/meneuse-de-betes.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 711
+        }
+    ];
+}
+
+
+// Morts-vivants
+
+function ServiteurExhume() {
+    this.name = "Serviteur exhumé";
+    this.species = "Mort-Vivant";
+    this.attack = 2;
+    this.hp = 1;
+    this.src = "morts-vivants/serviteur-exhume.jpg";
+    this.revive = true;
+    this.tier = 1;
+    this.effects = [
+
     ];
 }
 
@@ -3905,6 +4186,11 @@ function showCardTooltip(c) {
         shield.innerHTML = "<em>Reconfiguration :</em> Alterne entre plusieurs effets chaque début de tour.";
         tips.appendChild(shield);
     }
+    if (containsKeyword(c, "Dévore")) {
+        let shield = document.createElement('div');
+        shield.innerHTML = "<em>Dévore :</em> Détruit la créature ciblée et gagne ses statistiques.";
+        tips.appendChild(shield);
+    }
     if (containsKeyword(c, "Injouable")) {
         let shield = document.createElement('div');
         shield.innerHTML = "<em>Injouable :</em> Ne peut qu'être revendu.";
@@ -4235,6 +4521,42 @@ function createEffect(id) {
             return new Effect621();
         case 701:
             return new Effect701();
+        case 702:
+            return new Effect702();
+        case 703:
+            return new Effect703();
+        case 704:
+            return new Effect704();
+        case 705:
+            return new Effect705();
+        case 706:
+            return new Effect706();
+        case 707:
+            return new Effect707();
+        case 708:
+            return new Effect708();
+        case 709:
+            return new Effect709();
+        case 710:
+            return new Effect710();
+        case 711:
+            return new Effect711();
+        case 712:
+            return new Effect712();
+        case 713:
+            return new Effect713();
+        case 714:
+            return new Effect714();
+        case 715:
+            return new Effect715();
+        case 716:
+            return new Effect716();
+        case 717:
+            return new Effect717();
+        case 718:
+            return new Effect718();
+        case 719:
+            return new Effect719();
         case 1001:
             return new Effect1001();
         case 1002:
@@ -5997,8 +6319,6 @@ function Effect611() {
     this.run = async (sender, args, doAnimate) => {
         if (sender.hp > 0) {
             let t = (args[0][0].concat(args[0][1]).includes(sender) ? args[1][0].concat(args[1][1]) : args[0][0].concat(args[0][1])).filter(x => x);
-            console.log(t);
-            console.log(args[1]);
             if (t.length > 0) {
                 if (doAnimate)
                     await effectProcGlow(sender);
@@ -6148,13 +6468,326 @@ function Effect701() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0].card === sender) {
             if (doAnimate)
-                effectProcGlow(sender);
+                await effectProcGlow(sender);
             let card = new ProieFacile();
             card.created = true;
             await addToHand(drawCard(card, 176));
         }
     };
     this.desc = "<em>Recrue :</em> Ajoute 1 Proie facile à votre main.";
+}
+
+function Effect702() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            let shop = document.getElementById("shop");
+            let options = [];
+            for (let c of shop.children)
+                if (c.card && c.card.species != "Sortilège")
+                    options.push(c);
+            let target = choice(options);
+            if (target) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                shop.removeChild(target);
+                shop.style.setProperty("--shop-size", parseInt(shop.style.getPropertyValue("--shop-size")) - 1);
+                await boostStats(sender, target.card.attack, target.card.hp, doAnimate);
+            }
+        }
+    };
+    this.desc = "<em>Recrue :</em> <em>Dévore</em> une créature disponible au recrutement aléatoire.";
+}
+
+function Effect703() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                effectProcGlow(sender);
+            chooseTarget(async (target) => {
+                let c = findDOMCard(target);
+                c.style.transition = ".5s";
+                c.style.opacity = "0";
+                await boostStats(sender, target.attack, target.hp, doAnimate);
+                await boostStats(sender, 2, 2, doAnimate);
+                c.parentElement.removeChild(c);
+                updateTroops();
+            }, {
+                area: "board",
+                notself: true
+            }, sender);
+        }
+    };
+    this.desc = "<em>Recrue :</em> <em>Dévore</em> une créature alliée ciblée, puis gagne +2/+2.";
+}
+
+function Effect704() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            let target;
+            let max = 999999;
+            for (let c of troops[0])
+                if (c && c.attack < max && c !== sender) {
+                    target = c;
+                    max = c.attack;
+                }
+
+            if (target) {
+                let c = findDOMCard(target);
+                c.style.transition = ".5s";
+                c.style.opacity = "0";
+                await boostStats(sender, target.attack, target.hp, doAnimate);
+                await boostStats(sender, 3, 3, doAnimate);
+                c.parentElement.removeChild(c);
+                updateTroops();
+
+                if (!sender.effect704)
+                    sender.effect704 = 0;
+                sender.effect704++;
+                if (sender.effect704 == 5) {
+                    sender.deathtouch = true;
+                    boostStats(sender, 0, 0, doAnimate);
+                }
+            }
+        }
+    };
+    this.desc = "Au début de chaque tour, <em>Dévore</em> la créature alliée la moins forte, puis gagne +3/+3. Gagne <em>Contact mortel</em> la 5<sup>ème</sup> fois.";
+}
+
+function Effect705() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+        if (t.includes(args[0]) && args[0].species == "Bête") {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(args[0], 1, 2, doAnimate, false, true);
+        }
+    };
+    this.desc = "Lorsqu'une Bête alliée est attaquée, lui confère définitivement +1/+2.";
+}
+
+function Effect706() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                effectProcGlow(sender);
+            chooseTarget(async (target) => {
+                let shop = document.getElementById("shop");
+                let options = [];
+                for (let c of shop.children)
+                    if (c.card && c.card.species != "Sortilège")
+                        options.push(c);
+                let t = choice(options);
+                if (t) {
+                    if (doAnimate)
+                        await effectProcGlow(target);
+                    shop.removeChild(t);
+                    shop.style.setProperty("--shop-size", parseInt(shop.style.getPropertyValue("--shop-size")) - 1);
+                    await boostStats(target, t.card.attack, t.card.hp, doAnimate);
+                }
+            }, {
+                area: "board",
+                species: "Bête",
+                notself: true
+            }, sender);
+        }
+    };
+    this.desc = "<em>Recrue :</em> La Bête alliée ciblée <em>Dévore</em> une créature disponible au recrutement aléatoire.";
+}
+
+function Effect707() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.hp <= 0 && args[6] && args[4] == 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let card = new ProieFacile();
+            card.created = true;
+            await addToHand(drawCard(card, 176));
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Ajoute une Proie facile à votre main.";
+}
+
+function Effect708() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let target of troops[0]) {
+                if (target && target.name == "Proie facile") {
+                    let c = findDOMCard(target);
+                    c.style.transition = ".5s";
+                    c.style.opacity = "0";
+                    await boostStats(sender, target.attack, target.hp, doAnimate);
+                    await boostStats(sender, 2, 1, doAnimate);
+                    c.parentElement.removeChild(c);
+                    updateTroops();
+                }
+            }
+            for (let d of document.getElementById("hand").children) {
+                let target = d.card;
+                if (target && target.name == "Proie facile") {
+                    let c = findDOMCard(target);
+                    c.style.transition = ".5s";
+                    c.style.opacity = "0";
+                    await boostStats(sender, target.attack, target.hp, doAnimate);
+                    await boostStats(sender, 2, 1, doAnimate);
+                    c.parentElement.removeChild(c);
+                }
+            }
+        }
+    };
+    this.desc = "<em>Recrue :</em> <em>Dévore</em> toutes les Proies faciles en jeu et dans votre main, et gagne +2/+1 à chaque fois.";
+}
+
+function Effect709() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.hp <= 0 && args[6] && args[4] == 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            sender.hp -= 7;
+            boostStats(sender, 7, 7, false, false, true);
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Gagne définitivement +7/+7.";
+}
+
+function Effect710() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+
+            let beasts = [];
+            for (let c of troops[0])
+                if (c && c.species == "Bête")
+                    beasts.push(c);
+            shuffle(beasts);
+
+            let shop = document.getElementById("shop");
+            for (let target of beasts) {
+                let options = [];
+                for (let c of shop.children)
+                    if (c.card && c.card.species != "Sortilège")
+                        options.push(c);
+                let t = choice(options);
+                if (t) {
+                    shop.removeChild(t);
+                    shop.style.setProperty("--shop-size", parseInt(shop.style.getPropertyValue("--shop-size")) - 1);
+                    await boostStats(target, t.card.attack, t.card.hp, doAnimate);
+                } else {
+                    await boostStats(target, 2, 2, doAnimate);
+                }
+            }
+        }
+    };
+    this.desc = "A la fin de votre tour, les Bêtes alliées <em>Dévorent</em> une créature aléatoire disponible au recrutement si possible, ou gagnent +2/+2 sinon.";
+}
+
+function Effect711() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card.species == "Bête" && args[0].card !== sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(args[0].card, 4, 3, doAnimate);
+        }
+    };
+    this.desc = "Les Bêtes que vous jouez gagnent +4/+3.";
+}
+
+function Effect712() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card.species != "Sortilège" && findDOMCard(sender) && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, 1, 1, doAnimate);
+        }
+    };
+    this.desc = "Gagne +1/+1 lorsque vous revendez une créature.";
+}
+
+function Effect713() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let c of document.getElementById("hand").children)
+                if (c.card.species == "Bête")
+                    await boostStats(c.card, 0, 3, doAnimate);
+        }
+    };
+    this.desc = "<em>Recrue :</em> Confère +0/+3 aux Bêtes dans votre main.";
+}
+
+function Effect714() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0) {
+            let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+            let n = 0;
+            for (let c of t)
+                if (c && c.hp > 0 && c.species == "Bête")
+                    n++;
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, n, n, doAnimate);
+        }
+    };
+    this.desc = "<em>Frappe préventive :</em> Gagne +X/+X, où X est le nombre de Bêtes alliées.";
+}
+
+function Effect715() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            await boostStats(sender, sender.attack, 0, doAnimate);
+        }
+    };
+    this.desc = "Lorsque cette créature attaque, elle double son attaque.";
+}
+
+function Effect716() {
+    this.run = async (sender, args, doAnimate) => {
+        for (let i = 0; i < 4; i++) {
+            if (troops[0][i])
+                await boostStats(troops[0][i], 1, 0, doAnimate);
+        }
+        let card = new ProieFacile();
+        card.created = true;
+        await addToHand(drawCard(card, 176));
+    };
+    this.desc = "Confère +1/+0 aux créatures de la première ligne, puis ajoute une Proie facile à votre main.";
+}
+
+function Effect717() {
+    this.run = async (sender, args, doAnimate) => {
+        for (let c of document.getElementById("shop").children)
+            if (c.card && c.card.species == "Bête")
+                await boostStats(c.card, 3, 3, doAnimate);
+        players[0].effects.push({
+            trigger: "shop-refresh",
+            id: 718
+        });
+        players[0].effects.push({
+            trigger: "turn-end",
+            id: 719
+        })
+    };
+    this.desc = "Confère +3/+3 aux Bêtes disponibles au recrutement jusqu'à la fin du tour.";
+}
+
+function Effect718() {
+    this.run = async (sender, args, doAnimate) => {
+        for (let c of document.getElementById("shop").children)
+            if (c.card && c.card.species == "Bête")
+                await boostStats(c.card, 3, 3, doAnimate);
+    };
+    this.desc = "";
+}
+
+function Effect719() {
+    this.run = async (sender, args, doAnimate) => {
+        sender.effects.splice(sender.effects.findIndex(e => e.id == 718), 1);
+        sender.effects.splice(sender.effects.findIndex(e => e.id == 719), 1);
+    };
+    this.desc = "";
 }
 
 function Effect1001() {
@@ -6415,7 +7048,6 @@ async function battleSummon(name, t, p, doAnimate, args) {
             await sleep(500);
         }
 
-        console.log(args[5])
         await broadcastEvent("battle-summon", args[5][0], args[5][1], args[5][2], args[5][3], args[5][4], doAnimate, [card, t].concat(args[5]));
     }
 }
