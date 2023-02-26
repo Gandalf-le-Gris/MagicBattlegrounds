@@ -1220,7 +1220,7 @@ const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machin
 
 const cardList = {
     "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
@@ -1228,7 +1228,7 @@ const cardList = {
     "Bandit": ["archere-aux-traits-de-feu", "voleuse-a-la-tire", "gredin-agile", "pilleur-de-bibliotheque", "siphonneuse-de-mana", "voleur-audacieux", "saboteur-masque", "passe-muraille", "ombre-sans-visage", "pillarde-inconsciente", "lanceuse-de-dagues", "piegeuse-d-ames", "receleur-de-tresors", "assassin-silencieux", "voleur-de-pensees"],
     "Machine": ["planeur-de-fortune", "renard-mecanique", "colosse-adaptatif", "protecteur-de-la-cite", "golem-cinetique", "carcasse-mecanophage", "automate-replicateur", "artisan-gadgetiste", "baliste-ambulante", "automate-manaforme", "auto-duplicateur", "chef-de-la-proliferation", "ouvrier-assembleur", "garde-de-fer", "robot-astiqueur"],
     "Bête": ["predateur-en-chasse", "devoreur-sauvage", "chasseur-bondissant", "guivre-colossale", "gardien-de-la-foret", "ame-rugissante", "colonie-de-rats", "hydre-vorace", "hydre-enragee", "avatar-de-la-predation", "alligator-charognard", "meneuse-de-betes", "hurleur-des-sylves", "chargeur-cuirasse", "mastodonte-galopant"],
-    "Mort-Vivant": ["serviteur-exhume"],
+    "Mort-Vivant": ["serviteur-exhume", "squelette-reconstitue", "archer-squelette", "liche-profanatrice", "devoreur-pourrissant", "eveilleur-d-ames", "creation-abjecte", "necromancienne-corrompue", "raccommodeur-de-cadavres", "guerrier-maudit", "crane-possede", "dragon-decharne", "marcheur-eternel", "soldat-revenu-a-la-vie", "assistant-du-raccommodeur"],
     "Autre": []
 };
 
@@ -1244,7 +1244,7 @@ function initCards() {
         if (!species.includes(s))
             species.push(s);
     }
-    species = ["Bête"]; //!!!
+    species = ["Mort-Vivant"]; //!!!
 
     for (let s of species.concat(["Sortilège", "Autre"])) {
         for (let c of cardList[s])
@@ -1571,6 +1571,38 @@ function createCard(card) {
 
         case "serviteur-exhume":
             return new ServiteurExhume();
+        case "squelette-reconstitue":
+            return new SqueletteReconstitue();
+        case "archer-squelette":
+            return new ArcherSquelette();
+        case "liche-profanatrice":
+            return new LicheProfanatrice();
+        case "devoreur-pourrissant":
+            return new DevoreurPourrissant();
+        case "eveilleur-d-ames":
+            return new EveilleurDAmes();
+        case "creation-abjecte":
+            return new CreationAbjecte();
+        case "necromancienne-corrompue":
+            return new NecromancienneCorrompue();
+        case "raccommodeur-de-cadavres":
+            return new RaccommodeurDeCadavres();
+        case "guerrier-maudit":
+            return new GuerrierMaudit();
+        case "crane-possede":
+            return new CranePossede();
+        case "dragon-decharne":
+            return new DragonDecharne();
+        case "marcheur-eternel":
+            return new MarcheurEternel();
+        case "soldat-revenu-a-la-vie":
+            return new SoldatRevenuALaVie();
+        case "assistant-du-raccommodeur":
+            return new AssistantDuRaccommodeur();
+        case "regain-de-vie":
+            return new RegainDeVie();
+        case "rite-de-sang":
+            return new RiteDeSang();
 
         case "aiguisage":
             return new Aiguisage();
@@ -3734,6 +3766,265 @@ function ServiteurExhume() {
     ];
 }
 
+function SqueletteReconstitue() {
+    this.name = "Squelette reconstitué";
+    this.species = "Mort-Vivant";
+    this.attack = 1;
+    this.hp = 3;
+    this.src = "morts-vivants/squelette-reconstitue.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 801
+        }
+    ];
+}
+
+function ArcherSquelette() {
+    this.name = "Archer squelette";
+    this.species = "Mort-Vivant";
+    this.attack = 3;
+    this.hp = 1;
+    this.src = "morts-vivants/archer-squelette.jpg";
+    this.tier = 2;
+    this.revive = true;
+    this.range = true;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 802
+        }
+    ];
+}
+
+function GuerrierMaudit() {
+    this.name = "Guerrier maudit";
+    this.species = "Mort-Vivant";
+    this.attack = 3;
+    this.hp = 2;
+    this.src = "morts-vivants/guerrier-maudit.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 810
+        }
+    ];
+}
+
+function SoldatRevenuALaVie() {
+    this.name = "Soldat revenu à la vie";
+    this.species = "Mort-Vivant";
+    this.attack = 1;
+    this.hp = 1;
+    this.src = "morts-vivants/soldat-revenu-a-la-vie.jpg";
+    this.tier = 2;
+    this.revive = true;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 814
+        }
+    ];
+}
+
+function DevoreurPourrissant() {
+    this.name = "Dévoreur pourrissant";
+    this.species = "Mort-Vivant";
+    this.attack = 4;
+    this.hp = 3;
+    this.src = "morts-vivants/devoreur-pourrissant.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 804
+        }
+    ];
+}
+
+function EveilleurDAmes() {
+    this.name = "Eveilleur d'âmes";
+    this.species = "Mort-Vivant";
+    this.attack = 3;
+    this.hp = 3;
+    this.src = "morts-vivants/eveilleur-d-ames.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 805
+        }
+    ];
+}
+
+function AssistantDuRaccommodeur() {
+    this.name = "Assistant du raccommodeur";
+    this.species = "Mort-Vivant";
+    this.attack = 3;
+    this.hp = 3;
+    this.src = "morts-vivants/assistant-du-raccommodeur.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 815
+        }
+    ];
+}
+
+function DragonDecharne() {
+    this.name = "Dragon décharné";
+    this.species = "Mort-Vivant";
+    this.attack = 5;
+    this.hp = 3;
+    this.src = "morts-vivants/dragon-decharne.jpg";
+    this.tier = 4;
+    this.revive = true;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 812
+        }
+    ];
+}
+
+function CranePossede() {
+    this.name = "Crâne possédé";
+    this.species = "Mort-Vivant";
+    this.attack = 1;
+    this.hp = 7;
+    this.src = "morts-vivants/crane-possede.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "attacked",
+            id: 811
+        }
+    ];
+}
+
+function NecromancienneCorrompue() {
+    this.name = "Nécromancienne corrompue";
+    this.species = "Autre";
+    this.attack = 2;
+    this.hp = 6;
+    this.src = "morts-vivants/necromancienne-corrompue.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 807
+        },
+        {
+            trigger: "ko",
+            id: 808
+        }
+    ];
+}
+
+function CreationAbjecte() {
+    this.name = "Création abjecte";
+    this.species = "Mort-Vivant";
+    this.attack = 4;
+    this.hp = 4;
+    this.src = "morts-vivants/creation-abjecte.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 806
+        }
+    ];
+}
+
+function RegainDeVie() {
+    this.name = "Regain de vie";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "morts-vivants/regain-de-vie.jpg";
+    this.tier = 6;
+    this.requirement = "Mort-Vivant";
+    this.effects = [
+        {
+            trigger: "",
+            id: 816
+        }
+    ];
+    this.validTarget = {
+        area: "board",
+        species: "Mort-Vivant"
+    };
+}
+
+function MarcheurEternel() {
+    this.name = "Marcheur éternel";
+    this.species = "Mort-Vivant";
+    this.attack = 6;
+    this.hp = 1;
+    this.src = "morts-vivants/marcheur-eternel.jpg";
+    this.tier = 6;
+    this.revive = true;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 813
+        }
+    ];
+}
+
+function LicheProfanatrice() {
+    this.name = "Liche profanatrice";
+    this.species = "Mort-Vivant";
+    this.attack = 8;
+    this.hp = 2;
+    this.src = "morts-vivants/liche-profanatrice.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 803
+        }
+    ];
+}
+
+function RaccommodeurDeCadavres() {
+    this.name = "Raccommodeur de cadavres";
+    this.species = "Autre";
+    this.attack = 6;
+    this.hp = 6;
+    this.src = "morts-vivants/raccommodeur-de-cadavres.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 809
+        }
+    ];
+}
+
+function RiteDeSang() {
+    this.name = "Rite de sang";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "morts-vivants/rite-de-sang.jpg";
+    this.tier = 6;
+    this.requirement = "Mort-Vivant";
+    this.effects = [
+        {
+            trigger: "",
+            id: 817
+        }
+    ];
+    this.validTarget = {
+        area: "board",
+        species: "Mort-Vivant"
+    };
+}
+
 
 //Sortileges
 
@@ -4557,6 +4848,40 @@ function createEffect(id) {
             return new Effect718();
         case 719:
             return new Effect719();
+        case 801:
+            return new Effect801();
+        case 802:
+            return new Effect802();
+        case 803:
+            return new Effect803();
+        case 804:
+            return new Effect804();
+        case 805:
+            return new Effect805();
+        case 806:
+            return new Effect806();
+        case 807:
+            return new Effect807();
+        case 808:
+            return new Effect808();
+        case 809:
+            return new Effect809();
+        case 810:
+            return new Effect810();
+        case 811:
+            return new Effect811();
+        case 812:
+            return new Effect812();
+        case 813:
+            return new Effect813();
+        case 814:
+            return new Effect814();
+        case 815:
+            return new Effect815();
+        case 816:
+            return new Effect816();
+        case 817:
+            return new Effect817();
         case 1001:
             return new Effect1001();
         case 1002:
@@ -4943,7 +5268,7 @@ function Effect114() {
 
 function Effect115() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0] === sender && sender.hp <= 0 && args[6] && args[4] == 0) {
+        if (args[0] === sender && sender.hp <= 0) {
             if (doAnimate)
                 await effectProcGlow(sender);
             let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
@@ -5578,7 +5903,7 @@ function Effect401() {
             if (doAnimate)
                 effectProcGlow(sender);
             chooseTarget((target) => {
-                boostStats(target, 2, 2, doAnimate);
+                boostStats(target, 1, 2, doAnimate);
             }, {
                 area: "board",
                 species: "Soldat",
@@ -5586,7 +5911,7 @@ function Effect401() {
             }, sender);
         }
     };
-    this.desc = "<em>Recrue :</em> Confère +2/+2 à un autre Soldat allié ciblé.";
+    this.desc = "<em>Recrue :</em> Confère +1/+2 à un autre Soldat allié ciblé.";
 }
 
 function Effect402() {
@@ -6641,7 +6966,7 @@ function Effect708() {
 
 function Effect709() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0] === sender && sender.hp <= 0 && args[6] && args[4] == 0) {
+        if (args[0] === sender && sender.hp <= 0) {
             if (doAnimate)
                 await effectProcGlow(sender);
             sender.hp -= 7;
@@ -6790,6 +7115,235 @@ function Effect719() {
     this.desc = "";
 }
 
+function Effect801() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] !== sender) {
+            let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            if (t.includes(sender))
+                await boostStats(sender, 1, 0, doAnimate);
+        }
+    };
+    this.desc = "Lorsqu'une créature alliée meurt, gagne +1/+0.";
+}
+
+function Effect802() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.hp <= 0) {
+            await boostStats(sender, 4, 0, doAnimate);
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Gagne +4/+0.";
+}
+
+function Effect803() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            let options = copy(cardList["Mort-Vivant"]);
+            console.log(options)
+            options.splice(options.findIndex(e => e == "liche-profanatrice"), 1);
+            console.log(options)
+            await battleSummon(choice(options), args[1] ? args[2] : args[3], args[4], doAnimate, args);
+            await battleSummon(choice(options), args[1] ? args[2] : args[3], args[4], doAnimate, args);
+            await battleSummon(choice(options), args[1] ? args[2] : args[3], args[4], doAnimate, args);
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Invoque trois autres Morts-Vivants aléatoires.";
+}
+
+function Effect804() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] !== sender) {
+            let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            if (!t.includes(sender))
+                await boostStats(sender, 2, 0, doAnimate);
+        }
+    };
+    this.desc = "Lorsqu'une créature ennemie meurt, gagne +2/+0.";
+}
+
+function Effect805() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.hp <= 0) {
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            let i = t.findIndex(e => e === sender);
+            if ((i % 4) > 0 && t[i - 1]) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                for (let e of copy(t[i - 1].effects))
+                    if (createEffect(e.id).desc.startsWith("<em>Dernière volonté"))
+                        t[i - 1].effects.push(copy(e));
+            }
+            if ((i % 4) < 3 && t[i + 1]) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                for (let e of copy(t[i + 1].effects))
+                    if (createEffect(e.id).desc.startsWith("<em>Dernière volonté"))
+                        t[i + 1].effects.push(copy(e));
+            }
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Double les <em>Dernières volontés</em> de ses voisins latéraux.";
+}
+
+function Effect806() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] !== sender) {
+            let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            if (t.includes(sender))
+                await boostStats(sender, 1, 1, doAnimate, false, true);
+        }
+    };
+    this.desc = "Lorsqu'une créature alliée meurt, gagne définitivement +1/+1.";
+}
+
+function Effect807() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] !== sender && args[0].species == "Mort-Vivant") {
+            let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            if (t.includes(sender)) {
+                if (!sender.effect807)
+                    sender.effect807 = [];
+                if (!sender.effect807.includes(args[0]))
+                    sender.effect807.push(args[0]);
+            }
+        }
+    };
+    this.desc = "";
+}
+
+function Effect808() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.effect807) {
+            if (sender.effect807.length > 0) {
+                let c = sender.effect807[0];
+                let name = Array.from(c.src.matchAll("^.*\/([^/]+)\.jpg$"), m => m[1])[0];
+                console.log(name);
+                await battleSummon(name, args[1] ? args[2] : args[3], args[4], doAnimate, args);
+            }
+            if (sender.effect807.length > 1) {
+                let c = sender.effect807[1];
+                let name = Array.from(c.src.matchAll("^.*\/([^/]+)\.jpg$"), m => m[1])[0];
+                await battleSummon(name, args[1] ? args[2] : args[3], args[4], doAnimate, args);
+            }
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Invoque des copies de base des deux premiers Morts-Vivants morts ce combat.";
+}
+
+function Effect809() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] !== sender && args[0].species == "Mort-Vivant") {
+            let t = (args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]));
+            let undead = t.filter(x => x && x.species == "Mort-Vivant");
+            if (t.includes(sender) && undead.length > 0) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                shuffle(undead);
+                undead = undead.slice(0, 3);
+                for (let c of undead)
+                    await boostStats(c, 1, 1, doAnimate, false, true);
+            }
+        }
+    };
+    this.desc = "Lorsqu'un Mort-Vivant allié meurt, confère définitivement +1/+1 à trois Morts-Vivants alliés aléatoires.";
+}
+
+function Effect810() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender)
+            await battleSummon("squelette-reconstitue", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+    };
+    this.desc = "<em>Dernière volonté :</em> Invoque un Squelette reconstitué.";
+}
+
+function Effect811() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let n = Math.floor(args[1].attack / 2);
+            if (n > 0) {
+                boostStats(args[1], -n, 0, doAnimate);
+                await boostStats(sender, n, 0, doAnimate);
+            }
+        }
+    };
+    this.desc = "Lorsque cette créature est attaquée, elle divise par 2 l'attaque de la créature assaillante et augmente son attaque d'autant.";
+}
+
+function Effect812() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card !== sender && args[0].card.revive && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let c of troops[0])
+                if (c && c.species == "Mort-Vivant" && c !== sender)
+                    await boostStats(c, 1, 2, doAnimate);
+        }
+    };
+    this.desc = "Lorsque vous jouez une autre créature avec <em>Résurrection</em>, confère +1/+2 à vos autres Morts-Vivants.";
+}
+
+function Effect813() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender)
+            await battleSummon("serviteur-exhume", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+    };
+    this.desc = "<em>Dernière volonté :</em> Invoque un Serviteur exhumé.";
+}
+
+function Effect814() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.hp <= 0) {
+            let t = (args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1])).filter(x => x && x.species == "Mort-Vivant" && x !== sender);
+            let target = choice(t);
+            if (target) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await boostStats(target, 1, 1, doAnimate);
+            }
+        }
+    };
+    this.desc = "<em>Dernière volonté :</em> Confère +1/+1 à un autre Mort-Vivant allié.";
+}
+
+function Effect815() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                effectProcGlow(sender);
+            chooseTarget((target) => {
+                boostStats(target, 0, 4, doAnimate);
+            }, {
+                area: "board",
+                species: "Mort-Vivant",
+                notself: true
+            }, sender);
+        }
+    };
+    this.desc = "<em>Recrue :</em> Confère +0/+4 à un autre Mort-Vivant allié ciblé.";
+}
+
+function Effect816() {
+    this.run = async (sender, args, doAnimate) => {
+        let c = args[0].card;
+        let n = Math.min(2, c.hp - 1);
+        boostStats(c, 0, -n, doAnimate);
+        await boostStats(players[0], 0, n, doAnimate);
+    };
+    this.desc = "Vole jusqu'à 2 PV au Mort-Vivant allié ciblé.";
+}
+
+function Effect817() {
+    this.run = async (sender, args, doAnimate) => {
+        let c = args[0].card;
+        c.revive = true;
+        boostStats(players[0], 0, -Math.min(6, players[0].hp - 1), doAnimate);
+        await boostStats(c, 0, 0, doAnimate);
+    };
+    this.desc = "Perdez 6 PV pour donner <em>Résurrection</em> au Mort-Vivant allié ciblé.";
+}
+
 function Effect1001() {
     this.run = async (sender, args, doAnimate) => { };
     this.desc = "<em>Injouable</em>.";
@@ -6805,18 +7359,10 @@ function Effect1002() {
 function Effect2001() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0] !== sender) {
-            if (doAnimate) {
-                if (Math.random() < .5) {
-                    await boostStats(sender, 1, 0, doAnimate);
-                    let i = troops[0].findIndex(e => e && e.name == "Scion aspirâme");
-                    troops[0][i].attack++;
-                } else {
-                    if (sender.hp > 0)
-                        await boostStats(sender, 0, 1, doAnimate);
-                    let i = troops[0].findIndex(e => e && e.name == "Scion aspirâme");
-                    troops[0][i].hp++;
-                }
-            }
+            if (Math.random() < .5)
+                await boostStats(sender, 1, 0, doAnimate, false, true);
+            else
+                await boostStats(sender, 0, 1, doAnimate, false, true);
         }
     };
     this.desc = "Lorsqu'une autre créature meurt, gagne définitivement +1/+0 ou +0/+1.";

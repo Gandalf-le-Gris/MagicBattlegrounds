@@ -39,7 +39,7 @@
             font-size: var(--font-large);
             font-weight: bold;
             top: calc(var(--size) * .022);
-            width: 100%;
+            width: 97%;
             text-align: center;
         }
 
@@ -150,6 +150,7 @@
                 text-align: center;
                 margin: auto;
                 transform: translateY(calc(var(--size) * -.02));
+                padding-right: calc(var(--size) * .015)
             }
 
 .small-card {
