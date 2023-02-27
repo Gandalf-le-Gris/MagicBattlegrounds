@@ -511,7 +511,9 @@ async function increaseShopTier() {
 let animating = 0;
 
 async function broadcastShopEvent(name, args) {
+    console.log("Broadcasting event " + name);
     animating++;
+    clearTimeout(menuLeaveTimer);
     document.getElementById("cover-filter").style.removeProperty("display");
     await sleep(1)
     hideCardTooltip();
@@ -548,6 +550,7 @@ let dragItem = undefined;
 function dragStart() {
     dragItem = this;
     hideCardTooltip();
+    clearTimeout(menuLeaveTimer);
     setTimeout(() => {
         this.style.opacity = "0";
         this.style.pointerEvents = "none";
@@ -559,6 +562,7 @@ function dragStart() {
 
 function dragEnd() {
     dragItem = undefined;
+    clearTimeout(menuLeaveTimer);
     setTimeout(() => {
         this.style.removeProperty("opacity");
         this.style.removeProperty("pointer-events");
@@ -853,6 +857,7 @@ function findCardPos(c) {
 async function broadcastEvent(name, t1, t2, p1, p2, turn, doAnimate, args) {
     if (doAnimate) {
         hideCardTooltip();
+        clearTimeout(menuLeaveTimer);
         await sleep(1);
     }
 
@@ -1220,7 +1225,7 @@ const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machin
 
 const cardList = {
     "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
@@ -1229,7 +1234,7 @@ const cardList = {
     "Machine": ["planeur-de-fortune", "renard-mecanique", "colosse-adaptatif", "protecteur-de-la-cite", "golem-cinetique", "carcasse-mecanophage", "automate-replicateur", "artisan-gadgetiste", "baliste-ambulante", "automate-manaforme", "auto-duplicateur", "chef-de-la-proliferation", "ouvrier-assembleur", "garde-de-fer", "robot-astiqueur"],
     "Bête": ["predateur-en-chasse", "devoreur-sauvage", "chasseur-bondissant", "guivre-colossale", "gardien-de-la-foret", "ame-rugissante", "colonie-de-rats", "hydre-vorace", "hydre-enragee", "avatar-de-la-predation", "alligator-charognard", "meneuse-de-betes", "hurleur-des-sylves", "chargeur-cuirasse", "mastodonte-galopant"],
     "Mort-Vivant": ["serviteur-exhume", "squelette-reconstitue", "archer-squelette", "liche-profanatrice", "devoreur-pourrissant", "eveilleur-d-ames", "creation-abjecte", "necromancienne-corrompue", "raccommodeur-de-cadavres", "guerrier-maudit", "crane-possede", "dragon-decharne", "marcheur-eternel", "soldat-revenu-a-la-vie", "assistant-du-raccommodeur"],
-    "Autre": []
+    "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"]
 };
 
 let species = [];
@@ -1244,13 +1249,16 @@ function initCards() {
         if (!species.includes(s))
             species.push(s);
     }
-    species = ["Mort-Vivant"]; //!!!
+
+    for (let s of speciesList)
+        cardList[s] = [cardList[s][0]]; //!!!
 
     for (let s of species.concat(["Sortilège", "Autre"])) {
         for (let c of cardList[s])
             for (let i = 0; i < 15; i++) {
                 let card = createCard(c);
                 if (!card.requirement || species.includes(card.requirement))
+                    if (!card.requirement) //!!!
                     cards.push(createCard(c));
             }
     }
@@ -1258,7 +1266,7 @@ function initCards() {
     commanders = [];
     for (let c of cardList["Commandant"]) {
         let card = createCard(c);
-        //if (!card.requirement || species.includes(card.requirement)) //!!!
+        if (!card.requirement || species.includes(card.requirement))
             commanders.push(card);
     }
 
@@ -1604,8 +1612,23 @@ function createCard(card) {
         case "rite-de-sang":
             return new RiteDeSang();
 
+        case "changeforme-masque":
+            return new ChangeformeMasque();
+        case "ange-guerrier":
+            return new AngeGuerrier();
+        case "guide-angelique":
+            return new GuideAngelique();
+        case "archange-eclatant":
+            return new ArchangeEclatant();
+        case "ange-de-l-unite":
+            return new AngeDeLUnite();
+        case "combattant-celeste":
+            return new CombattantCeleste();
+
         case "aiguisage":
             return new Aiguisage();
+        case "reunion-celeste":
+            return new ReunionCeleste();
 
         case "piece-d-or":
             return new PieceDOr();
@@ -4026,6 +4049,99 @@ function RiteDeSang() {
 }
 
 
+// Autre
+
+function AngeDeLUnite() {
+    this.name = "Ange de l'unité";
+    this.species = "Autre";
+    this.attack = 2;
+    this.hp = 3;
+    this.src = "autres/ange-de-l-unite.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 2006
+        }
+    ];
+}
+
+function ChangeformeMasque() {
+    this.name = "Changeforme masqué";
+    this.species = "Autre";
+    this.attack = 3;
+    this.hp = 3;
+    this.src = "autres/changeforme-masque.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 2002
+        }
+    ];
+}
+
+function AngeGuerrier() {
+    this.name = "Ange guerrier";
+    this.species = "Autre";
+    this.attack = 3;
+    this.hp = 5;
+    this.src = "autres/ange-guerrier.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 2003
+        }
+    ];
+}
+
+function GuideAngelique() {
+    this.name = "Guide angélique";
+    this.species = "Autre";
+    this.attack = 2;
+    this.hp = 4;
+    this.src = "autres/guide-angelique.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 2004
+        }
+    ];
+}
+
+function ArchangeEclatant() {
+    this.name = "Archange éclatant";
+    this.species = "Autre";
+    this.attack = 7;
+    this.hp = 7;
+    this.src = "autres/archange-eclatant.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "card-sell",
+            id: 2005
+        }
+    ];
+}
+
+function CombattantCeleste() {
+    this.name = "Combattant céleste";
+    this.species = "Autre";
+    this.attack = 6;
+    this.hp = 6;
+    this.src = "autres/combattant-celeste.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 2007
+        }
+    ];
+}
+
+
 //Sortileges
 
 function Aiguisage() {
@@ -4039,6 +4155,24 @@ function Aiguisage() {
         {
             trigger: "",
             id: 1002
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function ReunionCeleste() {
+    this.name = "Réunion céleste";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "sortileges/reunion-celeste.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1003
         }
     ];
     this.validTarget = {
@@ -4886,8 +5020,22 @@ function createEffect(id) {
             return new Effect1001();
         case 1002:
             return new Effect1002();
+        case 1003:
+            return new Effect1003();
         case 2001:
             return new Effect2001();
+        case 2002:
+            return new Effect2002();
+        case 2003:
+            return new Effect2003();
+        case 2004:
+            return new Effect2004();
+        case 2005:
+            return new Effect2005();
+        case 2006:
+            return new Effect2006();
+        case 2007:
+            return new Effect2007();
         default:
             alert("Effet inconnu : " + id);
     }
@@ -7356,6 +7504,17 @@ function Effect1002() {
     this.desc = "Confère +2/+1 à la créature alliée ciblée.";
 }
 
+function Effect1003() {
+    this.run = async (sender, args, doAnimate) => {
+        let f = [];
+        for (let c of troops[0])
+            if (c && !f.includes(c.species) && c.species != "Autre")
+                f.push(c.species);
+        await boostStats(args[0].card, f.length, f.length, doAnimate);
+    };
+    this.desc = "Confère +X/+X à la créature alliée ciblée, où X est le nombre de familles alliées différentes.";
+}
+
 function Effect2001() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0] !== sender) {
@@ -7367,6 +7526,118 @@ function Effect2001() {
     };
     this.desc = "Lorsqu'une autre créature meurt, gagne définitivement +1/+0 ou +0/+1.";
 }
+
+function Effect2002() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            sender.species = choice(copy(species).filter(x => x != sender.species));
+            let n = 0;
+            for (let c of troops[0])
+                if (c && c.species == sender.species && c !== sender)
+                    n++;
+            if (n > 0)
+                await boostStats(sender, n, n, doAnimate);
+        }
+    };
+    this.desc = "Au début de votre tour, change de famille et gagne +X/+X, où X est le nombre de créatures alliées de cette famille.";
+}
+
+function Effect2003() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0) {
+            let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+            let f = [];
+            for (let c of t)
+                if (c && !f.includes(c.species) && c.species != "Autre")
+                    f.push(c.species);
+            if (f.length > 0) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await boostStats(sender, f.length, f.length, doAnimate);
+            }
+        }
+    };
+    this.desc = "<em>Frappe préventive :</em> Gagne +1/+1 pour chaque famille alliée différente.";
+}
+
+function Effect2004() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let sp = copy(species);
+            shuffle(sp);
+            for (let s of sp) {
+                let t = choice(troops[0].filter(x => x && x.species == s));
+                if (t)
+                    await boostStats(t, 2, 2, doAnimate);
+            }
+        }
+    };
+    this.desc = "A la fin de chaque tour, confère +2/+2 à une créature alliée de chaque famille.";
+}
+
+function Effect2005() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let card = args[0].card;
+            let sp = copy(species);
+            shuffle(sp);
+            for (let s of sp) {
+                let t = choice(troops[0].filter(x => x && x.species == s));
+                if (t && s != card.species)
+                    await boostStats(t, 2, 2, doAnimate);
+            }
+        }
+    };
+    this.desc = "Lorsque vous revendez une créature, confère +2/+2 à une créature alliée de chaque autre famille.";
+}
+
+function Effect2006() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let sp = copy(species);
+            shuffle(sp);
+            for (let s of sp) {
+                let t = choice(troops[0].filter(x => x && x.species == s));
+                if (t)
+                    await boostStats(t, 1, 1, doAnimate);
+            }
+        }
+    };
+    this.desc = "<em>Recrue :</em> Confère +1/+1 à une créature alliée de chaque famille.";
+}
+
+function Effect2007() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0) {
+            let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+            let f = [];
+            for (let c of t)
+                if (c && !f.includes(c.species) && c.species != "Autre")
+                    f.push(c.species);
+            if (f.length > 0) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                if (f.length >= 2)
+                    sender.shield = true;
+                if (f.length >= 4)
+                    sender.deathtouch = true;
+                await boostStats(sender, f.length * 5, f.length * 7, doAnimate);
+            }
+        }
+    };
+    this.desc = "<em>Frappe préventive :</em> Gagne +5/+7 pour chaque famille alliée différente, ainsi que <em>Bouclier</em> s'il y en a au moins 2 et <em>Contact mortel</em> s'il y en a au moins 4.";
+}
+
+
+
 
 async function effectProcGlow(card) {
     let c = findDOMCard(card);
