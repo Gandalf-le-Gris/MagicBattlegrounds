@@ -1,3 +1,19 @@
+function resizeScreen() {
+    let width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+    let height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    let wratio = width / 1536;
+    let hratio = height / 864;
+    let ratio = Math.max(wratio, hratio);
+    document.body.style.transform = "scale(" + ratio + ")";
+    document.body.style.left = "-" + (1536 * (1 - ratio) / 2) + "px";
+    document.body.style.top = "-" + (864 * (1 - ratio) / 2) + "px";
+};
+
+window.onresize = resizeScreen;
+resizeScreen();
+
+
+
 /* ----------------------------------------------------- */
 /* -------------------- Home screen -------------------- */
 /* ----------------------------------------------------- */
@@ -65,9 +81,9 @@ let currentScene;
 async function startGame() {
     await fadeTransition(() => {
         initCards();
-        shopTier = 6; //!!!
+        shopTier = 1; //!!!
         round = 1;
-        coins = 1000; //!!!
+        coins = 3; //!!!
         players = [];
         for (let i = 0; i < 8; i++) {
             lastFights.push([]);
@@ -500,7 +516,7 @@ async function increaseShopTier() {
         let banner = document.createElement('div');
         banner.className = "shop-banner";
         banner.id = "shop-banner";
-        banner.innerHTML = "Recrutement amélioré";
+        banner.innerHTML = "Recrutement amÃ©liorÃ©";
         document.body.appendChild(banner);
         setTimeout(() => {
             document.body.removeChild(document.getElementById("shop-banner"));
@@ -556,7 +572,7 @@ function dragStart() {
         this.style.pointerEvents = "none";
     });
 
-    if (this.card && this.card.species == "Sortilège" && this.card.validTarget.area == "any")
+    if (this.card && this.card.species == "SortilÃ¨ge" && this.card.validTarget.area == "any")
         document.getElementById("spell-area").style.pointerEvents = "all";
 }
 
@@ -574,17 +590,17 @@ function dragEnd() {
 async function dragDrop() {
     let card = dragItem;
     dragItem = undefined;
-    if (document.getElementById("hand").contains(card) && this.className == "spell-area" && card.card.species == "Sortilège" && card.card.validTarget.area == "any")
+    if (document.getElementById("hand").contains(card) && this.className == "spell-area" && card.card.species == "SortilÃ¨ge" && card.card.validTarget.area == "any")
         playSpell(card, undefined);
     else if (document.getElementById("shop").contains(card) && this.className == "hand" && this.children[0].children.length < 6)
         buyCard(card);
     else if (!document.getElementById("shop").contains(card) && this.className == "shop")
         sellCard(card);
-    else if (document.getElementById("hand").contains(card) && this.name == "position" && this.children.length == 0 && card.card.species != "Sortilège")
+    else if (document.getElementById("hand").contains(card) && this.name == "position" && this.children.length == 0 && card.card.species != "SortilÃ¨ge")
         placeCard(this, card);
     else if (card.classList.contains("small-card") && this.name == "position")
         moveCard(this, card);
-    else if (document.getElementById("hand").contains(card) && this.name == "position" && this.children[0] && card.card.species == "Sortilège" && canPlaySpell(card.card, this.children[0].card, "board"))
+    else if (document.getElementById("hand").contains(card) && this.name == "position" && this.children[0] && card.card.species == "SortilÃ¨ge" && canPlaySpell(card.card, this.children[0].card, "board"))
         playSpell(card, this.children[0]);
 }
 
@@ -716,6 +732,8 @@ async function runBattle(p1, p2, doAnimate) {
         turn = !turn;
         finish = getWinner(t1, t2);
     }
+    if (nTurn == 2000)
+        alert("!!!!!!!!!!!!!!!")
 
     if (finish == 1)
         console.log(p1 + " won against " + p2);
@@ -1000,6 +1018,8 @@ async function checkKO(c, d, t1, t2, p1, p2, turn, doAnimate) {
                 d.children[0].style.removeProperty("filter");
                 d.children[0].style.removeProperty("opacity");
                 await sleep(500);
+            } else {
+                delete c.revive;
             }
         } else {
             if (owner) {
@@ -1097,7 +1117,7 @@ async function drawShopScene() {
 
         let banner = document.createElement('div');
         banner.className = "end-banner";
-        banner.innerHTML = "Défaite";
+        banner.innerHTML = "DÃ©faite";
         filter.appendChild(banner);
 
         let players2 = copy(players);
@@ -1106,7 +1126,7 @@ async function drawShopScene() {
 
         let place = document.createElement('div');
         place.className = "end-position";
-        place.innerHTML = "Votre place : " + n + "<sup>ème</sup>";
+        place.innerHTML = "Votre place : " + n + "<sup>Ã¨me</sup>";
         filter.appendChild(place);
 
         let cont = document.createElement('div');
@@ -1221,18 +1241,18 @@ async function drawShopScene() {
 /* ------------------ Card management ------------------ */
 /* ----------------------------------------------------- */
 
-const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant"];
+const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "BÃªte", "Mort-Vivant"];
 
 const cardList = {
     "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste"],
+    "SortilÃ¨ge": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
     "Soldat": ["fantassin-en-armure", "capitaine-d-escouade", "protectrice-devouee", "ecraseuse-au-bouclier", "veteran-sylvebouclier", "general-ethere", "chevalier-loyal", "baliste-de-la-legion", "tacticien-de-la-legion", "commandante-sylvelame", "mentor-chevaleresque", "recrue-peureuse", "recruteur-de-la-legion", "paladin-inspirateur", "heroine-de-la-legion"],
     "Bandit": ["archere-aux-traits-de-feu", "voleuse-a-la-tire", "gredin-agile", "pilleur-de-bibliotheque", "siphonneuse-de-mana", "voleur-audacieux", "saboteur-masque", "passe-muraille", "ombre-sans-visage", "pillarde-inconsciente", "lanceuse-de-dagues", "piegeuse-d-ames", "receleur-de-tresors", "assassin-silencieux", "voleur-de-pensees"],
     "Machine": ["planeur-de-fortune", "renard-mecanique", "colosse-adaptatif", "protecteur-de-la-cite", "golem-cinetique", "carcasse-mecanophage", "automate-replicateur", "artisan-gadgetiste", "baliste-ambulante", "automate-manaforme", "auto-duplicateur", "chef-de-la-proliferation", "ouvrier-assembleur", "garde-de-fer", "robot-astiqueur"],
-    "Bête": ["predateur-en-chasse", "devoreur-sauvage", "chasseur-bondissant", "guivre-colossale", "gardien-de-la-foret", "ame-rugissante", "colonie-de-rats", "hydre-vorace", "hydre-enragee", "avatar-de-la-predation", "alligator-charognard", "meneuse-de-betes", "hurleur-des-sylves", "chargeur-cuirasse", "mastodonte-galopant"],
+    "BÃªte": ["predateur-en-chasse", "devoreur-sauvage", "chasseur-bondissant", "guivre-colossale", "gardien-de-la-foret", "ame-rugissante", "colonie-de-rats", "hydre-vorace", "hydre-enragee", "avatar-de-la-predation", "alligator-charognard", "meneuse-de-betes", "hurleur-des-sylves", "chargeur-cuirasse", "mastodonte-galopant"],
     "Mort-Vivant": ["serviteur-exhume", "squelette-reconstitue", "archer-squelette", "liche-profanatrice", "devoreur-pourrissant", "eveilleur-d-ames", "creation-abjecte", "necromancienne-corrompue", "raccommodeur-de-cadavres", "guerrier-maudit", "crane-possede", "dragon-decharne", "marcheur-eternel", "soldat-revenu-a-la-vie", "assistant-du-raccommodeur"],
     "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"]
 };
@@ -1250,15 +1270,15 @@ function initCards() {
             species.push(s);
     }
 
-    for (let s of speciesList)
-        cardList[s] = [cardList[s][0]]; //!!!
+    //for (let s of speciesList)
+    //    cardList[s] = [cardList[s][0]]; //!!!
 
-    for (let s of species.concat(["Sortilège", "Autre"])) {
+    for (let s of species.concat(["SortilÃ¨ge", "Autre"])) {
         for (let c of cardList[s])
             for (let i = 0; i < 15; i++) {
                 let card = createCard(c);
                 if (!card.requirement || species.includes(card.requirement))
-                    if (!card.requirement) //!!!
+                    //if (!card.requirement) //!!!
                     cards.push(createCard(c));
             }
     }
@@ -1651,7 +1671,7 @@ function createCard(card) {
 // Commandants
 
 function CommandantDeLaLegion() {
-    this.name = "Commandant de la Légion";
+    this.name = "Commandant de la LÃ©gion";
     this.species = "Commandant";
     this.attack = -1;
     this.hp = 32;
@@ -1710,7 +1730,7 @@ function TyranDraconique() {
 }
 
 function InstructriceDeLAcademie() {
-    this.name = "Instructrice de l'Académie";
+    this.name = "Instructrice de l'AcadÃ©mie";
     this.species = "Commandant";
     this.attack = -1;
     this.hp = 30;
@@ -1725,7 +1745,7 @@ function InstructriceDeLAcademie() {
 }
 
 function LOmbreEtheree() {
-    this.name = "L'Ombre étherée";
+    this.name = "L'Ombre Ã©therÃ©e";
     this.species = "Commandant";
     this.attack = -1;
     this.hp = 30;
@@ -1760,7 +1780,7 @@ function ZoomancienneSylvestre() {
     this.attack = -1;
     this.hp = 30;
     this.src = "commandants/zoomancienne-sylvestre.jpg";
-    this.requirement = "Bête";
+    this.requirement = "BÃªte";
     this.effects = [
         {
             trigger: "turn-start",
@@ -1798,7 +1818,7 @@ function DiplomateAstucieux() {
 }
 
 function ChefDuClanFracassecrane() {
-    this.name = "Chef du clan Fracassecrâne";
+    this.name = "Chef du clan FracassecrÃ¢ne";
     this.species = "Commandant";
     this.attack = -1;
     this.hp = 40;
@@ -1812,7 +1832,7 @@ function ChefDuClanFracassecrane() {
 }
 
 function CollectionneurDAmes() {
-    this.name = "Collectionneur d'Âmes";
+    this.name = "Collectionneur d'Ã‚mes";
     this.species = "Commandant";
     this.attack = -1;
     this.hp = 27;
@@ -1859,7 +1879,7 @@ function DragonnetArdent() {
 }
 
 function DragonEnchante() {
-    this.name = "Dragon enchanté";
+    this.name = "Dragon enchantÃ©";
     this.species = "Dragon";
     this.attack = 3;
     this.hp = 2;
@@ -1938,7 +1958,7 @@ function DragonCupide() {
 }
 
 function MeneuseDeProgeniture() {
-    this.name = "Meneuse de progéniture";
+    this.name = "Meneuse de progÃ©niture";
     this.species = "Dragon";
     this.attack = 4;
     this.hp = 4;
@@ -2002,7 +2022,7 @@ function TyranSolitaire() {
 }
 
 function DevoreurInsatiable() {
-    this.name = "Dévoreur insatiable";
+    this.name = "DÃ©voreur insatiable";
     this.species = "Dragon";
     this.attack = 5;
     this.hp = 6;
@@ -2048,7 +2068,7 @@ function ChasseurEcailleux() {
 }
 
 function GardienDuTresor() {
-    this.name = "Gardien du trésor";
+    this.name = "Gardien du trÃ©sor";
     this.species = "Dragon";
     this.attack = 7;
     this.hp = 6;
@@ -2063,7 +2083,7 @@ function GardienDuTresor() {
 }
 
 function ProtecteurBrillecaille() {
-    this.name = "Protecteur Brillécaille";
+    this.name = "Protecteur BrillÃ©caille";
     this.species = "Dragon";
     this.attack = 6;
     this.hp = 5;
@@ -2078,8 +2098,8 @@ function ProtecteurBrillecaille() {
 }
 
 function TresorDuDragon() {
-    this.name = "Trésor du dragon";
-    this.species = "Sortilège";
+    this.name = "TrÃ©sor du dragon";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "dragons/tresor-du-dragon.jpg";
@@ -2101,8 +2121,8 @@ function TresorDuDragon() {
 }
 
 function RecitDesLegendes() {
-    this.name = "Récit des légendes";
-    this.species = "Sortilège";
+    this.name = "RÃ©cit des lÃ©gendes";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "dragons/recit-des-legendes.jpg";
@@ -2154,7 +2174,7 @@ function AgitateurGobelin() {
 }
 
 function BatailleurFrenetique() {
-    this.name = "Batailleur frénétique";
+    this.name = "Batailleur frÃ©nÃ©tique";
     this.species = "Gobelin";
     this.attack = 2;
     this.hp = 2;
@@ -2230,7 +2250,7 @@ function ArtisanForgemalice() {
 }
 
 function ChampionDeFracassecrane() {
-    this.name = "Champion de Fracassecrâne";
+    this.name = "Champion de FracassecrÃ¢ne";
     this.species = "Gobelin";
     this.attack = 3;
     this.hp = 6;
@@ -2245,7 +2265,7 @@ function ChampionDeFracassecrane() {
 }
 
 function SpecialisteEnExplosions() {
-    this.name = "Spécialiste en explosions";
+    this.name = "SpÃ©cialiste en explosions";
     this.species = "Gobelin";
     this.attack = 5;
     this.hp = 3;
@@ -2351,7 +2371,7 @@ function ChefDeGuerreGobelin() {
 
 function HordeInfinie() {
     this.name = "Horde infinie";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "gobelins/horde-infinie.jpg";
@@ -2371,7 +2391,7 @@ function HordeInfinie() {
 
 function GobelinBondissant() {
     this.name = "Gobelin bondissant";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "gobelins/gobelin-bondissant.jpg";
@@ -2421,7 +2441,7 @@ function PyromancienneNovice() {
 
 function InvocationMineure() {
     this.name = "Invocation mineure";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "sorciers/invocation-mineure.jpg";
@@ -2439,7 +2459,7 @@ function InvocationMineure() {
 }
 
 function PrecheurDeLEquilibre() {
-    this.name = "Prêcheur de l'Équilibre";
+    this.name = "PrÃªcheur de l'Ã‰quilibre";
     this.species = "Sorcier";
     this.attack = 3;
     this.hp = 3;
@@ -2454,7 +2474,7 @@ function PrecheurDeLEquilibre() {
 }
 
 function MageReflecteur() {
-    this.name = "Mage réflecteur";
+    this.name = "Mage rÃ©flecteur";
     this.species = "Sorcier";
     this.attack = 2;
     this.hp = 3;
@@ -2474,7 +2494,7 @@ function MageReflecteur() {
 
 function JavelotDeFeu() {
     this.name = "Javelot de feu";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "sorciers/javelot-de-feu.jpg";
@@ -2523,8 +2543,8 @@ function AmasseurDePuissance() {
 }
 
 function EchoArcanique() {
-    this.name = "Écho arcanique";
-    this.species = "Sortilège";
+    this.name = "Ã‰cho arcanique";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "sorciers/echo-arcanique.jpg";
@@ -2542,7 +2562,7 @@ function EchoArcanique() {
 }
 
 function MaitresseDesIllusions() {
-    this.name = "Maîtresse des illusions";
+    this.name = "MaÃ®tresse des illusions";
     this.species = "Sorcier";
     this.attack = 4;
     this.hp = 6;
@@ -2557,7 +2577,7 @@ function MaitresseDesIllusions() {
 }
 
 function CreationDeFoudre() {
-    this.name = "Création de foudre";
+    this.name = "CrÃ©ation de foudre";
     this.species = "Sorcier";
     this.attack = 6;
     this.hp = 3;
@@ -2576,7 +2596,7 @@ function CreationDeFoudre() {
 }
 
 function ReservoirDePuissance() {
-    this.name = "Réservoir de puissance";
+    this.name = "RÃ©servoir de puissance";
     this.species = "Autre";
     this.attack = 0;
     this.hp = 2;
@@ -2596,7 +2616,7 @@ function ReservoirDePuissance() {
 
 function PortailDInvocation() {
     this.name = "Portail d'invocation";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "sorciers/portail-d-invocation.jpg";
@@ -2667,8 +2687,8 @@ function ArchimageOmnipotent() {
 }
 
 function SecretsDeLaBibliotheque() {
-    this.name = "Secrets de la bibliothèque";
-    this.species = "Sortilège";
+    this.name = "Secrets de la bibliothÃ¨que";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "sorciers/secrets-de-la-bibliotheque.jpg";
@@ -2732,7 +2752,7 @@ function CapitaineDEscouade() {
 }
 
 function RecruteurDeLaLegion() {
-    this.name = "Recruteur de la Légion";
+    this.name = "Recruteur de la LÃ©gion";
     this.species = "Soldat";
     this.attack = 4;
     this.hp = 3;
@@ -2748,7 +2768,7 @@ function RecruteurDeLaLegion() {
 
 function NobleCamaraderie() {
     this.name = "Noble camaraderie";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "soldats/noble-camaraderie.jpg";
@@ -2767,7 +2787,7 @@ function NobleCamaraderie() {
 }
 
 function EcraseuseAuBouclier() {
-    this.name = "Écraseuse au bouclier";
+    this.name = "Ã‰craseuse au bouclier";
     this.species = "Soldat";
     this.attack = 5;
     this.hp = 3;
@@ -2786,7 +2806,7 @@ function EcraseuseAuBouclier() {
     ];
 }
 function BalisteDeLaLegion() {
-    this.name = "Baliste de la Légion";
+    this.name = "Baliste de la LÃ©gion";
     this.species = "Soldat";
     this.attack = 6;
     this.hp = 2;
@@ -2818,7 +2838,7 @@ function CommandanteSylvelame() {
 
 function ProtectionDUrgence() {
     this.name = "Protection d'urgence";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "soldats/protection-d-urgence.jpg";
@@ -2836,7 +2856,7 @@ function ProtectionDUrgence() {
 }
 
 function ProtectriceDevouee() {
-    this.name = "Protectrice dévouée";
+    this.name = "Protectrice dÃ©vouÃ©e";
     this.species = "Soldat";
     this.attack = 4;
     this.hp = 4;
@@ -2851,7 +2871,7 @@ function ProtectriceDevouee() {
 }
 
 function TacticienDeLaLegion() {
-    this.name = "Tacticien de la Légion";
+    this.name = "Tacticien de la LÃ©gion";
     this.species = "Soldat";
     this.attack = 3;
     this.hp = 5;
@@ -2881,7 +2901,7 @@ function MentorChevaleresque() {
 }
 
 function VeteranSylvebouclier() {
-    this.name = "Vétéran Sylvebouclier";
+    this.name = "VÃ©tÃ©ran Sylvebouclier";
     this.species = "Soldat";
     this.attack = 1;
     this.hp = 7;
@@ -2912,7 +2932,7 @@ function ChevalierLoyal() {
 }
 
 function HeroineDeLaLegion() {
-    this.name = "Héroïne de la Légion";
+    this.name = "HÃ©roÃ¯ne de la LÃ©gion";
     this.species = "Soldat";
     this.attack = 5;
     this.hp = 7;
@@ -2927,7 +2947,7 @@ function HeroineDeLaLegion() {
 }
 
 function GeneralEthere() {
-    this.name = "Général étheré";
+    this.name = "GÃ©nÃ©ral Ã©therÃ©";
     this.species = "Soldat";
     this.attack = 3;
     this.hp = 7;
@@ -2965,7 +2985,7 @@ function PaladinInspirateur() {
 // Bandits
 
 function ArchereAuxTraitsDeFeu() {
-    this.name = "Archère aux traits de feu";
+    this.name = "ArchÃ¨re aux traits de feu";
     this.species = "Bandit";
     this.attack = 1;
     this.hp = 4;
@@ -2993,7 +3013,7 @@ function GredinAgile() {
 }
 
 function VoleuseALaTire() {
-    this.name = "Voleuse à la tire";
+    this.name = "Voleuse Ã  la tire";
     this.species = "Bandit";
     this.attack = 1;
     this.hp = 1;
@@ -3008,7 +3028,7 @@ function VoleuseALaTire() {
 }
 
 function PilleurDeBibliotheque() {
-    this.name = "Pilleur de bibliothèque";
+    this.name = "Pilleur de bibliothÃ¨que";
     this.species = "Bandit";
     this.attack = 2;
     this.hp = 2;
@@ -3089,7 +3109,7 @@ function LanceuseDeDagues() {
 
 function Corruption() {
     this.name = "Corruption";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "bandits/corruption.jpg";
@@ -3123,7 +3143,7 @@ function PasseMuraille() {
 }
 
 function PiegeuseDAmes() {
-    this.name = "Piégeuse d'âmes";
+    this.name = "PiÃ©geuse d'Ã¢mes";
     this.species = "Bandit";
     this.attack = 6;
     this.hp = 5;
@@ -3138,7 +3158,7 @@ function PiegeuseDAmes() {
 }
 
 function VoleurDePensees() {
-    this.name = "Voleur de pensées";
+    this.name = "Voleur de pensÃ©es";
     this.species = "Bandit";
     this.attack = 4;
     this.hp = 4;
@@ -3154,7 +3174,7 @@ function VoleurDePensees() {
 
 function BonTuyau() {
     this.name = "Bon tuyau";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "bandits/bon-tuyau.jpg";
@@ -3172,7 +3192,7 @@ function BonTuyau() {
 }
 
 function SaboteurMasque() {
-    this.name = "Saboteur masqué";
+    this.name = "Saboteur masquÃ©";
     this.species = "Bandit";
     this.attack = 1;
     this.hp = 2;
@@ -3202,7 +3222,7 @@ function PillardeInconsciente() {
 }
 
 function ReceleurDeTresors() {
-    this.name = "Receleur de trésors";
+    this.name = "Receleur de trÃ©sors";
     this.species = "Bandit";
     this.attack = 5;
     this.hp = 8;
@@ -3252,7 +3272,7 @@ function PlaneurDeFortune() {
 }
 
 function RenardMecanique() {
-    this.name = "Renard mécanique";
+    this.name = "Renard mÃ©canique";
     this.species = "Machine";
     this.attack = 2;
     this.hp = 3;
@@ -3282,7 +3302,7 @@ function GardeDeFer() {
 }
 
 function ProtecteurDeLaCite() {
-    this.name = "Protecteur de la cité";
+    this.name = "Protecteur de la citÃ©";
     this.species = "Machine";
     this.attack = 3;
     this.hp = 4;
@@ -3326,13 +3346,17 @@ function RobotAstiqueur() {
         {
             trigger: "card-place",
             id: 618
+        },
+        {
+            trigger: "turn-start",
+            id: 622
         }
     ];
 }
 
 function ReplicationMecanique() {
-    this.name = "Réplication mécanique";
-    this.species = "Sortilège";
+    this.name = "RÃ©plication mÃ©canique";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "machines/replication-mecanique.jpg";
@@ -3366,7 +3390,7 @@ function ColosseAdaptatif() {
 }
 
 function GolemCinetique() {
-    this.name = "Golem cinétique";
+    this.name = "Golem cinÃ©tique";
     this.species = "Machine";
     this.attack = 5;
     this.hp = 4;
@@ -3381,7 +3405,7 @@ function GolemCinetique() {
 }
 
 function CarcasseMecanophage() {
-    this.name = "Carcasse mécanophage";
+    this.name = "Carcasse mÃ©canophage";
     this.species = "Machine";
     this.attack = 6;
     this.hp = 4;
@@ -3411,7 +3435,7 @@ function AutomateManaforme() {
 }
 
 function ChefDeLaProliferation() {
-    this.name = "Chef de la Prolifération";
+    this.name = "Chef de la ProlifÃ©ration";
     this.species = "Machine";
     this.attack = 4;
     this.hp = 6;
@@ -3457,7 +3481,7 @@ function OuvrierAssembleur() {
 }
 
 function ArtisanGadgetiste() {
-    this.name = "Artisan gadgétiste";
+    this.name = "Artisan gadgÃ©tiste";
     this.species = "Autre";
     this.attack = 5;
     this.hp = 5;
@@ -3472,7 +3496,7 @@ function ArtisanGadgetiste() {
 }
 
 function AutomateReplicateur() {
-    this.name = "Automate réplicateur";
+    this.name = "Automate rÃ©plicateur";
     this.species = "Machine";
     this.attack = 6;
     this.hp = 6;
@@ -3487,8 +3511,8 @@ function AutomateReplicateur() {
 }
 
 function RevisionsMecaniques() {
-    this.name = "Révisions mécaniques";
-    this.species = "Sortilège";
+    this.name = "RÃ©visions mÃ©caniques";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "machines/revisions-mecaniques.jpg";
@@ -3507,11 +3531,11 @@ function RevisionsMecaniques() {
 }
 
 
-// Bêtes
+// BÃªtes
 
 function PredateurEnChasse() {
-    this.name = "Prédateur en chasse";
-    this.species = "Bête";
+    this.name = "PrÃ©dateur en chasse";
+    this.species = "BÃªte";
     this.attack = 2;
     this.hp = 2;
     this.src = "betes/predateur-en-chasse.jpg";
@@ -3525,8 +3549,8 @@ function PredateurEnChasse() {
 }
 
 function DevoreurSauvage() {
-    this.name = "Dévoreur sauvage";
-    this.species = "Bête";
+    this.name = "DÃ©voreur sauvage";
+    this.species = "BÃªte";
     this.attack = 1;
     this.hp = 1;
     this.src = "betes/devoreur-sauvage.jpg";
@@ -3541,7 +3565,7 @@ function DevoreurSauvage() {
 
 function ChasseurBondissant() {
     this.name = "Chasseur bondissant";
-    this.species = "Bête";
+    this.species = "BÃªte";
     this.attack = 2;
     this.hp = 2;
     this.src = "betes/chasseur-bondissant.jpg";
@@ -3555,8 +3579,8 @@ function ChasseurBondissant() {
 }
 
 function AmeRugissante() {
-    this.name = "Âme rugissante";
-    this.species = "Bête";
+    this.name = "Ã‚me rugissante";
+    this.species = "BÃªte";
     this.attack = 2;
     this.hp = 3;
     this.src = "betes/ame-rugissante.jpg";
@@ -3570,13 +3594,13 @@ function AmeRugissante() {
 }
 
 function ChasseBenie() {
-    this.name = "Bénédiction de chasse";
-    this.species = "Sortilège";
+    this.name = "BÃ©nÃ©diction de chasse";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "betes/chasse-benie.jpg";
     this.tier = 2;
-    this.requirement = "Bête";
+    this.requirement = "BÃªte";
     this.effects = [
         {
             trigger: "",
@@ -3590,7 +3614,7 @@ function ChasseBenie() {
 
 function HurleurDesSylves() {
     this.name = "Hurleur des sylves";
-    this.species = "Bête";
+    this.species = "BÃªte";
     this.attack = 4;
     this.hp = 3;
     this.src = "betes/hurleur-des-sylves.jpg";
@@ -3605,7 +3629,7 @@ function HurleurDesSylves() {
 
 function ColonieDeRats() {
     this.name = "Colonie de rats";
-    this.species = "Bête";
+    this.species = "BÃªte";
     this.attack = 5;
     this.hp = 3;
     this.src = "betes/colonie-de-rats.jpg";
@@ -3620,7 +3644,7 @@ function ColonieDeRats() {
 
 function HydreVorace() {
     this.name = "Hydre vorace";
-    this.species = "Bête";
+    this.species = "BÃªte";
     this.attack = 4;
     this.hp = 4;
     this.src = "betes/hydre-vorace.jpg";
@@ -3634,8 +3658,8 @@ function HydreVorace() {
 }
 
 function ChargeurCuirasse() {
-    this.name = "Chargeur cuirassé";
-    this.species = "Bête";
+    this.name = "Chargeur cuirassÃ©";
+    this.species = "BÃªte";
     this.attack = 1;
     this.hp = 1;
     this.src = "betes/chargeur-cuirasse.jpg";
@@ -3651,7 +3675,7 @@ function ChargeurCuirasse() {
 
 function GuivreColossale() {
     this.name = "Guivre colossale";
-    this.species = "Bête";
+    this.species = "BÃªte";
     this.attack = 4;
     this.hp = 4;
     this.src = "betes/guivre-colossale.jpg";
@@ -3666,7 +3690,7 @@ function GuivreColossale() {
 
 function AlligatorCharognard() {
     this.name = "Alligator charognard";
-    this.species = "Bête";
+    this.species = "BÃªte";
     this.attack = 5;
     this.hp = 6;
     this.src = "betes/alligator-charognard.jpg";
@@ -3681,12 +3705,12 @@ function AlligatorCharognard() {
 
 function Traque() {
     this.name = "Traque";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "betes/traque.jpg";
     this.tier = 4;
-    this.requirement = "Bête";
+    this.requirement = "BÃªte";
     this.effects = [
         {
             trigger: "",
@@ -3699,8 +3723,8 @@ function Traque() {
 }
 
 function GardienDeLaForet() {
-    this.name = "Gardien de la forêt";
-    this.species = "Bête";
+    this.name = "Gardien de la forÃªt";
+    this.species = "BÃªte";
     this.attack = 4;
     this.hp = 6;
     this.src = "betes/gardien-de-la-foret.jpg";
@@ -3714,8 +3738,8 @@ function GardienDeLaForet() {
 }
 
 function HydreEnragee() {
-    this.name = "Hydre enragée";
-    this.species = "Bête";
+    this.name = "Hydre enragÃ©e";
+    this.species = "BÃªte";
     this.attack = 7;
     this.hp = 7;
     this.src = "betes/hydre-enragee.jpg";
@@ -3744,8 +3768,8 @@ function MastodonteGalopant() {
 }
 
 function AvatarDeLaPredation() {
-    this.name = "Avatar de la prédation";
-    this.species = "Bête";
+    this.name = "Avatar de la prÃ©dation";
+    this.species = "BÃªte";
     this.attack = 8;
     this.hp = 6;
     this.src = "betes/avatar-de-la-predation.jpg";
@@ -3759,7 +3783,7 @@ function AvatarDeLaPredation() {
 }
 
 function MeneuseDeBetes() {
-    this.name = "Meneuse de bêtes";
+    this.name = "Meneuse de bÃªtes";
     this.species = "Autre";
     this.attack = 4;
     this.hp = 9;
@@ -3777,7 +3801,7 @@ function MeneuseDeBetes() {
 // Morts-vivants
 
 function ServiteurExhume() {
-    this.name = "Serviteur exhumé";
+    this.name = "Serviteur exhumÃ©";
     this.species = "Mort-Vivant";
     this.attack = 2;
     this.hp = 1;
@@ -3790,7 +3814,7 @@ function ServiteurExhume() {
 }
 
 function SqueletteReconstitue() {
-    this.name = "Squelette reconstitué";
+    this.name = "Squelette reconstituÃ©";
     this.species = "Mort-Vivant";
     this.attack = 1;
     this.hp = 3;
@@ -3837,7 +3861,7 @@ function GuerrierMaudit() {
 }
 
 function SoldatRevenuALaVie() {
-    this.name = "Soldat revenu à la vie";
+    this.name = "Soldat revenu Ã  la vie";
     this.species = "Mort-Vivant";
     this.attack = 1;
     this.hp = 1;
@@ -3853,7 +3877,7 @@ function SoldatRevenuALaVie() {
 }
 
 function DevoreurPourrissant() {
-    this.name = "Dévoreur pourrissant";
+    this.name = "DÃ©voreur pourrissant";
     this.species = "Mort-Vivant";
     this.attack = 4;
     this.hp = 3;
@@ -3868,7 +3892,7 @@ function DevoreurPourrissant() {
 }
 
 function EveilleurDAmes() {
-    this.name = "Eveilleur d'âmes";
+    this.name = "Eveilleur d'Ã¢mes";
     this.species = "Mort-Vivant";
     this.attack = 3;
     this.hp = 3;
@@ -3898,7 +3922,7 @@ function AssistantDuRaccommodeur() {
 }
 
 function DragonDecharne() {
-    this.name = "Dragon décharné";
+    this.name = "Dragon dÃ©charnÃ©";
     this.species = "Mort-Vivant";
     this.attack = 5;
     this.hp = 3;
@@ -3914,7 +3938,7 @@ function DragonDecharne() {
 }
 
 function CranePossede() {
-    this.name = "Crâne possédé";
+    this.name = "CrÃ¢ne possÃ©dÃ©";
     this.species = "Mort-Vivant";
     this.attack = 1;
     this.hp = 7;
@@ -3929,7 +3953,7 @@ function CranePossede() {
 }
 
 function NecromancienneCorrompue() {
-    this.name = "Nécromancienne corrompue";
+    this.name = "NÃ©cromancienne corrompue";
     this.species = "Autre";
     this.attack = 2;
     this.hp = 6;
@@ -3948,7 +3972,7 @@ function NecromancienneCorrompue() {
 }
 
 function CreationAbjecte() {
-    this.name = "Création abjecte";
+    this.name = "CrÃ©ation abjecte";
     this.species = "Mort-Vivant";
     this.attack = 4;
     this.hp = 4;
@@ -3964,7 +3988,7 @@ function CreationAbjecte() {
 
 function RegainDeVie() {
     this.name = "Regain de vie";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "morts-vivants/regain-de-vie.jpg";
@@ -3983,7 +4007,7 @@ function RegainDeVie() {
 }
 
 function MarcheurEternel() {
-    this.name = "Marcheur éternel";
+    this.name = "Marcheur Ã©ternel";
     this.species = "Mort-Vivant";
     this.attack = 6;
     this.hp = 1;
@@ -4030,7 +4054,7 @@ function RaccommodeurDeCadavres() {
 
 function RiteDeSang() {
     this.name = "Rite de sang";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "morts-vivants/rite-de-sang.jpg";
@@ -4052,7 +4076,7 @@ function RiteDeSang() {
 // Autre
 
 function AngeDeLUnite() {
-    this.name = "Ange de l'unité";
+    this.name = "Ange de l'unitÃ©";
     this.species = "Autre";
     this.attack = 2;
     this.hp = 3;
@@ -4067,7 +4091,7 @@ function AngeDeLUnite() {
 }
 
 function ChangeformeMasque() {
-    this.name = "Changeforme masqué";
+    this.name = "Changeforme masquÃ©";
     this.species = "Autre";
     this.attack = 3;
     this.hp = 3;
@@ -4097,7 +4121,7 @@ function AngeGuerrier() {
 }
 
 function GuideAngelique() {
-    this.name = "Guide angélique";
+    this.name = "Guide angÃ©lique";
     this.species = "Autre";
     this.attack = 2;
     this.hp = 4;
@@ -4112,7 +4136,7 @@ function GuideAngelique() {
 }
 
 function ArchangeEclatant() {
-    this.name = "Archange éclatant";
+    this.name = "Archange Ã©clatant";
     this.species = "Autre";
     this.attack = 7;
     this.hp = 7;
@@ -4127,7 +4151,7 @@ function ArchangeEclatant() {
 }
 
 function CombattantCeleste() {
-    this.name = "Combattant céleste";
+    this.name = "Combattant cÃ©leste";
     this.species = "Autre";
     this.attack = 6;
     this.hp = 6;
@@ -4146,7 +4170,7 @@ function CombattantCeleste() {
 
 function Aiguisage() {
     this.name = "Aiguisage";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "sortileges/aiguisage.jpg";
@@ -4163,8 +4187,8 @@ function Aiguisage() {
 }
 
 function ReunionCeleste() {
-    this.name = "Réunion céleste";
-    this.species = "Sortilège";
+    this.name = "RÃ©union cÃ©leste";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "sortileges/reunion-celeste.jpg";
@@ -4185,7 +4209,7 @@ function ReunionCeleste() {
 
 function PieceDOr() {
     this.name = "Piece d'or";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "sortileges/piece-d-or.jpg";
@@ -4203,7 +4227,7 @@ function PieceDOr() {
 
 function ProieFacile() {
     this.name = "Proie facile";
-    this.species = "Bête";
+    this.species = "BÃªte";
     this.attack = 0;
     this.hp = 1;
     this.src = "betes/proie-facile.jpg";
@@ -4214,7 +4238,7 @@ function ProieFacile() {
 }
 
 function ScionAspirame() {
-    this.name = "Scion aspirâme";
+    this.name = "Scion aspirÃ¢me";
     this.species = "Autre";
     this.attack = 1;
     this.hp = 1;
@@ -4257,7 +4281,7 @@ function ArtificierGobelin() {
 
 function ConnaissancesArcaniques() {
     this.name = "Connaissances arcaniques";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "sorciers/connaissances-arcaniques.jpg";
@@ -4275,7 +4299,7 @@ function ConnaissancesArcaniques() {
 
 function CatalyseurDePuissance() {
     this.name = "Catalyseur de puissance";
-    this.species = "Sortilège";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "sorciers/catalyseur-de-puissance.jpg";
@@ -4292,8 +4316,8 @@ function CatalyseurDePuissance() {
 }
 
 function EquilibreNaturel() {
-    this.name = "Équilibre naturel";
-    this.species = "Sortilège";
+    this.name = "Ã‰quilibre naturel";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "sorciers/equilibre-naturel.jpg";
@@ -4310,8 +4334,8 @@ function EquilibreNaturel() {
 }
 
 function Dephasage() {
-    this.name = "Déphasage";
-    this.species = "Sortilège";
+    this.name = "DÃ©phasage";
+    this.species = "SortilÃ¨ge";
     this.attack = -1;
     this.hp = -1;
     this.src = "sorciers/dephasage.jpg";
@@ -4328,7 +4352,7 @@ function Dephasage() {
 }
 
 function AutomateReplicateurMod() {
-    this.name = "Automate réplicateur";
+    this.name = "Automate rÃ©plicateur";
     this.species = "Machine";
     this.attack = 6;
     this.hp = 6;
@@ -4355,7 +4379,7 @@ function AutoDuplicateurMod() {
 }
 
 function OuvrierAssemble() {
-    this.name = "Ouvrier assemblé";
+    this.name = "Ouvrier assemblÃ©";
     this.species = "Machine";
     this.attack = 2;
     this.hp = 3;
@@ -4568,57 +4592,57 @@ function showCardTooltip(c) {
 
     if (c.shield || containsKeyword(c, "Bouclier")) {
         let shield = document.createElement('div');
-        shield.innerHTML = "<em>Bouclier :</em> Annule les premiers dégâts subis chaque combat.";
+        shield.innerHTML = "<em>Bouclier :</em> Annule les premiers dÃ©gÃ¢ts subis chaque combat.";
         tips.appendChild(shield);
     }
-    if (c.revive || containsKeyword(c, "Résurrection")) {
+    if (c.revive || containsKeyword(c, "RÃ©surrection")) {
         let shield = document.createElement('div');
-        shield.innerHTML = "<em>Résurrection :</em> Ressuscite avec 1PV après la première mort.";
+        shield.innerHTML = "<em>RÃ©surrection :</em> Ressuscite avec 1PV aprÃ¨s la premiÃ¨re mort.";
         tips.appendChild(shield);
     }
-    if (c.range || containsKeyword(c, "Portée")) {
+    if (c.range || containsKeyword(c, "PortÃ©e")) {
         let shield = document.createElement('div');
-        shield.innerHTML = "<em>Portée :</em> Peut attaquer la ligne arrière.";
+        shield.innerHTML = "<em>PortÃ©e :</em> Peut attaquer la ligne arriÃ¨re.";
         tips.appendChild(shield);
     }
     if (c.deathtouch || containsKeyword(c, "Contact mortel")) {
         let shield = document.createElement('div');
-        shield.innerHTML = "<em>Contact mortel :</em> Tue instantanément les créatures qu'elle blesse.";
+        shield.innerHTML = "<em>Contact mortel :</em> Tue instantanÃ©ment les crÃ©atures qu'elle blesse.";
         tips.appendChild(shield);
     }
     if (containsKeyword(c, "Recrue")) {
         let shield = document.createElement('div');
-        shield.innerHTML = "<em>Recrue :</em> Se produit lorsque la créature est jouée.";
+        shield.innerHTML = "<em>Recrue :</em> Se produit lorsque la crÃ©ature est jouÃ©e.";
         tips.appendChild(shield);
     }
-    if (containsKeyword(c, "Dernière volonté")) {
+    if (containsKeyword(c, "DerniÃ¨re volontÃ©")) {
         let shield = document.createElement('div');
-        shield.innerHTML = "<em>Dernière volonté :</em> Se produit à la mort de la créature.";
+        shield.innerHTML = "<em>DerniÃ¨re volontÃ© :</em> Se produit Ã  la mort de la crÃ©ature.";
         tips.appendChild(shield);
     }
-    if (containsKeyword(c, "Frappe préventive")) {
+    if (containsKeyword(c, "Frappe prÃ©ventive")) {
         let shield = document.createElement('div');
-        shield.innerHTML = "<em>Frappe préventive :</em> Se produit au début du combat.";
+        shield.innerHTML = "<em>Frappe prÃ©ventive :</em> Se produit au dÃ©but du combat.";
         tips.appendChild(shield);
     }
     if (containsKeyword(c, "Rage")) {
         let shield = document.createElement('div');
-        shield.innerHTML = "<em>Rage :</em> Se produit lorsque la créature subit des dégâts.";
+        shield.innerHTML = "<em>Rage :</em> Se produit lorsque la crÃ©ature subit des dÃ©gÃ¢ts.";
         tips.appendChild(shield);
     }
     if (containsKeyword(c, "Reconfiguration")) {
         let shield = document.createElement('div');
-        shield.innerHTML = "<em>Reconfiguration :</em> Alterne entre plusieurs effets chaque début de tour.";
+        shield.innerHTML = "<em>Reconfiguration :</em> Alterne entre plusieurs effets chaque dÃ©but de tour.";
         tips.appendChild(shield);
     }
-    if (containsKeyword(c, "Dévore")) {
+    if (containsKeyword(c, "DÃ©vore")) {
         let shield = document.createElement('div');
-        shield.innerHTML = "<em>Dévore :</em> Détruit la créature ciblée et gagne ses statistiques.";
+        shield.innerHTML = "<em>DÃ©vore :</em> DÃ©truit la crÃ©ature ciblÃ©e et gagne ses statistiques.";
         tips.appendChild(shield);
     }
     if (containsKeyword(c, "Injouable")) {
         let shield = document.createElement('div');
-        shield.innerHTML = "<em>Injouable :</em> Ne peut qu'être revendu.";
+        shield.innerHTML = "<em>Injouable :</em> Ne peut qu'Ãªtre revendu.";
         tips.appendChild(shield);
     }
 
@@ -4639,9 +4663,9 @@ function getDescription(c) {
     if (c.shield)
         res += "<em>Bouclier</em>.</br>";
     if (c.revive)
-        res += "<em>Résurrection</em>.</br>";
+        res += "<em>RÃ©surrection</em>.</br>";
     if (c.range)
-        res += "<em>Portée</em>.</br>";
+        res += "<em>PortÃ©e</em>.</br>";
     if (c.deathtouch)
         res += "<em>Contact mortel</em>.</br>";
     for (let e of c.effects)
@@ -4944,6 +4968,8 @@ function createEffect(id) {
             return new Effect620();
         case 621:
             return new Effect621();
+        case 622:
+            return new Effect622();
         case 701:
             return new Effect701();
         case 702:
@@ -5049,7 +5075,7 @@ function Effect1() {
             await spendCoins(-1, false);
         }
     };
-    this.desc = "Gagnez 1 pièce d'or à chaque fois que vous achetez un Dragon.";
+    this.desc = "Gagnez 1 piÃ¨ce d'or Ã  chaque fois que vous achetez un Dragon.";
 }
 
 function Effect2() {
@@ -5063,7 +5089,7 @@ function Effect2() {
             }
         }
     };
-    this.desc = "Lorsque vous jouez une créature avec Bouclier, vos autres créatures avec Bouclier gagnent +1/+1.";
+    this.desc = "Lorsque vous jouez une crÃ©ature avec Bouclier, vos autres crÃ©atures avec Bouclier gagnent +1/+1.";
 }
 
 function Effect3() {
@@ -5074,7 +5100,7 @@ function Effect3() {
             await boostStats(args[0].card, 2, 3, doAnimate);
         }
     };
-    this.desc = "Confère +2/+3 aux créatures que vous jouez et que vous n'avez pas achetées.";
+    this.desc = "ConfÃ¨re +2/+3 aux crÃ©atures que vous jouez et que vous n'avez pas achetÃ©es.";
 }
 
 function Effect4() {
@@ -5087,7 +5113,7 @@ function Effect4() {
                 await dealDamage(target, 1, doAnimate, args[5]);
         }
     };
-    this.desc = "Lorsqu'un Gobelin allié meurt, inflige 1 dégât à une créature adverse aléatoire.";
+    this.desc = "Lorsqu'un Gobelin alliÃ© meurt, inflige 1 dÃ©gÃ¢t Ã  une crÃ©ature adverse alÃ©atoire.";
 }
 
 function Effect5() {
@@ -5106,7 +5132,7 @@ function Effect5() {
             }
         }
     };
-    this.desc = "<em>Frappe préventive :</em> La première créature alliée acquiert <em>Résurrection</em>.";
+    this.desc = "<em>Frappe prÃ©ventive :</em> La premiÃ¨re crÃ©ature alliÃ©e acquiert <em>RÃ©surrection</em>.";
 }
 
 function Effect6() {
@@ -5114,12 +5140,12 @@ function Effect6() {
         if (round % 2 == 0) {
             if (doAnimate)
                 await effectProcGlow(sender);
-            let card = getCard(shopTier, "Sortilège");
+            let card = getCard(shopTier, "SortilÃ¨ge");
             card.created = true;
             await addToHand(drawCard(card, 176));
         }
     };
-    this.desc = "Tous les 2 tours, ajoute un Sortilège aléatoire dans votre main.";
+    this.desc = "Tous les 2 tours, ajoute un SortilÃ¨ge alÃ©atoire dans votre main.";
 }
 
 function Effect7() {
@@ -5135,7 +5161,7 @@ function Effect7() {
                 await boostStats(args[0].card, 0, 0, doAnimate);
         }
     };
-    this.desc = "Confère \"<em>Reconfiguration :</em> Gagne +1/+0 <em>ou</em> Gagne +0/+1.\" aux Machines alliées.";
+    this.desc = "ConfÃ¨re \"<em>Reconfiguration :</em> Gagne +1/+0 <em>ou</em> Gagne +0/+1.\" aux Machines alliÃ©es.";
 }
 
 function Effect8() {
@@ -5153,17 +5179,21 @@ function Effect8() {
 
 function Effect9() {
     this.run = async (sender, args, doAnimate) => {
-        if (doAnimate)
-            await effectProcGlow(sender);
         let c = args[0].card;
-        for (let d of document.getElementById("board").children) {
-            if (d.children[0]) {
-                if (d.children[0].card.species != c.species)
-                    await boostStats(d.children[0].card, 1, 1, doAnimate);
+        if (c.species !== "SortilÃ¨ge" && c.species !== "Autre") {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let sp = copy(species);
+            sp.splice(sp.indexOf(c.species), 1);
+            shuffle(sp);
+            for (let s of sp) {
+                let t = choice(troops[0].filter(x => x && x.species == s));
+                if (t)
+                    await boostStats(t, 2, 2, doAnimate);
             }
         }
     };
-    this.desc = "Lorsque vous revendez une créature, confère +1/+1 aux créatures alliées d'autres familles.";
+    this.desc = "Lorsque vous revendez une crÃ©ature d'une famille, confÃ¨re +1/+1 Ã  une crÃ©ature alliÃ©e de chaque autre famille.";
 }
 
 function Effect10() {
@@ -5174,12 +5204,12 @@ function Effect10() {
             spendCoins(1 - lastResult);
         }
     };
-    this.desc = "Gagnez 1 pièce d'or au début de votre tour si vous n'avez pas gagné le dernier combat.";
+    this.desc = "Gagnez 1 piÃ¨ce d'or au dÃ©but de votre tour si vous n'avez pas gagnÃ© le dernier combat.";
 }
 
 function Effect11() {
     this.run = async (sender, args, doAnimate) => { };
-    this.desc = "Inflige 3 dégâts supplémentaires aux autres commandants.";
+    this.desc = "Inflige 3 dÃ©gÃ¢ts supplÃ©mentaires aux autres commandants.";
 }
 
 function Effect12() {
@@ -5190,7 +5220,7 @@ function Effect12() {
         card.created = true;
         await addToHand(drawCard(card, 176));
     };
-    this.desc = "Commencez la partie avec un Scion aspirâme en main.";
+    this.desc = "Commencez la partie avec un Scion aspirÃ¢me en main.";
 }
 
 function Effect13() {
@@ -5221,7 +5251,7 @@ function Effect13() {
             }
         }
     };
-    this.desc = "Lorsque vous recherchez des recrues, leur donne +1/+1 puis mélange leurs statistiques.";
+    this.desc = "Lorsque vous recherchez des recrues, leur donne +1/+1 puis mÃ©lange leurs statistiques.";
 }
 
 function Effect101() {
@@ -5234,7 +5264,7 @@ function Effect101() {
             await addToHand(drawCard(card, 176));
         }
     };
-    this.desc = "<em>Recrue :</em> Ajoute 1 Pièce d'or à votre main.";
+    this.desc = "<em>Recrue :</em> Ajoute 1 PiÃ¨ce d'or Ã  votre main.";
 }
 
 function Effect102() {
@@ -5243,7 +5273,7 @@ function Effect102() {
             await boostStats(sender, Math.min(6, 2 * coins), Math.min(6, 2 * coins), doAnimate);
         }
     };
-    this.desc = "A la fin de votre tour, gagne +2/+2 pour chaque pièce d'or inutilisée, jusqu'à 3.";
+    this.desc = "A la fin de votre tour, gagne +2/+2 pour chaque piÃ¨ce d'or inutilisÃ©e, jusqu'Ã  3.";
 }
 
 function Effect103() {
@@ -5266,7 +5296,7 @@ function Effect103() {
             }
         }
     };
-    this.desc = "Après avoir joué 5 autres Dragons, se transforme en Dragon d'or.";
+    this.desc = "AprÃ¨s avoir jouÃ© 5 autres Dragons, se transforme en Dragon d'or.";
 }
 
 function Effect104() {
@@ -5279,7 +5309,7 @@ function Effect104() {
                 await boostStats(sender, 1, 1, doAnimate);
         }
     };
-    this.desc = "Lorsque vous obtenez des pièces d'or, gagne +1/+1 jusqu'au prochain tour.";
+    this.desc = "Lorsque vous obtenez des piÃ¨ces d'or, gagne +1/+1 jusqu'au prochain tour.";
 }
 
 function Effect105() {
@@ -5305,7 +5335,7 @@ function Effect106() {
                 await spendCoins(n, false);
         }
     };
-    this.desc = "<em>Recrue :</em> Gagnez 1 pièce d'or pour chaque autre Dragon allié.";
+    this.desc = "<em>Recrue :</em> Gagnez 1 piÃ¨ce d'or pour chaque autre Dragon alliÃ©.";
 }
 
 function Effect107() {
@@ -5318,7 +5348,7 @@ function Effect107() {
             await addToHand(drawCard(card, 176));
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Ajoute 1 Pièce d'or à votre main.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Ajoute 1 PiÃ¨ce d'or Ã  votre main.";
 }
 
 function Effect108() {
@@ -5329,7 +5359,7 @@ function Effect108() {
             await spendCoins(-1, false);
         }
     };
-    this.desc = "Lorsque vous revendez un Dragon, obtenez une pièce d'or supplémentaire.";
+    this.desc = "Lorsque vous revendez un Dragon, obtenez une piÃ¨ce d'or supplÃ©mentaire.";
 }
 
 function Effect109() {
@@ -5346,7 +5376,7 @@ function Effect109() {
                 await boostStats(c.card, 0, 1, doAnimate);
         }
     };
-    this.desc = "Lorsque vous gagnez des pièces d'or, confère +0/+1 à 3 Dragons alliés.";
+    this.desc = "Lorsque vous gagnez des piÃ¨ces d'or, confÃ¨re +0/+1 Ã  3 Dragons alliÃ©s.";
 }
 
 function Effect110() {
@@ -5355,7 +5385,7 @@ function Effect110() {
             await boostStats(sender, 1, 0, doAnimate);
         }
     };
-    this.desc = "Lorsque vous gagnez des pièces d'or, gagne +1/+0.";
+    this.desc = "Lorsque vous gagnez des piÃ¨ces d'or, gagne +1/+0.";
 }
 
 function Effect111() {
@@ -5368,7 +5398,7 @@ function Effect111() {
             await boostStats(sender, -n, -n, doAnimate, true);
         }
     };
-    this.desc = "<em>Recrue :</em> Gagne -1/-1 pour chaque autre Dragon allié.";
+    this.desc = "<em>Recrue :</em> Gagne -1/-1 pour chaque autre Dragon alliÃ©.";
 }
 
 function Effect112() {
@@ -5382,7 +5412,7 @@ function Effect112() {
                 await boostStats(choice(options).card, sender.attack, sender.hp, doAnimate);
         }
     };
-    this.desc = "Lorsque vous revendez cette carte depuis le plateau, confère ses statistiques à un Dragon allié.";
+    this.desc = "Lorsque vous revendez cette carte depuis le plateau, confÃ¨re ses statistiques Ã  un Dragon alliÃ©.";
 }
 
 function Effect113() {
@@ -5397,7 +5427,7 @@ function Effect113() {
             }
         }
     };
-    this.desc = "Inflige 12 dégâts aux créatures derrière les créatures attaquées.";
+    this.desc = "Inflige 12 dÃ©gÃ¢ts aux crÃ©atures derriÃ¨re les crÃ©atures attaquÃ©es.";
 }
 
 function Effect114() {
@@ -5411,7 +5441,7 @@ function Effect114() {
                     await boostStats(c, 2, 1, doAnimate, false, true);
         }
     };
-    this.desc = "Lorsque cette créature est attaquée, elle confère définitivement +2/+1 aux Dragons alliés.";
+    this.desc = "Lorsque cette crÃ©ature est attaquÃ©e, elle confÃ¨re dÃ©finitivement +2/+1 aux Dragons alliÃ©s.";
 }
 
 function Effect115() {
@@ -5426,7 +5456,7 @@ function Effect115() {
             }
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Tous les dragons alliés gagnent +0/+20.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Tous les dragons alliÃ©s gagnent +0/+20.";
 }
 
 function Effect116() {
@@ -5437,7 +5467,7 @@ function Effect116() {
             await dealDamage(args[1], 3, doAnimate, [args[2], args[3], args[4], args[5], args[6]]);
         }
     };
-    this.desc = "Lorsque cette créature est attaquée, elle inflige 3 dégâts à l'attaquant avant de combattre.";
+    this.desc = "Lorsque cette crÃ©ature est attaquÃ©e, elle inflige 3 dÃ©gÃ¢ts Ã  l'attaquant avant de combattre.";
 }
 
 function Effect117() {
@@ -5450,7 +5480,7 @@ function Effect117() {
             await boostStats(sender, n, 0, doAnimate);
         }
     };
-    this.desc = "A la fin de votre tour, gagne +1/+0 pour chaque autre Dragon allié.";
+    this.desc = "A la fin de votre tour, gagne +1/+0 pour chaque autre Dragon alliÃ©.";
 }
 
 function Effect118() {
@@ -5459,7 +5489,7 @@ function Effect118() {
             await spendCoins(-2, false);
         }
     };
-    this.desc = "Lorsque vous revendez cette carte, obtenez 2 pièces d'or supplémentaires.";
+    this.desc = "Lorsque vous revendez cette carte, obtenez 2 piÃ¨ces d'or supplÃ©mentaires.";
 }
 
 function Effect119() {
@@ -5467,7 +5497,7 @@ function Effect119() {
         let n = lastResult == 1 ? 5 : 1;
         await boostStats(args[0].card, n, n, doAnimate);
     };
-    this.desc = "Confère +1/+1 au Dragon allié ciblé, ou +5/+5 si vous avez gagné le dernier combat.";
+    this.desc = "ConfÃ¨re +1/+1 au Dragon alliÃ© ciblÃ©, ou +5/+5 si vous avez gagnÃ© le dernier combat.";
 }
 
 function Effect201() {
@@ -5479,7 +5509,7 @@ function Effect201() {
             discountedRefreshes++;
         }
     };
-    this.desc = "<em>Recrue :</em> Réduit de 1 le coût de la prochaine recherche de recrues.";
+    this.desc = "<em>Recrue :</em> RÃ©duit de 1 le coÃ»t de la prochaine recherche de recrues.";
 }
 
 function Effect202() {
@@ -5500,7 +5530,7 @@ function Effect203() {
         if (args[0] === sender)
             await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate, args);
     };
-    this.desc = "<em>Dernière volonté :</em> Invoque un Artificier gobelin.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Invoque un Artificier gobelin.";
 }
 
 function Effect204() {
@@ -5515,7 +5545,7 @@ function Effect204() {
             }
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Inflige 3 dégâts à une créature ennemie aléatoire.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Inflige 3 dÃ©gÃ¢ts Ã  une crÃ©ature ennemie alÃ©atoire.";
 }
 
 function Effect205() {
@@ -5526,7 +5556,7 @@ function Effect205() {
                 await boostStats(sender, 2, 1, doAnimate);
         }
     };
-    this.desc = "Lorsqu'un Gobelin allié meurt, gagne +2/+1.";
+    this.desc = "Lorsqu'un Gobelin alliÃ© meurt, gagne +2/+1.";
 }
 
 function Effect206() {
@@ -5544,7 +5574,7 @@ function Effect206() {
             }
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Inflige 2 dégâts à une créature ennemie aléatoire 5 fois.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Inflige 2 dÃ©gÃ¢ts Ã  une crÃ©ature ennemie alÃ©atoire 5 fois.";
 }
 
 function Effect207() {
@@ -5559,7 +5589,7 @@ function Effect207() {
             }
         }
     };
-    this.desc = "Lorsque cette créature attaque, elle inflige 5 dégâts à une créature adverse aléatoire.";
+    this.desc = "Lorsque cette crÃ©ature attaque, elle inflige 5 dÃ©gÃ¢ts Ã  une crÃ©ature adverse alÃ©atoire.";
 }
 
 function Effect208() {
@@ -5581,7 +5611,7 @@ function Effect208() {
             }
         }
     };
-    this.desc = "Lorsqu'une créature adverse subit des dégâts, confère définitivement +1/+0 à un autre gobelin allié.";
+    this.desc = "Lorsqu'une crÃ©ature adverse subit des dÃ©gÃ¢ts, confÃ¨re dÃ©finitivement +1/+0 Ã  un autre gobelin alliÃ©.";
 }
 
 function Effect209() {
@@ -5595,7 +5625,7 @@ function Effect209() {
             }
         }
     };
-    this.desc = "Lorsqu'un Gobelin allié attaque, inflige 2 dégâts à sa cible avant qu'il ne combatte.";
+    this.desc = "Lorsqu'un Gobelin alliÃ© attaque, inflige 2 dÃ©gÃ¢ts Ã  sa cible avant qu'il ne combatte.";
 }
 
 function Effect210() {
@@ -5613,11 +5643,11 @@ function Effect210() {
 
 function Effect211() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0].card !== sender && containsKeyword(args[0].card, "Dernière volonté") && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+        if (args[0].card !== sender && containsKeyword(args[0].card, "DerniÃ¨re volontÃ©") && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             await boostStats(sender, 1, 2, doAnimate);
         }
     };
-    this.desc = "Lorsque vous jouez une carte avec <em>Dernière volonté</em>, gagne +1/+2.";
+    this.desc = "Lorsque vous jouez une carte avec <em>DerniÃ¨re volontÃ©</em>, gagne +1/+2.";
 }
 
 function Effect212() {
@@ -5630,7 +5660,7 @@ function Effect212() {
             }
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Confère définitivement +1/+1 à tous les autres Gobelins alliés.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> ConfÃ¨re dÃ©finitivement +1/+1 Ã  tous les autres Gobelins alliÃ©s.";
 }
 
 function Effect213() {
@@ -5642,17 +5672,17 @@ function Effect213() {
             let i = t.findIndex(e => e === sender);
             if (i % 4 > 0 && t[i - 1]) {
                 for (let e of t[i - 1].effects)
-                    if ((createEffect(e.id)).desc.startsWith("<em>Dernière volonté :</em>"))
+                    if ((createEffect(e.id)).desc.startsWith("<em>DerniÃ¨re volontÃ© :</em>"))
                         t[i].effects.push(e);
             }
             if (i % 4 < 3 && t[i + 1]) {
                 for (let e of t[i + 1].effects)
-                    if ((createEffect(e.id)).desc.startsWith("<em>Dernière volonté :</em>"))
+                    if ((createEffect(e.id)).desc.startsWith("<em>DerniÃ¨re volontÃ© :</em>"))
                         t[i].effects.push(e);
             }
         }
     };
-    this.desc = "<em>Frappe préventive :</em> Copie les effets de <em>Dernière volonté</em> de ses voisins latéraux.";
+    this.desc = "<em>Frappe prÃ©ventive :</em> Copie les effets de <em>DerniÃ¨re volontÃ©</em> de ses voisins latÃ©raux.";
 }
 
 function Effect214() {
@@ -5663,7 +5693,7 @@ function Effect214() {
             await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate, args);
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Invoque trois Artificiers gobelins.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Invoque trois Artificiers gobelins.";
 }
 
 function Effect215() {
@@ -5685,7 +5715,7 @@ function Effect215() {
             }
         }
     };
-    this.desc = "<em>Frappe préventive :</em> Gagne de l'attaque équivalente à l'attaque du Gobelin voisin le plus fort.";
+    this.desc = "<em>Frappe prÃ©ventive :</em> Gagne de l'attaque Ã©quivalente Ã  l'attaque du Gobelin voisin le plus fort.";
 }
 
 function Effect216() {
@@ -5702,7 +5732,7 @@ function Effect216() {
             }
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Invoque trois Gobelins aléatoires de niveau inférieur ou égal à 3.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Invoque trois Gobelins alÃ©atoires de niveau infÃ©rieur ou Ã©gal Ã  3.";
 }
 
 function Effect217() {
@@ -5713,7 +5743,7 @@ function Effect217() {
         });
         await boostStats(args[0].card, 0, 0, doAnimate);
     };
-    this.desc = "Confère \"<em>Dernière volonté :</em> Invoque un Artificier gobelin.\" au Gobelin allié ciblé.";
+    this.desc = "ConfÃ¨re \"<em>DerniÃ¨re volontÃ© :</em> Invoque un Artificier gobelin.\" au Gobelin alliÃ© ciblÃ©.";
 }
 
 function Effect218() {
@@ -5724,7 +5754,7 @@ function Effect218() {
         addToHand(drawCard(card, 176));
         await boostStats(card, 0, 0, doAnimate);
     };
-    this.desc = "Ajoute un Gobelin aléatoire à votre main et lui confère <em>Portée</em>.";
+    this.desc = "Ajoute un Gobelin alÃ©atoire Ã  votre main et lui confÃ¨re <em>PortÃ©e</em>.";
 }
 
 function Effect301() {
@@ -5737,27 +5767,27 @@ function Effect301() {
             await addToHand(drawCard(card, 176));
         }
     };
-    this.desc = "<em>Recrue :</em> Ajoute une Connaissances arcaniques à votre main.";
+    this.desc = "<em>Recrue :</em> Ajoute une Connaissances arcaniques Ã  votre main.";
 }
 
 function Effect302() {
     this.run = async (sender, args, doAnimate) => {
         await boostStats(args[0].card, 1, 1, doAnimate);
     };
-    this.desc = "Confère +1/+1 à la créature alliée ciblée.";
+    this.desc = "ConfÃ¨re +1/+1 Ã  la crÃ©ature alliÃ©e ciblÃ©e.";
 }
 
 function Effect303() {
     this.run = async (sender, args, doAnimate) => {
         let card = getCard(1);
-        while (card.species == "Sortilège")
+        while (card.species == "SortilÃ¨ge")
             card = getCard(1);
         card.created = true;
         card.attack = 3;
         card.hp = 3;
         await summonCard(card);
     };
-    this.desc = "Invoque une créature de niveau 1 aléatoire et fixe ses statistiques à 3/3.";
+    this.desc = "Invoque une crÃ©ature de niveau 1 alÃ©atoire et fixe ses statistiques Ã  3/3.";
 }
 
 function Effect304() {
@@ -5770,7 +5800,7 @@ function Effect304() {
             sender.effect304 = 1;
         }
     };
-    this.desc = "Le premier sort joué sur cette créature chaque tour prend effet deux fois.";
+    this.desc = "Le premier sort jouÃ© sur cette crÃ©ature chaque tour prend effet deux fois.";
 }
 
 function Effect305() {
@@ -5785,14 +5815,14 @@ function Effect306() {
         if (findDOMCard(sender).parentElement.parentElement.classList.contains("board"))
             await boostStats(sender, 1, 1, doAnimate);
     };
-    this.desc = "Gagne +1/+1 lorsque que vous jouez un Sortilège.";
+    this.desc = "Gagne +1/+1 lorsque que vous jouez un SortilÃ¨ge.";
 }
 
 function Effect307() {
     this.run = async (sender, args, doAnimate) => {
         if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             let card = getCard(shopTier);
-            while (card.species == "Sortilège" || (card.tier < 3 && shopTier >= 3) || card.effects.findIndex(e => e.id == 307) != -1)
+            while (card.species == "SortilÃ¨ge" || (card.tier < 3 && shopTier >= 3) || card.effects.findIndex(e => e.id == 307) != -1)
                 card = getCard(shopTier);
             card.created = true;
             if (doAnimate)
@@ -5800,7 +5830,7 @@ function Effect307() {
             await summonCard(card);
         }
     };
-    this.desc = "A la fin de votre tour, invoque une créature de niveau supérieur ou égal à 3.";
+    this.desc = "A la fin de votre tour, invoque une crÃ©ature de niveau supÃ©rieur ou Ã©gal Ã  3.";
 }
 
 function Effect308() {
@@ -5813,14 +5843,14 @@ function Effect308() {
             await addToHand(drawCard(card, 176));
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Ajoute un Catalyseur de puissance à votre main.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Ajoute un Catalyseur de puissance Ã  votre main.";
 }
 
 function Effect309() {
     this.run = async (sender, args, doAnimate) => {
         await boostStats(args[0].card, 2, 1, doAnimate);
     };
-    this.desc = "Confère +2/+1 à la créature alliée ciblée.";
+    this.desc = "ConfÃ¨re +2/+1 Ã  la crÃ©ature alliÃ©e ciblÃ©e.";
 }
 
 function Effect310() {
@@ -5831,7 +5861,7 @@ function Effect310() {
             await boostStats(args[1], 2, 2, doAnimate);
         }
     };
-    this.desc = "Lorsque vous jouez un Sortilège sur une créature alliée, lui confère +2/+2.";
+    this.desc = "Lorsque vous jouez un SortilÃ¨ge sur une crÃ©ature alliÃ©e, lui confÃ¨re +2/+2.";
 }
 
 function Effect311() {
@@ -5867,7 +5897,7 @@ function Effect312() {
             }
         }
     };
-    this.desc = "A la fin de votre tour, rejoue les 3 derniers Sortilèges joués ce tour-ci sur des cibles aléatoires.";
+    this.desc = "A la fin de votre tour, rejoue les 3 derniers SortilÃ¨ges jouÃ©s ce tour-ci sur des cibles alÃ©atoires.";
 }
 
 function Effect313() {
@@ -5883,12 +5913,12 @@ function Effect313() {
 function Effect314() {
     this.run = async (sender, args, doAnimate) => {
         let card = getCard(Math.min(6, shopTier + 1));
-        while (card.species == "Sortilège" || card.tier != Math.min(6, shopTier + 1))
+        while (card.species == "SortilÃ¨ge" || card.tier != Math.min(6, shopTier + 1))
             card = getCard(Math.min(6, shopTier + 1));
         card.created = true;
         await summonCard(card);
     };
-    this.desc = "Invoque une créature du niveau supérieur à votre niveau de recrutement.";
+    this.desc = "Invoque une crÃ©ature du niveau supÃ©rieur Ã  votre niveau de recrutement.";
 }
 
 function Effect315() {
@@ -5901,7 +5931,7 @@ function Effect315() {
             await addToHand(drawCard(card, 176));
         }
     };
-    this.desc = "<em>Recrue :</em> Ajoute un Équilibre naturel à votre main.";
+    this.desc = "<em>Recrue :</em> Ajoute un Ã‰quilibre naturel Ã  votre main.";
 }
 
 function Effect316() {
@@ -5912,7 +5942,7 @@ function Effect316() {
         let dhp = Math.floor((atk - hp) / 2);
         await boostStats(args[0].card, datk + 1, dhp + 1, doAnimate);
     };
-    this.desc = "Confère +1/+1 à la créature alliée ciblée, puis équilibre ses statistiques.";
+    this.desc = "ConfÃ¨re +1/+1 Ã  la crÃ©ature alliÃ©e ciblÃ©e, puis Ã©quilibre ses statistiques.";
 }
 
 function Effect317() {
@@ -5926,7 +5956,7 @@ function Effect317() {
                 await playSpell(drawCard(new ConnaissancesArcaniques(), 0), choice(options));
         }
     };
-    this.desc = "Joue 5 Connaissances arcaniques sur des cibles aléatoires.";
+    this.desc = "Joue 5 Connaissances arcaniques sur des cibles alÃ©atoires.";
 }
 
 function Effect318() {
@@ -5939,7 +5969,7 @@ function Effect318() {
             await addToHand(drawCard(card, 176));
         }
     };
-    this.desc = "<em>Recrue :</em> Ajoute un Déphasage à votre main.";
+    this.desc = "<em>Recrue :</em> Ajoute un DÃ©phasage Ã  votre main.";
 }
 
 function Effect319() {
@@ -5947,7 +5977,7 @@ function Effect319() {
         args[0].card.shield = true;
         await boostStats(args[0].card, 0, 0, doAnimate);
     };
-    this.desc = "Confère <em>Bouclier</em> au Sorcier allié ciblé.";
+    this.desc = "ConfÃ¨re <em>Bouclier</em> au Sorcier alliÃ© ciblÃ©.";
 }
 
 function Effect320() {
@@ -5958,11 +5988,11 @@ function Effect320() {
             if (target) {
                 if (doAnimate)
                     await effectProcGlow(sender);
-                dealDamage(target, sender.effect320, doAnimate, args);
+                await dealDamage(target, sender.effect320, doAnimate, args);
             }
         }
     };
-    this.desc = "<em>Frappe préventive :</em> Inflige 1 dégât à une cible adverse aléatoire pour chaque Sortilège joué depuis que cette carte est en jeu.";
+    this.desc = "<em>Frappe prÃ©ventive :</em> Inflige 1 dÃ©gÃ¢t Ã  une cible adverse alÃ©atoire pour chaque SortilÃ¨ge jouÃ© depuis que cette carte est en jeu.";
 }
 
 function Effect321() {
@@ -5978,18 +6008,20 @@ function Effect321() {
 
 function Effect322() {
     this.run = async (sender, args, doAnimate) => {
-        if (doAnimate)
-            effectProcGlow(sender);
-        let card = new CatalyseurDePuissance();
-        card.created = true;
-        await addToHand(drawCard(card, 176));
-        if (lastResult && lastResult == 2) {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                effectProcGlow(sender);
             let card = new CatalyseurDePuissance();
             card.created = true;
             await addToHand(drawCard(card, 176));
+            if (lastResult && lastResult == 2) {
+                let card = new CatalyseurDePuissance();
+                card.created = true;
+                await addToHand(drawCard(card, 176));
+            }
         }
     };
-    this.desc = "Au début de votre tour, ajoute un Catalyseur de puissance à votre main, ou deux si vous avez perdu le dernier combat.";
+    this.desc = "Au dÃ©but de votre tour, ajoute un Catalyseur de puissance Ã  votre main, ou deux si vous avez perdu le dernier combat.";
 }
 
 function Effect323() {
@@ -6010,7 +6042,7 @@ function Effect324() {
             id: 326
         });
     };
-    this.desc = "Jusqu'au prochain tour, confère +1/+2 à une créature alliée aléatoire lorsque vous jouez un Sortilège.";
+    this.desc = "Jusqu'au prochain tour, confÃ¨re +1/+2 Ã  une crÃ©ature alliÃ©e alÃ©atoire lorsque vous jouez un SortilÃ¨ge.";
 }
 
 function Effect325() {
@@ -6042,7 +6074,7 @@ function Effect327() {
         args[0].card.range = true;
         await boostStats(args[0].card, 0, 0, doAnimate);
     };
-    this.desc = "Confère <em>Portée</em> au Sorcier allié ciblé.";
+    this.desc = "ConfÃ¨re <em>PortÃ©e</em> au Sorcier alliÃ© ciblÃ©.";
 }
 
 function Effect401() {
@@ -6059,7 +6091,7 @@ function Effect401() {
             }, sender);
         }
     };
-    this.desc = "<em>Recrue :</em> Confère +1/+2 à un autre Soldat allié ciblé.";
+    this.desc = "<em>Recrue :</em> ConfÃ¨re +1/+2 Ã  un autre Soldat alliÃ© ciblÃ©.";
 }
 
 function Effect402() {
@@ -6083,7 +6115,7 @@ function Effect402() {
             }
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Confère <em>Bouclier</em> aux Soldats voisins.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> ConfÃ¨re <em>Bouclier</em> aux Soldats voisins.";
 }
 
 function Effect403() {
@@ -6092,7 +6124,7 @@ function Effect403() {
             await boostStats(sender, 5, 0, doAnimate);
         }
     };
-    this.desc = "Lorsque cette créature attaque ou est attaquée, si elle a le <em>Bouclier</em>, elle gagne +5/+0.";
+    this.desc = "Lorsque cette crÃ©ature attaque ou est attaquÃ©e, si elle a le <em>Bouclier</em>, elle gagne +5/+0.";
 }
 
 function Effect404() {
@@ -6119,7 +6151,7 @@ function Effect405() {
             }, sender);
         }
     };
-    this.desc = "<em>Recrue :</em> Confère <em>Bouclier</em> à un autre Soldat allié ciblé.";
+    this.desc = "<em>Recrue :</em> ConfÃ¨re <em>Bouclier</em> Ã  un autre Soldat alliÃ© ciblÃ©.";
 }
 
 function Effect406() {
@@ -6131,7 +6163,7 @@ function Effect406() {
             await boostStats(args[0], 3, 3, doAnimate, false, true);
         }
     };
-    this.desc = "Lorsqu'une créature alliée avec <em>Bouclier</em> attaque ou est attaquée, elle gagne définitivement +3/+3.";
+    this.desc = "Lorsqu'une crÃ©ature alliÃ©e avec <em>Bouclier</em> attaque ou est attaquÃ©e, elle gagne dÃ©finitivement +3/+3.";
 }
 
 function Effect407() {
@@ -6156,7 +6188,7 @@ function Effect408() {
             await boostStats(sender, 0, 0, doAnimate, false, true);
         }
     };
-    this.desc = "Lorsqu'une créature alliée qui a eu <em>Bouclier</em> meurt, gagne <em>Bouclier</em>.";
+    this.desc = "Lorsqu'une crÃ©ature alliÃ©e qui a eu <em>Bouclier</em> meurt, gagne <em>Bouclier</em>.";
 }
 
 function Effect409() {
@@ -6180,7 +6212,7 @@ function Effect409() {
             }
         }
     };
-    this.desc = "<em>Frappe préventive :</em> Confère <em>Portée</em> aux Soldats voisins.";
+    this.desc = "<em>Frappe prÃ©ventive :</em> ConfÃ¨re <em>PortÃ©e</em> aux Soldats voisins.";
 }
 
 function Effect410() {
@@ -6193,7 +6225,7 @@ function Effect410() {
                     await boostStats(d.children[0].card, 1, 1, doAnimate);
         }
     };
-    this.desc = "A la fin de chaque tour, confère +1/+1 à tous les Soldats alliés.";
+    this.desc = "A la fin de chaque tour, confÃ¨re +1/+1 Ã  tous les Soldats alliÃ©s.";
 }
 
 function Effect411() {
@@ -6217,7 +6249,7 @@ function Effect411() {
             }
         }
     };
-    this.desc = "<em>Frappe préventive :</em> Confère +1/+2 aux Soldats alliés pour chacun de leurs voisins différents.";
+    this.desc = "<em>Frappe prÃ©ventive :</em> ConfÃ¨re +1/+2 aux Soldats alliÃ©s pour chacun de leurs voisins diffÃ©rents.";
 }
 
 function Effect412() {
@@ -6232,7 +6264,7 @@ function Effect412() {
             }
         }
     };
-    this.desc = "<em>Frappe préventive :</em> Confère +10/+10 au Soldat à sa gauche.";
+    this.desc = "<em>Frappe prÃ©ventive :</em> ConfÃ¨re +10/+10 au Soldat Ã  sa gauche.";
 }
 
 function Effect413() {
@@ -6242,7 +6274,7 @@ function Effect413() {
             await boostStats(sender, -1, 0, doAnimate);
         }
     };
-    this.desc = "Lorsqu'une créature alliée meurt, gagne -1/-0.";
+    this.desc = "Lorsqu'une crÃ©ature alliÃ©e meurt, gagne -1/-0.";
 }
 
 function Effect414() {
@@ -6259,7 +6291,7 @@ function Effect414() {
                 await boostStats(target, 1, 1, doAnimate);
         }
     };
-    this.desc = "Lorsque vous jouez un Soldat, confère +1/+1 à un Soldat allié aléatoire.";
+    this.desc = "Lorsque vous jouez un Soldat, confÃ¨re +1/+1 Ã  un Soldat alliÃ© alÃ©atoire.";
 }
 
 function Effect415() {
@@ -6282,7 +6314,7 @@ function Effect415() {
             }
         }
     };
-    this.desc = "Au début de votre tour, ajoute à votre main une copie de base d'un autre Soldat allié aléatoire.";
+    this.desc = "Au dÃ©but de votre tour, ajoute Ã  votre main une copie de base d'un autre Soldat alliÃ© alÃ©atoire.";
 }
 
 function Effect416() {
@@ -6300,7 +6332,7 @@ function Effect416() {
             }
         }
     };
-    this.desc = "Lorsque cette créature attaque, elle fait perdre le <em>Bouclier</em>, la <em>Résurrection</em>, la <em>Portée</em> et le <em>Contact mortel</em> à la créature attaquée avant de combattre.";
+    this.desc = "Lorsque cette crÃ©ature attaque, elle fait perdre le <em>Bouclier</em>, la <em>RÃ©surrection</em>, la <em>PortÃ©e</em> et le <em>Contact mortel</em> Ã  la crÃ©ature attaquÃ©e avant de combattre.";
 }
 
 function Effect417() {
@@ -6317,7 +6349,7 @@ function Effect417() {
         if (i % 4 < 3 && t[i + 1])
             boostStats(t[i + 1], 1, 1, doAnimate);
     };
-    this.desc = "Confère +1/+1 à un Soldat allié et à ses voisins.";
+    this.desc = "ConfÃ¨re +1/+1 Ã  un Soldat alliÃ© et Ã  ses voisins.";
 }
 
 function Effect418() {
@@ -6327,7 +6359,7 @@ function Effect418() {
             id: 419
         });
     };
-    this.desc = "Confère \"Lorsque le dernier allié de cette créature meurt, elle acquiert <em>Bouclier</em>.\" à une créature alliée.";
+    this.desc = "ConfÃ¨re \"Lorsque le dernier alliÃ© de cette crÃ©ature meurt, elle acquiert <em>Bouclier</em>.\" Ã  une crÃ©ature alliÃ©e.";
 }
 
 function Effect419() {
@@ -6346,7 +6378,7 @@ function Effect419() {
             }
         }
     };
-    this.desc = "Lorsque le dernier allié de cette créature meurt, elle acquiert <em>Bouclier</em>.";
+    this.desc = "Lorsque le dernier alliÃ© de cette crÃ©ature meurt, elle acquiert <em>Bouclier</em>.";
 }
 
 function Effect501() {
@@ -6365,7 +6397,7 @@ function Effect501() {
             }
         }
     };
-    this.desc = "<em>Recrue :</em> Déplace une carte aléatoire disponible au recrutement dans votre main.";
+    this.desc = "<em>Recrue :</em> DÃ©place une carte alÃ©atoire disponible au recrutement dans votre main.";
 }
 
 function Effect502() {
@@ -6380,7 +6412,7 @@ function Effect502() {
             }
         }
     };
-    this.desc = "<em>Frappe préventive :</em> Inflige 2 dégâts à une cible adverse aléatoire.";
+    this.desc = "<em>Frappe prÃ©ventive :</em> Inflige 2 dÃ©gÃ¢ts Ã  une cible adverse alÃ©atoire.";
 }
 
 function Effect503() {
@@ -6388,12 +6420,12 @@ function Effect503() {
         if (args[0].card === sender) {
             if (doAnimate)
                 await effectProcGlow(sender);
-            let card = getCard(shopTier, "Sortilège");
+            let card = getCard(shopTier, "SortilÃ¨ge");
             card.created = true;
             addToHand(drawCard(card, 176));
         }
     };
-    this.desc = "<em>Recrue :</em> Ajoute un Sortilège aléatoire à votre main.";
+    this.desc = "<em>Recrue :</em> Ajoute un SortilÃ¨ge alÃ©atoire Ã  votre main.";
 }
 
 function Effect504() {
@@ -6401,7 +6433,7 @@ function Effect504() {
         if (args[0].card !== sender && args[0].card.created && findDOMCard(sender).parentElement.parentElement.classList.contains("board"))
             await boostStats(sender, 2, 1, doAnimate);
     };
-    this.desc = "Gagne +2/+1 lorsque vous jouez une carte que vous n'avez pas achetée.";
+    this.desc = "Gagne +2/+1 lorsque vous jouez une carte que vous n'avez pas achetÃ©e.";
 }
 
 function Effect505() {
@@ -6435,7 +6467,7 @@ function Effect506() {
             }
         }
     };
-    this.desc = "<em>Recrue :</em> Ajoute une copie de base d'une créature de votre dernier adversaire à votre main. Elle devient un Bandit.";
+    this.desc = "<em>Recrue :</em> Ajoute une copie de base d'une crÃ©ature de votre dernier adversaire Ã  votre main. Elle devient un Bandit.";
 }
 
 function Effect507() {
@@ -6458,7 +6490,7 @@ function Effect507() {
             }
         }
     };
-    this.desc = "<em>Frappe préventive :</em> Réduit l'attaque des créatures ennemies de 1 pour chaque autre Bandit allié.";
+    this.desc = "<em>Frappe prÃ©ventive :</em> RÃ©duit l'attaque des crÃ©atures ennemies de 1 pour chaque autre Bandit alliÃ©.";
 }
 
 function Effect508() {
@@ -6471,7 +6503,7 @@ function Effect508() {
             await boostStats(args[0], 4, 2, doAnimate);
         }
     };
-    this.desc = "Lorsqu'une créature alliée attaque la ligne arrière, elle gagne +4/+2.";
+    this.desc = "Lorsqu'une crÃ©ature alliÃ©e attaque la ligne arriÃ¨re, elle gagne +4/+2.";
 }
 
 function Effect509() {
@@ -6490,7 +6522,7 @@ function Effect510() {
             await spendCoins(-1, false);
         }
     };
-    this.desc = "Lorsque vous revendez une carte que vous n'avez pas achetée, obtenez une pièce d'or supplémentaire.";
+    this.desc = "Lorsque vous revendez une carte que vous n'avez pas achetÃ©e, obtenez une piÃ¨ce d'or supplÃ©mentaire.";
 }
 
 function Effect511() {
@@ -6508,7 +6540,7 @@ function Effect511() {
             }, sender);
         }
     };
-    this.desc = "<em>Recrue :</em> Confère <em>Portée</em> à un autre Bandit allié ciblé.";
+    this.desc = "<em>Recrue :</em> ConfÃ¨re <em>PortÃ©e</em> Ã  un autre Bandit alliÃ© ciblÃ©.";
 }
 
 function Effect512() {
@@ -6519,13 +6551,14 @@ function Effect512() {
             if (target) {
                 if (doAnimate)
                     await effectProcGlow(sender);
-                let card = copy(target);
+                let name = target.src.substring(target.src.indexOf("/") + 1, target.src.indexOf("."));
+                let card = createCard(name);
                 card.created = true;
                 await addToHand(drawCard(card, 176));
             }
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Ajoute une copie de base d'une créature adverse aléatoire à votre main.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Ajoute une copie de base d'une crÃ©ature adverse alÃ©atoire Ã  votre main.";
 }
 
 function Effect513() {
@@ -6540,7 +6573,7 @@ function Effect513() {
             }
         }
     };
-    this.desc = "Lorsque vous jouez une carte que vous n'avez pas achetée, confère +2/+2 à 3 créatures alliées aléatoires.";
+    this.desc = "Lorsque vous jouez une carte que vous n'avez pas achetÃ©e, confÃ¨re +2/+2 Ã  3 crÃ©atures alliÃ©es alÃ©atoires.";
 }
 
 function Effect514() {
@@ -6577,24 +6610,24 @@ function Effect515() {
             }
         }
     };
-    this.desc = "A la fin de votre tour, déplace la carte de plus haut niveau disponible au recrutement dans votre main.";
+    this.desc = "A la fin de votre tour, dÃ©place la carte de plus haut niveau disponible au recrutement dans votre main.";
 }
 
 function Effect516() {
     this.run = async (sender, args, doAnimate) => {
         await spendCoins(-1, false);
         for (let c of document.getElementsByClassName("small-card"))
-            if (c.parentElement.parentElement.classList.contains("board") && c.card.created && c.card.species != "Bandit" && c.card.species != "Sortilège") {
+            if (c.parentElement.parentElement.classList.contains("board") && c.card.created && c.card.species != "Bandit" && c.card.species != "SortilÃ¨ge") {
                 c.card.species = "Bandit";
                 boostStats(c.card, 0, 0, doAnimate);
             }
         for (let c of document.getElementsByClassName("card"))
-            if (c.parentElement.parentElement.classList.contains("hand") && c.card.created && c.card.species != "Bandit" && c.card.species != "Sortilège") {
+            if (c.parentElement.parentElement.classList.contains("hand") && c.card.created && c.card.species != "Bandit" && c.card.species != "SortilÃ¨ge") {
                 c.card.species = "Bandit";
                 boostStats(c.card, 0, 0, doAnimate);
             }
     };
-    this.desc = "Gagnez une pièce d'or. Toutes les créatures en jeu et dans votre main que vous n'avez pas achetées deviennent des Bandits.";
+    this.desc = "Gagnez une piÃ¨ce d'or. Toutes les crÃ©atures en jeu et dans votre main que vous n'avez pas achetÃ©es deviennent des Bandits.";
 }
 
 function Effect517() {
@@ -6604,7 +6637,7 @@ function Effect517() {
             id: 518
         });
     };
-    this.desc = "Au début de votre prochain tour, ajoute 2 copies de base de créatures de votre prochain adversaire à votre main.";
+    this.desc = "Au dÃ©but de votre prochain tour, ajoute 2 copies de base de crÃ©atures de votre prochain adversaire Ã  votre main.";
 }
 
 function Effect518() {
@@ -6664,7 +6697,7 @@ function Effect602() {
             }
         }
     };
-    this.desc = "<em>Reconfiguration :</em> Confère +1/+0 à une créature alliée aléatoire <em>ou</em> Confère +0/+1 à une créature alliée aléatoire.";
+    this.desc = "<em>Reconfiguration :</em> ConfÃ¨re +1/+0 Ã  une crÃ©ature alliÃ©e alÃ©atoire <em>ou</em> ConfÃ¨re +0/+1 Ã  une crÃ©ature alliÃ©e alÃ©atoire.";
 }
 
 function Effect603() {
@@ -6673,11 +6706,11 @@ function Effect603() {
             if (doAnimate)
                 await effectProcGlow(sender);
             for (let d of document.getElementById("shop").children)
-                if (d.classList.contains("card") && d.card.species != "Sortilège")
+                if (d.classList.contains("card") && d.card.species != "SortilÃ¨ge")
                     await boostStats(d.card, 1, 1, doAnimate);
         }
     };
-    this.desc = "<em>Recrue :</em> Confère +1/+1 aux créatures disponibles au recrutement.";
+    this.desc = "<em>Recrue :</em> ConfÃ¨re +1/+1 aux crÃ©atures disponibles au recrutement.";
 }
 
 function Effect604() {
@@ -6711,14 +6744,14 @@ function Effect605() {
             }
         }
     };
-    this.desc = "<em>Reconfiguration :</em> Gagne <em>Bouclier</em> et perd <em>Portée</em> <em>ou</em> Gagne <em>Portée</em> et perd <em>Bouclier</em>.";
+    this.desc = "<em>Reconfiguration :</em> Gagne <em>Bouclier</em> et perd <em>PortÃ©e</em> <em>ou</em> Gagne <em>PortÃ©e</em> et perd <em>Bouclier</em>.";
 }
 
 function Effect606() {
     this.run = async (sender, args, doAnimate) => {
 
     };
-    this.desc = "Pendant la phase de recrutement, les statistiques de vos créatures ne peuvent pas baisser.";
+    this.desc = "Pendant la phase de recrutement, les statistiques de vos crÃ©atures ne peuvent pas baisser.";
 }
 
 function Effect607() {
@@ -6734,7 +6767,7 @@ function Effect607() {
             await boostStats(sender, atk, hp, doAnimate);
         }
     };
-    this.desc = "A la fin de chaque tour, cette créature vole jusqu'à 6/6 à la Machine derrière elle, si possible.";
+    this.desc = "A la fin de chaque tour, cette crÃ©ature vole jusqu'Ã  6/6 Ã  la Machine derriÃ¨re elle, si possible.";
 }
 
 function Effect608() {
@@ -6748,7 +6781,7 @@ function Effect608() {
             await battleSummon("automate-replicateur-mod", args[1] ? args[2] : args[3], args[4], doAnimate, args);
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Confère +2/+2 à toutes les autres Machines alliées, puis invoque deux copies de base de cette créature sans réinvocation.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> ConfÃ¨re +2/+2 Ã  toutes les autres Machines alliÃ©es, puis invoque deux copies de base de cette crÃ©ature sans rÃ©invocation.";
 }
 
 function Effect609() {
@@ -6760,7 +6793,7 @@ function Effect609() {
                     await boostStats(c, 2, 2, doAnimate);
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Confère +2/+2 à toutes les autres Machines alliées.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> ConfÃ¨re +2/+2 Ã  toutes les autres Machines alliÃ©es.";
 }
 
 function Effect610() {
@@ -6785,7 +6818,7 @@ function Effect610() {
                 }
         }
     };
-    this.desc = "A la fin de votre tour, redéclenche les <em>Reconfigurations</em> des Machines voisines.";
+    this.desc = "A la fin de votre tour, redÃ©clenche les <em>Reconfigurations</em> des Machines voisines.";
 }
 
 function Effect611() {
@@ -6800,7 +6833,7 @@ function Effect611() {
             }
         }
     };
-    this.desc = "<em>Frappe préventive :</em> Inflige 8 dégâts à la créature adverse avec les PV les plus faibles.";
+    this.desc = "<em>Frappe prÃ©ventive :</em> Inflige 8 dÃ©gÃ¢ts Ã  la crÃ©ature adverse avec les PV les plus faibles.";
 }
 
 function Effect612() {
@@ -6831,7 +6864,7 @@ function Effect612() {
             }
         }
     };
-    this.desc = "<em>Reconfiguration :</em> Confère +X/-3 <em>ou</em> Confère -3/+X à ses voisins latéraux, X étant le nombre de Machines alliées.";
+    this.desc = "<em>Reconfiguration :</em> ConfÃ¨re +X/-3 <em>ou</em> ConfÃ¨re -3/+X Ã  ses voisins latÃ©raux, X Ã©tant le nombre de Machines alliÃ©es.";
 }
 
 function Effect613() {
@@ -6840,7 +6873,7 @@ function Effect613() {
             await battleSummon("auto-duplicateur-mod", args[1] ? args[2] : args[3], args[4], doAnimate, args);
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Invoque une copie de base de cette créature sans réinvocation.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Invoque une copie de base de cette crÃ©ature sans rÃ©invocation.";
 }
 
 function Effect614() {
@@ -6852,7 +6885,7 @@ function Effect614() {
             await boostStats(sender, 3, 2, doAnimate);
         }
     };
-    this.desc = "Lorsqu'une créature alliée est invoquée en combat, gagne +3/+2.";
+    this.desc = "Lorsqu'une crÃ©ature alliÃ©e est invoquÃ©e en combat, gagne +3/+2.";
 }
 
 function Effect615() {
@@ -6863,7 +6896,7 @@ function Effect615() {
             await battleSummon("ouvrier-assemble", args[1] ? args[2] : args[3], args[4], doAnimate, args);
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Invoque trois Ouvriers assemblés.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Invoque trois Ouvriers assemblÃ©s.";
 }
 
 function Effect616() {
@@ -6909,7 +6942,7 @@ function Effect619() {
             await battleSummon("ouvrier-assemble", args[1] ? args[2] : args[3], args[4], doAnimate, args);
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Invoque un Ouvrier assemblé.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Invoque un Ouvrier assemblÃ©.";
 }
 
 function Effect620() {
@@ -6920,7 +6953,7 @@ function Effect620() {
         });
         boostStats(args[0].card, 0, 0, doAnimate);
     };
-    this.desc = "Confère \"<em>Dernière volonté :</em> Invoque un Ouvrier assemblé.\" à la Machine alliée ciblée.";
+    this.desc = "ConfÃ¨re \"<em>DerniÃ¨re volontÃ© :</em> Invoque un Ouvrier assemblÃ©.\" Ã  la Machine alliÃ©e ciblÃ©e.";
 }
 
 function Effect621() {
@@ -6934,7 +6967,20 @@ function Effect621() {
             }
         }
     };
-    this.desc = "Déclenche 3 fois les <em>Reconfigurations</em> de la Machine alliée ciblée.";
+    this.desc = "DÃ©clenche 3 fois les <em>Reconfigurations</em> de la Machine alliÃ©e ciblÃ©e.";
+}
+
+function Effect622() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let c of document.getElementById("shop").children)
+                if (c.card && c.card.species == "Machine")
+                    await boostStats(c.card, 2, 2, doAnimate);
+        }
+    };
+    this.desc = "";
 }
 
 function Effect701() {
@@ -6947,7 +6993,7 @@ function Effect701() {
             await addToHand(drawCard(card, 176));
         }
     };
-    this.desc = "<em>Recrue :</em> Ajoute 1 Proie facile à votre main.";
+    this.desc = "<em>Recrue :</em> Ajoute 1 Proie facile Ã  votre main.";
 }
 
 function Effect702() {
@@ -6956,7 +7002,7 @@ function Effect702() {
             let shop = document.getElementById("shop");
             let options = [];
             for (let c of shop.children)
-                if (c.card && c.card.species != "Sortilège")
+                if (c.card && c.card.species != "SortilÃ¨ge")
                     options.push(c);
             let target = choice(options);
             if (target) {
@@ -6968,7 +7014,7 @@ function Effect702() {
             }
         }
     };
-    this.desc = "<em>Recrue :</em> <em>Dévore</em> une créature disponible au recrutement aléatoire.";
+    this.desc = "<em>Recrue :</em> <em>DÃ©vore</em> une crÃ©ature disponible au recrutement alÃ©atoire.";
 }
 
 function Effect703() {
@@ -6990,7 +7036,7 @@ function Effect703() {
             }, sender);
         }
     };
-    this.desc = "<em>Recrue :</em> <em>Dévore</em> une créature alliée ciblée, puis gagne +2/+2.";
+    this.desc = "<em>Recrue :</em> <em>DÃ©vore</em> une crÃ©ature alliÃ©e ciblÃ©e, puis gagne +2/+2.";
 }
 
 function Effect704() {
@@ -7023,19 +7069,19 @@ function Effect704() {
             }
         }
     };
-    this.desc = "Au début de chaque tour, <em>Dévore</em> la créature alliée la moins forte, puis gagne +3/+3. Gagne <em>Contact mortel</em> la 5<sup>ème</sup> fois.";
+    this.desc = "Au dÃ©but de chaque tour, <em>DÃ©vore</em> la crÃ©ature alliÃ©e la moins forte, puis gagne +3/+3. Gagne <em>Contact mortel</em> la 5<sup>Ã¨me</sup> fois.";
 }
 
 function Effect705() {
     this.run = async (sender, args, doAnimate) => {
         let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
-        if (t.includes(args[0]) && args[0].species == "Bête") {
+        if (t.includes(args[0]) && args[0].species == "BÃªte") {
             if (doAnimate)
                 await effectProcGlow(sender);
             await boostStats(args[0], 1, 2, doAnimate, false, true);
         }
     };
-    this.desc = "Lorsqu'une Bête alliée est attaquée, lui confère définitivement +1/+2.";
+    this.desc = "Lorsqu'une BÃªte alliÃ©e est attaquÃ©e, lui confÃ¨re dÃ©finitivement +1/+2.";
 }
 
 function Effect706() {
@@ -7047,7 +7093,7 @@ function Effect706() {
                 let shop = document.getElementById("shop");
                 let options = [];
                 for (let c of shop.children)
-                    if (c.card && c.card.species != "Sortilège")
+                    if (c.card && c.card.species != "SortilÃ¨ge")
                         options.push(c);
                 let t = choice(options);
                 if (t) {
@@ -7059,12 +7105,12 @@ function Effect706() {
                 }
             }, {
                 area: "board",
-                species: "Bête",
+                species: "BÃªte",
                 notself: true
             }, sender);
         }
     };
-    this.desc = "<em>Recrue :</em> La Bête alliée ciblée <em>Dévore</em> une créature disponible au recrutement aléatoire.";
+    this.desc = "<em>Recrue :</em> La BÃªte alliÃ©e ciblÃ©e <em>DÃ©vore</em> une crÃ©ature disponible au recrutement alÃ©atoire.";
 }
 
 function Effect707() {
@@ -7077,7 +7123,7 @@ function Effect707() {
             await addToHand(drawCard(card, 176));
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Ajoute une Proie facile à votre main.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Ajoute une Proie facile Ã  votre main.";
 }
 
 function Effect708() {
@@ -7096,6 +7142,7 @@ function Effect708() {
                     updateTroops();
                 }
             }
+            let toRemove = [];
             for (let d of document.getElementById("hand").children) {
                 let target = d.card;
                 if (target && target.name == "Proie facile") {
@@ -7104,12 +7151,14 @@ function Effect708() {
                     c.style.opacity = "0";
                     await boostStats(sender, target.attack, target.hp, doAnimate);
                     await boostStats(sender, 2, 1, doAnimate);
-                    c.parentElement.removeChild(c);
+                    toRemove.push(c);
                 }
             }
+            for (let c of toRemove)
+                c.parentElement.removeChild(c);
         }
     };
-    this.desc = "<em>Recrue :</em> <em>Dévore</em> toutes les Proies faciles en jeu et dans votre main, et gagne +2/+1 à chaque fois.";
+    this.desc = "<em>Recrue :</em> <em>DÃ©vore</em> toutes les Proies faciles en jeu et dans votre main, et gagne +2/+1 Ã  chaque fois.";
 }
 
 function Effect709() {
@@ -7121,7 +7170,7 @@ function Effect709() {
             boostStats(sender, 7, 7, false, false, true);
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Gagne définitivement +7/+7.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Gagne dÃ©finitivement +7/+7.";
 }
 
 function Effect710() {
@@ -7132,7 +7181,7 @@ function Effect710() {
 
             let beasts = [];
             for (let c of troops[0])
-                if (c && c.species == "Bête")
+                if (c && c.species == "BÃªte")
                     beasts.push(c);
             shuffle(beasts);
 
@@ -7140,7 +7189,7 @@ function Effect710() {
             for (let target of beasts) {
                 let options = [];
                 for (let c of shop.children)
-                    if (c.card && c.card.species != "Sortilège")
+                    if (c.card && c.card.species != "SortilÃ¨ge")
                         options.push(c);
                 let t = choice(options);
                 if (t) {
@@ -7153,29 +7202,27 @@ function Effect710() {
             }
         }
     };
-    this.desc = "A la fin de votre tour, les Bêtes alliées <em>Dévorent</em> une créature aléatoire disponible au recrutement si possible, ou gagnent +2/+2 sinon.";
+    this.desc = "A la fin de votre tour, les BÃªtes alliÃ©es <em>DÃ©vorent</em> une crÃ©ature alÃ©atoire disponible au recrutement si possible, ou gagnent +2/+2 sinon.";
 }
 
 function Effect711() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0].card.species == "Bête" && args[0].card !== sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+        if (args[0].card.species == "BÃªte" && args[0].card !== sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             if (doAnimate)
                 await effectProcGlow(sender);
             await boostStats(args[0].card, 4, 3, doAnimate);
         }
     };
-    this.desc = "Les Bêtes que vous jouez gagnent +4/+3.";
+    this.desc = "Les BÃªtes que vous jouez gagnent +4/+3.";
 }
 
 function Effect712() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0].card.species != "Sortilège" && findDOMCard(sender) && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
-            if (doAnimate)
-                await effectProcGlow(sender);
+        if (args[0].card.species != "SortilÃ¨ge" && findDOMCard(sender) && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             await boostStats(sender, 1, 1, doAnimate);
         }
     };
-    this.desc = "Gagne +1/+1 lorsque vous revendez une créature.";
+    this.desc = "Gagne +1/+1 lorsque vous revendez une crÃ©ature.";
 }
 
 function Effect713() {
@@ -7184,11 +7231,11 @@ function Effect713() {
             if (doAnimate)
                 await effectProcGlow(sender);
             for (let c of document.getElementById("hand").children)
-                if (c.card.species == "Bête")
+                if (c.card.species == "BÃªte")
                     await boostStats(c.card, 0, 3, doAnimate);
         }
     };
-    this.desc = "<em>Recrue :</em> Confère +0/+3 aux Bêtes dans votre main.";
+    this.desc = "<em>Recrue :</em> ConfÃ¨re +0/+3 aux BÃªtes dans votre main.";
 }
 
 function Effect714() {
@@ -7197,14 +7244,14 @@ function Effect714() {
             let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
             let n = 0;
             for (let c of t)
-                if (c && c.hp > 0 && c.species == "Bête")
+                if (c && c.hp > 0 && c.species == "BÃªte")
                     n++;
             if (doAnimate)
                 await effectProcGlow(sender);
             await boostStats(sender, n, n, doAnimate);
         }
     };
-    this.desc = "<em>Frappe préventive :</em> Gagne +X/+X, où X est le nombre de Bêtes alliées.";
+    this.desc = "<em>Frappe prÃ©ventive :</em> Gagne +X/+X, oÃ¹ X est le nombre de BÃªtes alliÃ©es.";
 }
 
 function Effect715() {
@@ -7213,7 +7260,7 @@ function Effect715() {
             await boostStats(sender, sender.attack, 0, doAnimate);
         }
     };
-    this.desc = "Lorsque cette créature attaque, elle double son attaque.";
+    this.desc = "Lorsque cette crÃ©ature attaque, elle double son attaque.";
 }
 
 function Effect716() {
@@ -7226,13 +7273,13 @@ function Effect716() {
         card.created = true;
         await addToHand(drawCard(card, 176));
     };
-    this.desc = "Confère +1/+0 aux créatures de la première ligne, puis ajoute une Proie facile à votre main.";
+    this.desc = "ConfÃ¨re +1/+0 aux crÃ©atures de la premiÃ¨re ligne, puis ajoute une Proie facile Ã  votre main.";
 }
 
 function Effect717() {
     this.run = async (sender, args, doAnimate) => {
         for (let c of document.getElementById("shop").children)
-            if (c.card && c.card.species == "Bête")
+            if (c.card && c.card.species == "BÃªte")
                 await boostStats(c.card, 3, 3, doAnimate);
         players[0].effects.push({
             trigger: "shop-refresh",
@@ -7243,13 +7290,13 @@ function Effect717() {
             id: 719
         })
     };
-    this.desc = "Confère +3/+3 aux Bêtes disponibles au recrutement jusqu'à la fin du tour.";
+    this.desc = "ConfÃ¨re +3/+3 aux BÃªtes disponibles au recrutement jusqu'Ã  la fin du tour.";
 }
 
 function Effect718() {
     this.run = async (sender, args, doAnimate) => {
         for (let c of document.getElementById("shop").children)
-            if (c.card && c.card.species == "Bête")
+            if (c.card && c.card.species == "BÃªte")
                 await boostStats(c.card, 3, 3, doAnimate);
     };
     this.desc = "";
@@ -7271,7 +7318,7 @@ function Effect801() {
                 await boostStats(sender, 1, 0, doAnimate);
         }
     };
-    this.desc = "Lorsqu'une créature alliée meurt, gagne +1/+0.";
+    this.desc = "Lorsqu'une crÃ©ature alliÃ©e meurt, gagne +1/+0.";
 }
 
 function Effect802() {
@@ -7280,7 +7327,7 @@ function Effect802() {
             await boostStats(sender, 4, 0, doAnimate);
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Gagne +4/+0.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Gagne +4/+0.";
 }
 
 function Effect803() {
@@ -7295,7 +7342,7 @@ function Effect803() {
             await battleSummon(choice(options), args[1] ? args[2] : args[3], args[4], doAnimate, args);
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Invoque trois autres Morts-Vivants aléatoires.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Invoque trois autres Morts-Vivants alÃ©atoires.";
 }
 
 function Effect804() {
@@ -7306,7 +7353,7 @@ function Effect804() {
                 await boostStats(sender, 2, 0, doAnimate);
         }
     };
-    this.desc = "Lorsqu'une créature ennemie meurt, gagne +2/+0.";
+    this.desc = "Lorsqu'une crÃ©ature ennemie meurt, gagne +2/+0.";
 }
 
 function Effect805() {
@@ -7318,19 +7365,19 @@ function Effect805() {
                 if (doAnimate)
                     await effectProcGlow(sender);
                 for (let e of copy(t[i - 1].effects))
-                    if (createEffect(e.id).desc.startsWith("<em>Dernière volonté"))
+                    if (createEffect(e.id).desc.startsWith("<em>DerniÃ¨re volontÃ©"))
                         t[i - 1].effects.push(copy(e));
             }
             if ((i % 4) < 3 && t[i + 1]) {
                 if (doAnimate)
                     await effectProcGlow(sender);
                 for (let e of copy(t[i + 1].effects))
-                    if (createEffect(e.id).desc.startsWith("<em>Dernière volonté"))
+                    if (createEffect(e.id).desc.startsWith("<em>DerniÃ¨re volontÃ©"))
                         t[i + 1].effects.push(copy(e));
             }
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Double les <em>Dernières volontés</em> de ses voisins latéraux.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Double les <em>DerniÃ¨res volontÃ©s</em> de ses voisins latÃ©raux.";
 }
 
 function Effect806() {
@@ -7341,7 +7388,7 @@ function Effect806() {
                 await boostStats(sender, 1, 1, doAnimate, false, true);
         }
     };
-    this.desc = "Lorsqu'une créature alliée meurt, gagne définitivement +1/+1.";
+    this.desc = "Lorsqu'une crÃ©ature alliÃ©e meurt, gagne dÃ©finitivement +1/+1.";
 }
 
 function Effect807() {
@@ -7375,7 +7422,7 @@ function Effect808() {
             }
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Invoque des copies de base des deux premiers Morts-Vivants morts ce combat.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Invoque des copies de base des deux premiers Morts-Vivants morts ce combat.";
 }
 
 function Effect809() {
@@ -7393,7 +7440,7 @@ function Effect809() {
             }
         }
     };
-    this.desc = "Lorsqu'un Mort-Vivant allié meurt, confère définitivement +1/+1 à trois Morts-Vivants alliés aléatoires.";
+    this.desc = "Lorsqu'un Mort-Vivant alliÃ© meurt, confÃ¨re dÃ©finitivement +1/+1 Ã  trois Morts-Vivants alliÃ©s alÃ©atoires.";
 }
 
 function Effect810() {
@@ -7401,7 +7448,7 @@ function Effect810() {
         if (args[0] === sender)
             await battleSummon("squelette-reconstitue", args[1] ? args[2] : args[3], args[4], doAnimate, args);
     };
-    this.desc = "<em>Dernière volonté :</em> Invoque un Squelette reconstitué.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Invoque un Squelette reconstituÃ©.";
 }
 
 function Effect811() {
@@ -7416,7 +7463,7 @@ function Effect811() {
             }
         }
     };
-    this.desc = "Lorsque cette créature est attaquée, elle divise par 2 l'attaque de la créature assaillante et augmente son attaque d'autant.";
+    this.desc = "Lorsque cette crÃ©ature est attaquÃ©e, elle divise par 2 l'attaque de la crÃ©ature assaillante et augmente son attaque d'autant.";
 }
 
 function Effect812() {
@@ -7429,7 +7476,7 @@ function Effect812() {
                     await boostStats(c, 1, 2, doAnimate);
         }
     };
-    this.desc = "Lorsque vous jouez une autre créature avec <em>Résurrection</em>, confère +1/+2 à vos autres Morts-Vivants.";
+    this.desc = "Lorsque vous jouez une autre crÃ©ature avec <em>RÃ©surrection</em>, confÃ¨re +1/+2 Ã  vos autres Morts-Vivants.";
 }
 
 function Effect813() {
@@ -7437,7 +7484,7 @@ function Effect813() {
         if (args[0] === sender)
             await battleSummon("serviteur-exhume", args[1] ? args[2] : args[3], args[4], doAnimate, args);
     };
-    this.desc = "<em>Dernière volonté :</em> Invoque un Serviteur exhumé.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> Invoque un Serviteur exhumÃ©.";
 }
 
 function Effect814() {
@@ -7452,7 +7499,7 @@ function Effect814() {
             }
         }
     };
-    this.desc = "<em>Dernière volonté :</em> Confère +1/+1 à un autre Mort-Vivant allié.";
+    this.desc = "<em>DerniÃ¨re volontÃ© :</em> ConfÃ¨re +1/+1 Ã  un autre Mort-Vivant alliÃ©.";
 }
 
 function Effect815() {
@@ -7469,7 +7516,7 @@ function Effect815() {
             }, sender);
         }
     };
-    this.desc = "<em>Recrue :</em> Confère +0/+4 à un autre Mort-Vivant allié ciblé.";
+    this.desc = "<em>Recrue :</em> ConfÃ¨re +0/+4 Ã  un autre Mort-Vivant alliÃ© ciblÃ©.";
 }
 
 function Effect816() {
@@ -7479,7 +7526,7 @@ function Effect816() {
         boostStats(c, 0, -n, doAnimate);
         await boostStats(players[0], 0, n, doAnimate);
     };
-    this.desc = "Vole jusqu'à 2 PV au Mort-Vivant allié ciblé.";
+    this.desc = "Vole jusqu'Ã  2 PV au Mort-Vivant alliÃ© ciblÃ©.";
 }
 
 function Effect817() {
@@ -7489,7 +7536,7 @@ function Effect817() {
         boostStats(players[0], 0, -Math.min(6, players[0].hp - 1), doAnimate);
         await boostStats(c, 0, 0, doAnimate);
     };
-    this.desc = "Perdez 6 PV pour donner <em>Résurrection</em> au Mort-Vivant allié ciblé.";
+    this.desc = "Perdez 6 PV pour donner <em>RÃ©surrection</em> au Mort-Vivant alliÃ© ciblÃ©.";
 }
 
 function Effect1001() {
@@ -7501,7 +7548,7 @@ function Effect1002() {
     this.run = async (sender, args, doAnimate) => {
         await boostStats(args[0].card, 2, 1, doAnimate);
     };
-    this.desc = "Confère +2/+1 à la créature alliée ciblée.";
+    this.desc = "ConfÃ¨re +2/+1 Ã  la crÃ©ature alliÃ©e ciblÃ©e.";
 }
 
 function Effect1003() {
@@ -7512,7 +7559,7 @@ function Effect1003() {
                 f.push(c.species);
         await boostStats(args[0].card, f.length, f.length, doAnimate);
     };
-    this.desc = "Confère +X/+X à la créature alliée ciblée, où X est le nombre de familles alliées différentes.";
+    this.desc = "ConfÃ¨re +X/+X Ã  la crÃ©ature alliÃ©e ciblÃ©e, oÃ¹ X est le nombre de familles alliÃ©es diffÃ©rentes.";
 }
 
 function Effect2001() {
@@ -7524,7 +7571,7 @@ function Effect2001() {
                 await boostStats(sender, 0, 1, doAnimate, false, true);
         }
     };
-    this.desc = "Lorsqu'une autre créature meurt, gagne définitivement +1/+0 ou +0/+1.";
+    this.desc = "Lorsqu'une autre crÃ©ature meurt, gagne dÃ©finitivement +1/+0 ou +0/+1.";
 }
 
 function Effect2002() {
@@ -7541,7 +7588,7 @@ function Effect2002() {
                 await boostStats(sender, n, n, doAnimate);
         }
     };
-    this.desc = "Au début de votre tour, change de famille et gagne +X/+X, où X est le nombre de créatures alliées de cette famille.";
+    this.desc = "Au dÃ©but de votre tour, change de famille et gagne +X/+X, oÃ¹ X est le nombre de crÃ©atures alliÃ©es de cette famille.";
 }
 
 function Effect2003() {
@@ -7559,7 +7606,7 @@ function Effect2003() {
             }
         }
     };
-    this.desc = "<em>Frappe préventive :</em> Gagne +1/+1 pour chaque famille alliée différente.";
+    this.desc = "<em>Frappe prÃ©ventive :</em> Gagne +1/+1 pour chaque famille alliÃ©e diffÃ©rente.";
 }
 
 function Effect2004() {
@@ -7576,7 +7623,7 @@ function Effect2004() {
             }
         }
     };
-    this.desc = "A la fin de chaque tour, confère +2/+2 à une créature alliée de chaque famille.";
+    this.desc = "A la fin de chaque tour, confÃ¨re +2/+2 Ã  une crÃ©ature alliÃ©e de chaque famille.";
 }
 
 function Effect2005() {
@@ -7594,7 +7641,7 @@ function Effect2005() {
             }
         }
     };
-    this.desc = "Lorsque vous revendez une créature, confère +2/+2 à une créature alliée de chaque autre famille.";
+    this.desc = "Lorsque vous revendez une crÃ©ature, confÃ¨re +2/+2 Ã  une crÃ©ature alliÃ©e de chaque autre famille.";
 }
 
 function Effect2006() {
@@ -7611,7 +7658,7 @@ function Effect2006() {
             }
         }
     };
-    this.desc = "<em>Recrue :</em> Confère +1/+1 à une créature alliée de chaque famille.";
+    this.desc = "<em>Recrue :</em> ConfÃ¨re +1/+1 Ã  une crÃ©ature alliÃ©e de chaque famille.";
 }
 
 function Effect2007() {
@@ -7633,7 +7680,7 @@ function Effect2007() {
             }
         }
     };
-    this.desc = "<em>Frappe préventive :</em> Gagne +5/+7 pour chaque famille alliée différente, ainsi que <em>Bouclier</em> s'il y en a au moins 2 et <em>Contact mortel</em> s'il y en a au moins 4.";
+    this.desc = "<em>Frappe prÃ©ventive :</em> Gagne +5/+7 pour chaque famille alliÃ©e diffÃ©rente, ainsi que <em>Bouclier</em> s'il y en a au moins 2 et <em>Contact mortel</em> s'il y en a au moins 4.";
 }
 
 
