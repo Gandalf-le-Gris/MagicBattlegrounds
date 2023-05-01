@@ -590,17 +590,17 @@ function dragEnd() {
 async function dragDrop() {
     let card = dragItem;
     dragItem = undefined;
-    if (document.getElementById("hand").contains(card) && this.className == "spell-area" && card.card.species == "Sortilège" && card.card.validTarget.area == "any")
+    if (document.getElementById("hand").contains(card) && this.className === "spell-area" && card.card.species == "Sortilège" && card.card.validTarget.area === "any")
         playSpell(card, undefined);
-    else if (document.getElementById("shop").contains(card) && this.className == "hand" && this.children[0].children.length < 6)
+    else if (document.getElementById("shop").contains(card) && this.className === "hand" && this.children[0].children.length < 6)
         buyCard(card);
-    else if (!document.getElementById("shop").contains(card) && this.className == "shop")
+    else if (!document.getElementById("shop").contains(card) && this.className === "shop")
         sellCard(card);
-    else if (document.getElementById("hand").contains(card) && this.name == "position" && this.children.length == 0 && card.card.species != "Sortilège")
+    else if (document.getElementById("hand").contains(card) && this.name === "position" && this.children.length === 0 && card.card.species !== "Sortilège")
         placeCard(this, card);
-    else if (card.classList.contains("small-card") && this.name == "position")
+    else if (card.classList.contains("small-card") && this.name === "position")
         moveCard(this, card);
-    else if (document.getElementById("hand").contains(card) && this.name == "position" && this.children[0] && card.card.species == "Sortilège" && canPlaySpell(card.card, this.children[0].card, "board"))
+    else if (document.getElementById("hand").contains(card) && this.name === "position" && this.children[0] && card.card.species === "Sortilège" && canPlaySpell(card.card, this.children[0].card, "board"))
         playSpell(card, this.children[0]);
 }
 
@@ -610,6 +610,8 @@ function dragOver(e) {
 
 function canPlaySpell(card, target, area) {
     let cond = card.validTarget;
+    if (!cond.area && !cond.species)
+        return false;
     if (cond.area && cond.area != area)
         return false;
     if (cond.species && cond.species != target.species)
