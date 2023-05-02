@@ -77,6 +77,7 @@ let troops = [];
 let round = 0;
 let discountedRefreshes = 0;
 let currentScene;
+let enemyFamilies = [];
 
 async function startGame() {
     await fadeTransition(() => {
@@ -99,6 +100,7 @@ async function startGame() {
                 troops[i].push(undefined);
         }
         discountedRefreshes = 0;
+        enemyFamilies = [undefined];
 
         let heroSelector1 = drawCard(commanders[0], 270);
         heroSelector1.className += " hero-selector hero-selector1";
@@ -155,6 +157,15 @@ async function selectHero(n) {
                 players[0] = selected.card;
                 for (let i = 3; i < 10; i++)
                     players[i - 2] = commanders[i];
+                for (let i = 1; i < 8; i++) {
+                    if (players[i].requirement)
+                        enemyFamilies[i] = players[i].requirement;
+                    else
+                        enemyFamilies[i] = choice(species);
+
+                    if (players[i].effects.findIndex(e => e.id == 12) != -1)
+                        troops[i].push(new ScionAspirame());
+                }
             }, 600);
         }
     }
@@ -699,11 +710,177 @@ function matchmaking() {
 }
 
 function updateEnemyTroops() {
-    //TODO
+    let budget;
     for (let i = 1; i < 8; i++) {
-        troops[i].pop();
-        troops[i].unshift(getCard(shopTier, choice(species)));
+        let t = troops[i];
+        for (let c of t) {
+            if (c) {
+                for (let e of c.effects) {
+                    let scaling = createEffect(e.id).scaling(c, t.filter(e => e));
+                    for (let k = 0; k < scaling[0]; k++) {
+                        if (Math.random() < .5)
+                            c.hp += 1;
+                        else
+                            c.attack += 1;
+                    }
+                    if (choice(t)) {
+                        for (let k = 0; k < scaling[1]; k++) {
+                            if (Math.random() < .5)
+                                choice(t.filter(e => e)).hp += 1;
+                            else
+                                choice(t.filter(e => e)).attack += 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        budget = Math.min(10, round + 2);
+        while (budget >= 3) {
+            let options = [];
+            for (let k = 0; k < 4; k++)
+                options.push(getCard(shopTier));
+            let newCard = getMostInteresting(options, t, enemyFamilies[i]);
+            let oldCard = getLeastUseful(t, enemyFamilies[i]);
+            if (getValue(newCard, t, false, enemyFamilies[i]) > getValue(oldCard, t, false, enemyFamilies[i])) {
+                t[t.indexOf(oldCard)] = newCard;
+                if (newCard.use)
+                    newCard.use(t);
+                
+                    for (let e of newCard.effects) {
+                        let scaling = createEffect(e.id).scaling(newCard, t.filter(e => e));
+                        for (let k = 0; k < scaling[2]; k++) {
+                            if (Math.random() < .5)
+                                newCard.hp += 1;
+                            else
+                                newCard.attack += 1;
+                        }
+                        if (choice(t)) {
+                            for (let k = 0; k < scaling[3]; k++) {
+                                if (Math.random() < .5)
+                                    choice(t.filter(e => e)).hp += 1;
+                                else
+                                    choice(t.filter(e => e)).attack += 1;
+                            }
+                        }
+                    }
+            }
+            budget -= 3;
+        }
+
+        arrangeEnemyTroops(t);
     }
+}
+
+function getLeastUseful(t, targetFamily) {
+    let min = 99999999;
+    let res = undefined;
+    let value;
+    for (let c of t) {
+        value = 0;
+        if (c) {
+            value = getValue(c, t, true, targetFamily);
+
+            if (value < min) {
+                min = value;
+                res = c;
+            }
+        } else {
+            return c;
+        }
+    }
+    return res;
+}
+
+function getMostInteresting(options, t, targetFamily) {
+    let max = -99999999;
+    let res = undefined;
+    let value;
+    for (let c of options) {
+        if (c && c.species !== "Sortilège") {
+            value = getValue(c, t, false, targetFamily);
+
+            if (value > max) {
+                max = value;
+                res = c;
+            }
+        }
+    }
+    /*while (!res || res.species === "Sortilège")
+        res = getCard(1);*/
+    return res;
+}
+
+function getValue(c, t, placed, targetFamily) {
+    let value = 0;
+    if (c && c.species !== "Sortilège") {
+        value += c.hp;
+        value += c.attack;
+        if (c.shield)
+            value += c.attack / 2;
+        if (c.revive)
+            value += c.attack / 2;
+        if (c.range)
+            value += c.attack / 8;
+        if (c.deathtouch)
+            value += c.hp / 2 + 60;
+        value += getScaling(c, t, placed);
+        value += getBattleEffectValue(c, t);
+        if (c.species === targetFamily)
+            value *= 5;
+    }
+    return value;
+}
+
+function getScaling(c, t, placed) {
+    let n = 0;
+    let scaling;
+    for (let e of c.effects) {
+        console.log(e.id)
+        scaling = createEffect(e.id).scaling(c, t.filter(e => e));
+        n += (scaling[0] + scaling[1]) * 3;
+        if (!placed)
+            n += scaling[2] + scaling[3];
+    }
+    return n;
+}
+
+function getBattleEffectValue(c, t) {
+    let n = 0;
+    for (let e of c.effects)
+        n += createEffect(e.id).battleValue(c, t.filter(e => e));
+    return n;
+}
+
+function arrangeEnemyTroops(t) {
+    t.sort((a, b) => {
+        if (toFront(a) && !toFront(b))
+            return -1;
+        else if (toFront(b) && !toFront(a))
+            return 1;
+        else if (toBack(a) && !toBack(b))
+            return 1;
+        else if (toBack(b) && !toBack(a))
+            return -1;
+        else
+            return (a.hp + a.attack > b.hp + b.attack);
+    });
+}
+
+function toFront(c) {
+    for (let e of c.effects) {
+        if (createEffect(e.id).toFront)
+            return true;
+    }
+    return false;
+}
+
+function toBack(c) {
+    for (let e of c.effects) {
+        if (createEffect(e.id).toBack)
+            return true;
+    }
+    return false;
 }
 
 async function runBattle(p1, p2, doAnimate) {
@@ -5077,6 +5254,12 @@ function Effect1() {
             await spendCoins(-1, false);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(Math.floor(t.filter(e => e.species === "Dragon").length * 1.5), .5, 1.5 + round > 9), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Gagnez 1 pièce d'or à chaque fois que vous achetez un Dragon.";
 }
 
@@ -5091,6 +5274,12 @@ function Effect2() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(t.filter(e => e.shield).length * 2, 0, 1.5), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Lorsque vous jouez une créature avec Bouclier, vos autres créatures avec Bouclier gagnent +1/+1.";
 }
 
@@ -5101,6 +5290,12 @@ function Effect3() {
                 await effectProcGlow(sender);
             await boostStats(args[0].card, 2, 3, doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(5, 0, 2), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Confère +2/+3 aux créatures que vous jouez et que vous n'avez pas achetées.";
 }
@@ -5114,6 +5309,12 @@ function Effect4() {
             if (target)
                 await dealDamage(target, 1, doAnimate, args[5]);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return t.filter(e => e.species === "Gobelin").length * 2;
     };
     this.desc = "Lorsqu'un Gobelin allié meurt, inflige 1 dégât à une créature adverse aléatoire.";
 }
@@ -5134,6 +5335,12 @@ function Effect5() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return t[0] ? t[0].hp / 2 : 0;
+    };
     this.desc = "<em>Frappe préventive :</em> La première créature alliée acquiert <em>Résurrection</em>.";
 }
 
@@ -5146,6 +5353,12 @@ function Effect6() {
             card.created = true;
             await addToHand(drawCard(card, 176));
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, round % 2 == 0 ? 2 * round : 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Tous les 2 tours, ajoute un Sortilège aléatoire dans votre main.";
 }
@@ -5163,6 +5376,12 @@ function Effect7() {
                 await boostStats(args[0].card, 0, 0, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, t.filter(e => e.species === "Machine").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Confère \"<em>Reconfiguration :</em> Gagne +1/+0 <em>ou</em> Gagne +0/+1.\" aux Machines alliées.";
 }
 
@@ -5175,6 +5394,12 @@ function Effect8() {
             card.created = true;
             await addToHand(drawCard(card, 176));
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, t.filter(e => e.species === "Bête").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Tous les 2 tours, ajoute une Proie facile dans votre main.";
 }
@@ -5195,6 +5420,12 @@ function Effect9() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(5, 0, 2), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Lorsque vous revendez une créature d'une famille, confère +1/+1 à une créature alliée de chaque autre famille.";
 }
 
@@ -5206,11 +5437,23 @@ function Effect10() {
             spendCoins(1 - lastResult);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(3, .5, 2), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Gagnez 1 pièce d'or au début de votre tour si vous n'avez pas gagné le dernier combat.";
 }
 
 function Effect11() {
     this.run = async (sender, args, doAnimate) => { };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Inflige 3 dégâts supplémentaires aux autres commandants.";
 }
 
@@ -5221,6 +5464,12 @@ function Effect12() {
         let card = new ScionAspirame();
         card.created = true;
         await addToHand(drawCard(card, 176));
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Commencez la partie avec un Scion aspirâme en main.";
 }
@@ -5253,6 +5502,12 @@ function Effect13() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(4, -.5, 2.5), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Lorsque vous recherchez des recrues, leur donne +1/+1 puis mélange leurs statistiques.";
 }
 
@@ -5266,6 +5521,12 @@ function Effect101() {
             await addToHand(drawCard(card, 176));
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 2];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> Ajoute 1 Pièce d'or à votre main.";
 }
 
@@ -5274,6 +5535,12 @@ function Effect102() {
         if (coins > 0 && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             await boostStats(sender, Math.min(6, 2 * coins), Math.min(6, 2 * coins), doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [4, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "A la fin de votre tour, gagne +2/+2 pour chaque pièce d'or inutilisée, jusqu'à 3.";
 }
@@ -5298,6 +5565,12 @@ function Effect103() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Après avoir joué 5 autres Dragons, se transforme en Dragon d'or.";
 }
 
@@ -5311,6 +5584,12 @@ function Effect104() {
                 await boostStats(sender, 1, 1, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Lorsque vous obtenez des pièces d'or, gagne +1/+1 jusqu'au prochain tour.";
 }
 
@@ -5320,6 +5599,12 @@ function Effect105() {
             await boostStats(sender, -sender.effect104, -sender.effect104, doAnimate);
             sender.effect104 = 0;
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "";
 }
@@ -5337,6 +5622,12 @@ function Effect106() {
                 await spendCoins(n, false);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 8];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> Gagnez 1 pièce d'or pour chaque autre Dragon allié.";
 }
 
@@ -5350,6 +5641,12 @@ function Effect107() {
             await addToHand(drawCard(card, 176));
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 3, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Dernière volonté :</em> Ajoute 1 Pièce d'or à votre main.";
 }
 
@@ -5360,6 +5657,12 @@ function Effect108() {
                 await effectProcGlow(sender);
             await spendCoins(-1, false);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 3, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Lorsque vous revendez un Dragon, obtenez une pièce d'or supplémentaire.";
 }
@@ -5378,6 +5681,12 @@ function Effect109() {
                 await boostStats(c.card, 0, 1, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 6, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Lorsque vous gagnez des pièces d'or, confère +0/+1 à 3 Dragons alliés.";
 }
 
@@ -5386,6 +5695,12 @@ function Effect110() {
         if (args[0] < 0 && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             await boostStats(sender, 1, 0, doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [2, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Lorsque vous gagnez des pièces d'or, gagne +1/+0.";
 }
@@ -5400,6 +5715,12 @@ function Effect111() {
             await boostStats(sender, -n, -n, doAnimate, true);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, -t.filter(e => e.species === "Dragon").count, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> Gagne -1/-1 pour chaque autre Dragon allié.";
 }
 
@@ -5413,6 +5734,12 @@ function Effect112() {
             if (options.length > 0)
                 await boostStats(choice(options).card, sender.attack, sender.hp, doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Lorsque vous revendez cette carte depuis le plateau, confère ses statistiques à un Dragon allié.";
 }
@@ -5429,6 +5756,13 @@ function Effect113() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 12;
+    };
+    this.toFront = true;
     this.desc = "Inflige 12 dégâts aux créatures derrière les créatures attaquées.";
 }
 
@@ -5443,6 +5777,13 @@ function Effect114() {
                     await boostStats(c, 2, 1, doAnimate, false, true);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 75;
+    };
+    this.toFront = true;
     this.desc = "Lorsque cette créature est attaquée, elle confère définitivement +2/+1 aux Dragons alliés.";
 }
 
@@ -5458,6 +5799,13 @@ function Effect115() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 80;
+    };
+    this.toFront = true;
     this.desc = "<em>Dernière volonté :</em> Tous les dragons alliés gagnent +0/+20.";
 }
 
@@ -5469,6 +5817,13 @@ function Effect116() {
             await dealDamage(args[1], 3, doAnimate, [args[2], args[3], args[4], args[5], args[6]]);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 8;
+    };
+    this.toFront = true;
     this.desc = "Lorsque cette créature est attaquée, elle inflige 3 dégâts à l'attaquant avant de combattre.";
 }
 
@@ -5482,6 +5837,12 @@ function Effect117() {
             await boostStats(sender, n, 0, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [t.filter(e => e.species === "Dragon").length, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "A la fin de votre tour, gagne +1/+0 pour chaque autre Dragon allié.";
 }
 
@@ -5491,6 +5852,12 @@ function Effect118() {
             await spendCoins(-2, false);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, t.filter(e => e.species === "Dragon").length, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Lorsque vous revendez cette carte, obtenez 2 pièces d'or supplémentaires.";
 }
 
@@ -5498,6 +5865,12 @@ function Effect119() {
     this.run = async (sender, args, doAnimate) => {
         let n = lastResult == 1 ? 5 : 1;
         await boostStats(args[0].card, n, n, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 6];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Confère +1/+1 au Dragon allié ciblé, ou +5/+5 si vous avez gagné le dernier combat.";
 }
@@ -5510,6 +5883,12 @@ function Effect201() {
             document.getElementById("refresh").style.boxShadow = "0 0 15px green";
             discountedRefreshes++;
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "<em>Recrue :</em> Réduit de 1 le coût de la prochaine recherche de recrues.";
 }
@@ -5524,6 +5903,16 @@ function Effect202() {
             await summonCard(card);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.use = (t) => {
+        if (t.indexOf(undefined) != -1)
+            t[t.indexOf(undefined)] = new GuerrierGobelin();
+    };
     this.desc = "<em>Recrue :</em> Invoque un Guerrier gobelin.";
 }
 
@@ -5531,6 +5920,12 @@ function Effect203() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0] === sender)
             await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 5;
     };
     this.desc = "<em>Dernière volonté :</em> Invoque un Artificier gobelin.";
 }
@@ -5547,6 +5942,12 @@ function Effect204() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 3;
+    };
     this.desc = "<em>Dernière volonté :</em> Inflige 3 dégâts à une créature ennemie aléatoire.";
 }
 
@@ -5558,6 +5959,13 @@ function Effect205() {
                 await boostStats(sender, 2, 1, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return t.filter(e => e.species == "Gobelin").length * 1.5;
+    };
+    this.toBack = true;
     this.desc = "Lorsqu'un Gobelin allié meurt, gagne +2/+1.";
 }
 
@@ -5576,6 +5984,12 @@ function Effect206() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 12;
+    };
     this.desc = "<em>Dernière volonté :</em> Inflige 2 dégâts à une créature ennemie aléatoire 5 fois.";
 }
 
@@ -5591,6 +6005,13 @@ function Effect207() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 5;
+    };
+    this.toFront = true;
     this.desc = "Lorsque cette créature attaque, elle inflige 5 dégâts à une créature adverse aléatoire.";
 }
 
@@ -5613,6 +6034,12 @@ function Effect208() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 50;
+    };
     this.desc = "Lorsqu'une créature adverse subit des dégâts, confère définitivement +1/+0 à un autre gobelin allié.";
 }
 
@@ -5627,6 +6054,13 @@ function Effect209() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 40;
+    };
+    this.toBack = true;
     this.desc = "Lorsqu'un Gobelin allié attaque, inflige 2 dégâts à sa cible avant qu'il ne combatte.";
 }
 
@@ -5640,6 +6074,12 @@ function Effect210() {
                     await boostStats(d.children[0].card, 0, 2, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 2 * t.filter(e => e.species === "Gobelin").length];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> Vos autres Gobelins gagnent +0/+2.";
 }
 
@@ -5648,6 +6088,12 @@ function Effect211() {
         if (args[0].card !== sender && containsKeyword(args[0].card, "Dernière volonté") && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             await boostStats(sender, 1, 2, doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [3, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Lorsque vous jouez une carte avec <em>Dernière volonté</em>, gagne +1/+2.";
 }
@@ -5662,6 +6108,13 @@ function Effect212() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 10;
+    };
+    this.toFront = true;
     this.desc = "<em>Dernière volonté :</em> Confère définitivement +1/+1 à tous les autres Gobelins alliés.";
 }
 
@@ -5684,6 +6137,12 @@ function Effect213() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 50;
+    };
     this.desc = "<em>Frappe préventive :</em> Copie les effets de <em>Dernière volonté</em> de ses voisins latéraux.";
 }
 
@@ -5694,6 +6153,12 @@ function Effect214() {
             await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate, args);
             await battleSummon("artificier-gobelin", args[1] ? args[2] : args[3], args[4], doAnimate, args);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 12;
     };
     this.desc = "<em>Dernière volonté :</em> Invoque trois Artificiers gobelins.";
 }
@@ -5717,6 +6182,12 @@ function Effect215() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return c.attack / 2;
+    };
     this.desc = "<em>Frappe préventive :</em> Gagne de l'attaque équivalente à l'attaque du Gobelin voisin le plus fort.";
 }
 
@@ -5734,6 +6205,12 @@ function Effect216() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 30;
+    };
     this.desc = "<em>Dernière volonté :</em> Invoque trois Gobelins aléatoires de niveau inférieur ou égal à 3.";
 }
 
@@ -5745,6 +6222,20 @@ function Effect217() {
         });
         await boostStats(args[0].card, 0, 0, doAnimate);
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.use = (t) => {
+        let goblins = t.filter(e => e.species === "Gobelin");
+        if (goblins.length > 0)
+            choice(goblins).effects.push({
+                trigger: "ko",
+                id: 203
+            });
+    }
     this.desc = "Confère \"<em>Dernière volonté :</em> Invoque un Artificier gobelin.\" au Gobelin allié ciblé.";
 }
 
@@ -5755,6 +6246,12 @@ function Effect218() {
         card.range = true;
         addToHand(drawCard(card, 176));
         await boostStats(card, 0, 0, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Ajoute un Gobelin aléatoire à votre main et lui confère <em>Portée</em>.";
 }
@@ -5769,12 +6266,24 @@ function Effect301() {
             await addToHand(drawCard(card, 176));
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 2];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> Ajoute une Connaissances arcaniques à votre main.";
 }
 
 function Effect302() {
     this.run = async (sender, args, doAnimate) => {
         await boostStats(args[0].card, 1, 1, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Confère +1/+1 à la créature alliée ciblée.";
 }
@@ -5789,6 +6298,22 @@ function Effect303() {
         card.hp = 3;
         await summonCard(card);
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.use = (t) => {
+        let card = getCard(1);
+        while (card.species == "Sortilège")
+            card = getCard(1);
+        card.created = true;
+        card.attack = 3;
+        card.hp = 3;
+        if (t.indexOf(undefined) != -1)
+            t[t.indexOf(undefined)] = card;
+    }
     this.desc = "Invoque une créature de niveau 1 aléatoire et fixe ses statistiques à 3/3.";
 }
 
@@ -5802,12 +6327,24 @@ function Effect304() {
             sender.effect304 = 1;
         }
     };
+    this.scaling = (c, t) => {
+        return [3, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Le premier sort joué sur cette créature chaque tour prend effet deux fois.";
 }
 
 function Effect305() {
     this.run = async (sender, args, doAnimate) => {
         sender.effect304 = 0;
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "";
 }
@@ -5816,6 +6353,12 @@ function Effect306() {
     this.run = async (sender, args, doAnimate) => {
         if (findDOMCard(sender).parentElement.parentElement.classList.contains("board"))
             await boostStats(sender, 1, 1, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [3, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Gagne +1/+1 lorsque que vous jouez un Sortilège.";
 }
@@ -5832,6 +6375,12 @@ function Effect307() {
             await summonCard(card);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "A la fin de votre tour, invoque une créature de niveau supérieur ou égal à 3.";
 }
 
@@ -5845,12 +6394,25 @@ function Effect308() {
             await addToHand(drawCard(card, 176));
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.toFront = true;
     this.desc = "<em>Dernière volonté :</em> Ajoute un Catalyseur de puissance à votre main.";
 }
 
 function Effect309() {
     this.run = async (sender, args, doAnimate) => {
         await boostStats(args[0].card, 2, 1, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Confère +2/+1 à la créature alliée ciblée.";
 }
@@ -5863,6 +6425,12 @@ function Effect310() {
             await boostStats(args[1], 2, 2, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 6, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Lorsque vous jouez un Sortilège sur une créature alliée, lui confère +2/+2.";
 }
 
@@ -5873,6 +6441,12 @@ function Effect311() {
                 sender.effect311 = [];
             sender.effect311.push(copy(args[0]));
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "";
 }
@@ -5899,6 +6473,12 @@ function Effect312() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 15, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "A la fin de votre tour, rejoue les 3 derniers Sortilèges joués ce tour-ci sur des cibles aléatoires.";
 }
 
@@ -5908,6 +6488,12 @@ function Effect313() {
             if (sender.effect311)
                 sender.effect311 = [];
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "";
 }
@@ -5919,6 +6505,12 @@ function Effect314() {
             card = getCard(Math.min(6, shopTier + 1));
         card.created = true;
         await summonCard(card);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Invoque une créature du niveau supérieur à votre niveau de recrutement.";
 }
@@ -5933,6 +6525,12 @@ function Effect315() {
             await addToHand(drawCard(card, 176));
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 2];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> Ajoute un Équilibre naturel à votre main.";
 }
 
@@ -5943,6 +6541,12 @@ function Effect316() {
         let datk = Math.floor((hp - atk) / 2);
         let dhp = Math.floor((atk - hp) / 2);
         await boostStats(args[0].card, datk + 1, dhp + 1, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Confère +1/+1 à la créature alliée ciblée, puis équilibre ses statistiques.";
 }
@@ -5958,6 +6562,12 @@ function Effect317() {
                 await playSpell(drawCard(new ConnaissancesArcaniques(), 0), choice(options));
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Joue 5 Connaissances arcaniques sur des cibles aléatoires.";
 }
 
@@ -5971,6 +6581,12 @@ function Effect318() {
             await addToHand(drawCard(card, 176));
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> Ajoute un Déphasage à votre main.";
 }
 
@@ -5978,6 +6594,12 @@ function Effect319() {
     this.run = async (sender, args, doAnimate) => {
         args[0].card.shield = true;
         await boostStats(args[0].card, 0, 0, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Confère <em>Bouclier</em> au Sorcier allié ciblé.";
 }
@@ -5994,6 +6616,15 @@ function Effect320() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        if (!c.effect320)
+            c.effect320 = 0;
+        c.effect320 += 2;
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return c.effect320 ? c.effect320 : 0;
+    };
     this.desc = "<em>Frappe préventive :</em> Inflige 1 dégât à une cible adverse aléatoire pour chaque Sortilège joué depuis que cette carte est en jeu.";
 }
 
@@ -6004,6 +6635,12 @@ function Effect321() {
                 sender.effect320 = 0;
             sender.effect320++;
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "";
 }
@@ -6023,12 +6660,24 @@ function Effect322() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 3, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Au début de votre tour, ajoute un Catalyseur de puissance à votre main, ou deux si vous avez perdu le dernier combat.";
 }
 
 function Effect323() {
     this.run = async (sender, args, doAnimate) => {
         
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Ne peut pas gagner d'attaque.";
 }
@@ -6044,6 +6693,12 @@ function Effect324() {
             id: 326
         });
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Jusqu'au prochain tour, confère +1/+2 à une créature alliée aléatoire lorsque vous jouez un Sortilège.";
 }
 
@@ -6055,6 +6710,12 @@ function Effect325() {
                 options.push(d.children[0].card);
         if (options.length > 0)
             await boostStats(choice(options), 1, 2, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "";
 }
@@ -6068,6 +6729,12 @@ function Effect326() {
         if (i != -1)
             sender.effects.splice(i, 1);
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "";
 }
 
@@ -6076,6 +6743,16 @@ function Effect327() {
         args[0].card.range = true;
         await boostStats(args[0].card, 0, 0, doAnimate);
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.use = (t) => {
+        if (t.findIndex(e => e.species === "Sorcier"))
+            t[t.findIndex(e => e.species === "Sorcier")].range = true;
+    }
     this.desc = "Confère <em>Portée</em> au Sorcier allié ciblé.";
 }
 
@@ -6092,6 +6769,12 @@ function Effect401() {
                 notself: true
             }, sender);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 3];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "<em>Recrue :</em> Confère +1/+2 à un autre Soldat allié ciblé.";
 }
@@ -6117,6 +6800,12 @@ function Effect402() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 30;
+    };
     this.desc = "<em>Dernière volonté :</em> Confère <em>Bouclier</em> aux Soldats voisins.";
 }
 
@@ -6126,6 +6815,12 @@ function Effect403() {
             await boostStats(sender, 5, 0, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 4;
+    };
     this.desc = "Lorsque cette créature attaque ou est attaquée, si elle a le <em>Bouclier</em>, elle gagne +5/+0.";
 }
 
@@ -6134,6 +6829,12 @@ function Effect404() {
         if (args[0] === sender && sender.shield) {
             await boostStats(sender, 5, 0, doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "";
 }
@@ -6153,6 +6854,12 @@ function Effect405() {
             }, sender);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> Confère <em>Bouclier</em> à un autre Soldat allié ciblé.";
 }
 
@@ -6165,6 +6872,13 @@ function Effect406() {
             await boostStats(args[0], 3, 3, doAnimate, false, true);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 50;
+    };
+    this.toBack = true;
     this.desc = "Lorsqu'une créature alliée avec <em>Bouclier</em> attaque ou est attaquée, elle gagne définitivement +3/+3.";
 }
 
@@ -6176,6 +6890,12 @@ function Effect407() {
                 await effectProcGlow(sender);
             await boostStats(args[0], 3, 3, doAnimate, false, true);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "";
 }
@@ -6190,6 +6910,13 @@ function Effect408() {
             await boostStats(sender, 0, 0, doAnimate, false, true);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 15;
+    };
+    this.toFront = true;
     this.desc = "Lorsqu'une créature alliée qui a eu <em>Bouclier</em> meurt, gagne <em>Bouclier</em>.";
 }
 
@@ -6214,6 +6941,12 @@ function Effect409() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 8;
+    };
     this.desc = "<em>Frappe préventive :</em> Confère <em>Portée</em> aux Soldats voisins.";
 }
 
@@ -6226,6 +6959,12 @@ function Effect410() {
                 if (d.children[0])
                     await boostStats(d.children[0].card, 1, 1, doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 2 * t.filter(e => e.species === "Soldat").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "A la fin de chaque tour, confère +1/+1 à tous les Soldats alliés.";
 }
@@ -6251,6 +6990,12 @@ function Effect411() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 3 * t.filter(e => e.species === "Soldat").length;
+    };
     this.desc = "<em>Frappe préventive :</em> Confère +1/+2 aux Soldats alliés pour chacun de leurs voisins différents.";
 }
 
@@ -6266,6 +7011,12 @@ function Effect412() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 15;
+    };
     this.desc = "<em>Frappe préventive :</em> Confère +10/+10 au Soldat à sa gauche.";
 }
 
@@ -6275,6 +7026,12 @@ function Effect413() {
         if (t.includes(sender) && sender.hp > 0) {
             await boostStats(sender, -1, 0, doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return -2;
     };
     this.desc = "Lorsqu'une créature alliée meurt, gagne -1/-0.";
 }
@@ -6292,6 +7049,12 @@ function Effect414() {
             if (target)
                 await boostStats(target, 1, 1, doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 4, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Lorsque vous jouez un Soldat, confère +1/+1 à un Soldat allié aléatoire.";
 }
@@ -6316,6 +7079,12 @@ function Effect415() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Au début de votre tour, ajoute à votre main une copie de base d'un autre Soldat allié aléatoire.";
 }
 
@@ -6334,6 +7103,12 @@ function Effect416() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 15;
+    };
     this.desc = "Lorsque cette créature attaque, elle fait perdre le <em>Bouclier</em>, la <em>Résurrection</em>, la <em>Portée</em> et le <em>Contact mortel</em> à la créature attaquée avant de combattre.";
 }
 
@@ -6351,6 +7126,12 @@ function Effect417() {
         if (i % 4 < 3 && t[i + 1])
             boostStats(t[i + 1], 1, 1, doAnimate);
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Confère +1/+1 à un Soldat allié et à ses voisins.";
 }
 
@@ -6360,6 +7141,12 @@ function Effect418() {
             trigger: "ko",
             id: 419
         });
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Confère \"Lorsque le dernier allié de cette créature meurt, elle acquiert <em>Bouclier</em>.\" à une créature alliée.";
 }
@@ -6380,6 +7167,12 @@ function Effect419() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 5;
+    };
     this.desc = "Lorsque le dernier allié de cette créature meurt, elle acquiert <em>Bouclier</em>.";
 }
 
@@ -6399,6 +7192,19 @@ function Effect501() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.use = (t) => {
+        let card = getCard(1);
+        while (card.species == "Sortilège")
+            card = getCard(1);
+        if (t.indexOf(undefined) != -1)
+            t[t.indexOf(undefined)] = card;
+    }
     this.desc = "<em>Recrue :</em> Déplace une carte aléatoire disponible au recrutement dans votre main.";
 }
 
@@ -6414,6 +7220,12 @@ function Effect502() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 2;
+    };
     this.desc = "<em>Frappe préventive :</em> Inflige 2 dégâts à une cible adverse aléatoire.";
 }
 
@@ -6427,6 +7239,12 @@ function Effect503() {
             addToHand(drawCard(card, 176));
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 2];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> Ajoute un Sortilège aléatoire à votre main.";
 }
 
@@ -6435,6 +7253,12 @@ function Effect504() {
         if (args[0].card !== sender && args[0].card.created && findDOMCard(sender).parentElement.parentElement.classList.contains("board"))
             await boostStats(sender, 2, 1, doAnimate);
     };
+    this.scaling = (c, t) => {
+        return [5, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Gagne +2/+1 lorsque vous jouez une carte que vous n'avez pas achetée.";
 }
 
@@ -6442,6 +7266,12 @@ function Effect505() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0] !== sender && args[0].created && findDOMCard(sender).parentElement.parentElement.classList.contains("board"))
             await boostStats(sender, 2, 1, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "";
 }
@@ -6469,6 +7299,12 @@ function Effect506() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> Ajoute une copie de base d'une créature de votre dernier adversaire à votre main. Elle devient un Bandit.";
 }
 
@@ -6492,6 +7328,12 @@ function Effect507() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 9 * t.filter(e => e.species === "Bandit").length;
+    };
     this.desc = "<em>Frappe préventive :</em> Réduit l'attaque des créatures ennemies de 1 pour chaque autre Bandit allié.";
 }
 
@@ -6505,6 +7347,12 @@ function Effect508() {
             await boostStats(args[0], 4, 2, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 8;
+    };
     this.desc = "Lorsqu'une créature alliée attaque la ligne arrière, elle gagne +4/+2.";
 }
 
@@ -6512,6 +7360,12 @@ function Effect509() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0].card !== sender && args[0].card.species == "Bandit" && findDOMCard(sender).parentElement.parentElement.classList.contains("board"))
             await boostStats(sender, 1, 1, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [5, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Gagne +1/+1 lorsque vous jouez un autre Bandit.";
 }
@@ -6523,6 +7377,12 @@ function Effect510() {
                 await effectProcGlow(sender);
             await spendCoins(-1, false);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 4, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Lorsque vous revendez une carte que vous n'avez pas achetée, obtenez une pièce d'or supplémentaire.";
 }
@@ -6542,6 +7402,12 @@ function Effect511() {
             }, sender);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> Confère <em>Portée</em> à un autre Bandit allié ciblé.";
 }
 
@@ -6560,6 +7426,13 @@ function Effect512() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.toFront = true;
     this.desc = "<em>Dernière volonté :</em> Ajoute une copie de base d'une créature adverse aléatoire à votre main.";
 }
 
@@ -6575,6 +7448,12 @@ function Effect513() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 20, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Lorsque vous jouez une carte que vous n'avez pas achetée, confère +2/+2 à 3 créatures alliées aléatoires.";
 }
 
@@ -6589,6 +7468,12 @@ function Effect514() {
                     await boostStats(target, 2, 2, doAnimate);
             }
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "";
 }
@@ -6612,6 +7497,12 @@ function Effect515() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 6, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "A la fin de votre tour, déplace la carte de plus haut niveau disponible au recrutement dans votre main.";
 }
 
@@ -6629,6 +7520,12 @@ function Effect516() {
                 boostStats(c.card, 0, 0, doAnimate);
             }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Gagnez une pièce d'or. Toutes les créatures en jeu et dans votre main que vous n'avez pas achetées deviennent des Bandits.";
 }
 
@@ -6638,6 +7535,12 @@ function Effect517() {
             trigger: "turn-start",
             id: 518
         });
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Au début de votre prochain tour, ajoute 2 copies de base de créatures de votre prochain adversaire à votre main.";
 }
@@ -6665,6 +7568,12 @@ function Effect518() {
         }
         sender.effects.splice(sender.effects.findIndex(e => e.id == 518), 1);
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "";
 }
 
@@ -6681,6 +7590,12 @@ function Effect601() {
             if (doAnimate)
                 await boostStats(sender, 0, 0, doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [1, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "<em>Reconfiguration :</em> Gagne +1/+0 <em>ou</em> Gagne +0/+1.";
 }
@@ -6699,6 +7614,12 @@ function Effect602() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 1, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Reconfiguration :</em> Confère +1/+0 à une créature alliée aléatoire <em>ou</em> Confère +0/+1 à une créature alliée aléatoire.";
 }
 
@@ -6712,6 +7633,12 @@ function Effect603() {
                     await boostStats(d.card, 1, 1, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> Confère +1/+1 aux créatures disponibles au recrutement.";
 }
 
@@ -6720,14 +7647,20 @@ function Effect604() {
         if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             if (!sender.effect604 || sender.effect604 == 0) {
                 sender.effect604 = 1;
-                await boostStats(sender, 7, -4, doAnimate, true);
+                await boostStats(sender, 5, -3, doAnimate, true);
             } else {
                 sender.effect604 = 0;
-                await boostStats(sender, -4, 7, doAnimate, true);
+                await boostStats(sender, -3, 5, doAnimate, true);
             }
         }
     };
-    this.desc = "<em>Reconfiguration :</em> Gagne +7/-4 <em>ou</em> Gagne -4/+7.";
+    this.scaling = (c, t) => {
+        return [2, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Reconfiguration :</em> Gagne +5/-3 <em>ou</em> Gagne -3/+5.";
 }
 
 function Effect605() {
@@ -6746,12 +7679,24 @@ function Effect605() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Reconfiguration :</em> Gagne <em>Bouclier</em> et perd <em>Portée</em> <em>ou</em> Gagne <em>Portée</em> et perd <em>Bouclier</em>.";
 }
 
 function Effect606() {
     this.run = async (sender, args, doAnimate) => {
 
+    };
+    this.scaling = (c, t) => {
+        return [0, 4, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Pendant la phase de recrutement, les statistiques de vos créatures ne peuvent pas baisser.";
 }
@@ -6769,6 +7714,12 @@ function Effect607() {
             await boostStats(sender, atk, hp, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [6, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "A la fin de chaque tour, cette créature vole jusqu'à 6/6 à la Machine derrière elle, si possible.";
 }
 
@@ -6783,6 +7734,12 @@ function Effect608() {
             await battleSummon("automate-replicateur-mod", args[1] ? args[2] : args[3], args[4], doAnimate, args);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 8 * t.filter(e => e.species === "Machine").length;
+    };
     this.desc = "<em>Dernière volonté :</em> Confère +2/+2 à toutes les autres Machines alliées, puis invoque deux copies de base de cette créature sans réinvocation.";
 }
 
@@ -6794,6 +7751,12 @@ function Effect609() {
                 if (c && c.species == "Machine")
                     await boostStats(c, 2, 2, doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 15;
     };
     this.desc = "<em>Dernière volonté :</em> Confère +2/+2 à toutes les autres Machines alliées.";
 }
@@ -6820,6 +7783,12 @@ function Effect610() {
                 }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 15 * (t.filter(e => e.species === "Machine").length > 3), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "A la fin de votre tour, redéclenche les <em>Reconfigurations</em> des Machines voisines.";
 }
 
@@ -6834,6 +7803,12 @@ function Effect611() {
                 await dealDamage(t[0], 8, doAnimate, args);
             }
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 8;
     };
     this.desc = "<em>Frappe préventive :</em> Inflige 8 dégâts à la créature adverse avec les PV les plus faibles.";
 }
@@ -6866,6 +7841,12 @@ function Effect612() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, -6 + 2 * t.filter(e => e.species === "Machine").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Reconfiguration :</em> Confère +X/-3 <em>ou</em> Confère -3/+X à ses voisins latéraux, X étant le nombre de Machines alliées.";
 }
 
@@ -6874,6 +7855,12 @@ function Effect613() {
         if (args[0] === sender) {
             await battleSummon("auto-duplicateur-mod", args[1] ? args[2] : args[3], args[4], doAnimate, args);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 4;
     };
     this.desc = "<em>Dernière volonté :</em> Invoque une copie de base de cette créature sans réinvocation.";
 }
@@ -6887,6 +7874,13 @@ function Effect614() {
             await boostStats(sender, 3, 2, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 10;
+    };
+    this.toBack = true;
     this.desc = "Lorsqu'une créature alliée est invoquée en combat, gagne +3/+2.";
 }
 
@@ -6898,6 +7892,12 @@ function Effect615() {
             await battleSummon("ouvrier-assemble", args[1] ? args[2] : args[3], args[4], doAnimate, args);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 12;
+    };
     this.desc = "<em>Dernière volonté :</em> Invoque trois Ouvriers assemblés.";
 }
 
@@ -6908,6 +7908,12 @@ function Effect616() {
                 await effectProcGlow(sender);
             await boostStats(sender, 0, 1, doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [2, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Lorsque vous jouez une autre Machine, gagne +0/+1.";
 }
@@ -6922,6 +7928,12 @@ function Effect617() {
                     await boostStats(c.card, 2, 2, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Les Machines disponibles au recrutement ont +2/+2.";
 }
 
@@ -6935,6 +7947,12 @@ function Effect618() {
                     await boostStats(c.card, 2, 2, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "";
 }
 
@@ -6943,6 +7961,12 @@ function Effect619() {
         if (args[0] === sender) {
             await battleSummon("ouvrier-assemble", args[1] ? args[2] : args[3], args[4], doAnimate, args);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 4;
     };
     this.desc = "<em>Dernière volonté :</em> Invoque un Ouvrier assemblé.";
 }
@@ -6955,6 +7979,20 @@ function Effect620() {
         });
         boostStats(args[0].card, 0, 0, doAnimate);
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.use = (t) => {
+        let machines = t.filter(e => e.species === "Machine");
+        if (machines.length > 0)
+            choice(machines).effects.push({
+                trigger: "ko",
+                id: 619
+            });
+    }
     this.desc = "Confère \"<em>Dernière volonté :</em> Invoque un Ouvrier assemblé.\" à la Machine alliée ciblée.";
 }
 
@@ -6969,6 +8007,12 @@ function Effect621() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 10 * (t.filter(e => e.species === "Machine").length > 0), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Déclenche 3 fois les <em>Reconfigurations</em> de la Machine alliée ciblée.";
 }
 
@@ -6982,6 +8026,12 @@ function Effect622() {
                     await boostStats(c.card, 2, 2, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "";
 }
 
@@ -6994,6 +8044,12 @@ function Effect701() {
             card.created = true;
             await addToHand(drawCard(card, 176));
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "<em>Recrue :</em> Ajoute 1 Proie facile à votre main.";
 }
@@ -7016,6 +8072,12 @@ function Effect702() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, fluctuate(5, .5, 1.5), 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> <em>Dévore</em> une créature disponible au recrutement aléatoire.";
 }
 
@@ -7037,6 +8099,12 @@ function Effect703() {
                 notself: true
             }, sender);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 4, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "<em>Recrue :</em> <em>Dévore</em> une créature alliée ciblée, puis gagne +2/+2.";
 }
@@ -7071,6 +8139,14 @@ function Effect704() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        if (c.attack > 40)
+            c.deathtouch = true;
+        return [5, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Au début de chaque tour, <em>Dévore</em> la créature alliée la moins forte, puis gagne +3/+3. Gagne <em>Contact mortel</em> la 5<sup>ème</sup> fois.";
 }
 
@@ -7083,6 +8159,13 @@ function Effect705() {
             await boostStats(args[0], 1, 2, doAnimate, false, true);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 60;
+    };
+    this.toBack = true;
     this.desc = "Lorsqu'une Bête alliée est attaquée, lui confère définitivement +1/+2.";
 }
 
@@ -7112,6 +8195,12 @@ function Effect706() {
             }, sender);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, fluctuate(6, .5, 1.5)];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> La Bête alliée ciblée <em>Dévore</em> une créature disponible au recrutement aléatoire.";
 }
 
@@ -7125,6 +8214,13 @@ function Effect707() {
             await addToHand(drawCard(card, 176));
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.toFront = true;
     this.desc = "<em>Dernière volonté :</em> Ajoute une Proie facile à votre main.";
 }
 
@@ -7160,6 +8256,12 @@ function Effect708() {
                 c.parentElement.removeChild(c);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, fluctuate(3, 0, 5), 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> <em>Dévore</em> toutes les Proies faciles en jeu et dans votre main, et gagne +2/+1 à chaque fois.";
 }
 
@@ -7172,6 +8274,13 @@ function Effect709() {
             boostStats(sender, 7, 7, false, false, true);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 20;
+    };
+    this.toFront = true;
     this.desc = "<em>Dernière volonté :</em> Gagne définitivement +7/+7.";
 }
 
@@ -7204,6 +8313,12 @@ function Effect710() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 4 * t.filter(e => e.species === "Bête").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "A la fin de votre tour, les Bêtes alliées <em>Dévorent</em> une créature aléatoire disponible au recrutement si possible, ou gagnent +2/+2 sinon.";
 }
 
@@ -7215,6 +8330,12 @@ function Effect711() {
             await boostStats(args[0].card, 4, 3, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 4, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Les Bêtes que vous jouez gagnent +4/+3.";
 }
 
@@ -7223,6 +8344,12 @@ function Effect712() {
         if (args[0].card.species != "Sortilège" && findDOMCard(sender) && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             await boostStats(sender, 1, 1, doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [4, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Gagne +1/+1 lorsque vous revendez une créature.";
 }
@@ -7236,6 +8363,12 @@ function Effect713() {
                 if (c.card.species == "Bête")
                     await boostStats(c.card, 0, 3, doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "<em>Recrue :</em> Confère +0/+3 aux Bêtes dans votre main.";
 }
@@ -7253,6 +8386,12 @@ function Effect714() {
             await boostStats(sender, n, n, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 2 * (t.filter(e => e.species === "Bête").length - 1);
+    };
     this.desc = "<em>Frappe préventive :</em> Gagne +X/+X, où X est le nombre de Bêtes alliées.";
 }
 
@@ -7262,6 +8401,13 @@ function Effect715() {
             await boostStats(sender, sender.attack, 0, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return c.attack / 2;
+    };
+    this.toFront = true;
     this.desc = "Lorsque cette créature attaque, elle double son attaque.";
 }
 
@@ -7274,6 +8420,12 @@ function Effect716() {
         let card = new ProieFacile();
         card.created = true;
         await addToHand(drawCard(card, 176));
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Confère +1/+0 aux créatures de la première ligne, puis ajoute une Proie facile à votre main.";
 }
@@ -7292,6 +8444,12 @@ function Effect717() {
             id: 719
         })
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Confère +3/+3 aux Bêtes disponibles au recrutement jusqu'à la fin du tour.";
 }
 
@@ -7301,6 +8459,12 @@ function Effect718() {
             if (c.card && c.card.species == "Bête")
                 await boostStats(c.card, 3, 3, doAnimate);
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "";
 }
 
@@ -7308,6 +8472,12 @@ function Effect719() {
     this.run = async (sender, args, doAnimate) => {
         sender.effects.splice(sender.effects.findIndex(e => e.id == 718), 1);
         sender.effects.splice(sender.effects.findIndex(e => e.id == 719), 1);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "";
 }
@@ -7320,6 +8490,13 @@ function Effect801() {
                 await boostStats(sender, 1, 0, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 2;
+    };
+    this.toBack = true;
     this.desc = "Lorsqu'une créature alliée meurt, gagne +1/+0.";
 }
 
@@ -7328,6 +8505,12 @@ function Effect802() {
         if (args[0] === sender && sender.hp <= 0) {
             await boostStats(sender, 4, 0, doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 4;
     };
     this.desc = "<em>Dernière volonté :</em> Gagne +4/+0.";
 }
@@ -7344,6 +8527,13 @@ function Effect803() {
             await battleSummon(choice(options), args[1] ? args[2] : args[3], args[4], doAnimate, args);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 40;
+    };
+    this.toBack = true;
     this.desc = "<em>Dernière volonté :</em> Invoque trois autres Morts-Vivants aléatoires.";
 }
 
@@ -7355,6 +8545,13 @@ function Effect804() {
                 await boostStats(sender, 2, 0, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 10;
+    };
+    this.toBack = true;
     this.desc = "Lorsqu'une créature ennemie meurt, gagne +2/+0.";
 }
 
@@ -7379,6 +8576,13 @@ function Effect805() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 5;
+    };
+    this.toFront = true;
     this.desc = "<em>Dernière volonté :</em> Double les <em>Dernières volontés</em> de ses voisins latéraux.";
 }
 
@@ -7390,6 +8594,13 @@ function Effect806() {
                 await boostStats(sender, 1, 1, doAnimate, false, true);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 20;
+    };
+    this.toBack = true;
     this.desc = "Lorsqu'une créature alliée meurt, gagne définitivement +1/+1.";
 }
 
@@ -7404,6 +8615,12 @@ function Effect807() {
                     sender.effect807.push(args[0]);
             }
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "";
 }
@@ -7424,6 +8641,13 @@ function Effect808() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 30 * (t.filter(e => e.species === "Mort-Vivant").length > 2);
+    };
+    this.toBack = true;
     this.desc = "<em>Dernière volonté :</em> Invoque des copies de base des deux premiers Morts-Vivants morts ce combat.";
 }
 
@@ -7442,6 +8666,13 @@ function Effect809() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 5 * t.filter(e => e.species === "Mort-Vivant").length;
+    };
+    this.toBack = true;
     this.desc = "Lorsqu'un Mort-Vivant allié meurt, confère définitivement +1/+1 à trois Morts-Vivants alliés aléatoires.";
 }
 
@@ -7449,6 +8680,12 @@ function Effect810() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0] === sender)
             await battleSummon("squelette-reconstitue", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 4;
     };
     this.desc = "<em>Dernière volonté :</em> Invoque un Squelette reconstitué.";
 }
@@ -7465,6 +8702,13 @@ function Effect811() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return c.hp / 2;
+    };
+    this.toFront = true;
     this.desc = "Lorsque cette créature est attaquée, elle divise par 2 l'attaque de la créature assaillante et augmente son attaque d'autant.";
 }
 
@@ -7478,6 +8722,12 @@ function Effect812() {
                     await boostStats(c, 1, 2, doAnimate);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 3 * t.filter(e => e.species === "Mort-Vivant").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Lorsque vous jouez une autre créature avec <em>Résurrection</em>, confère +1/+2 à vos autres Morts-Vivants.";
 }
 
@@ -7485,6 +8735,12 @@ function Effect813() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0] === sender)
             await battleSummon("serviteur-exhume", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 20;
     };
     this.desc = "<em>Dernière volonté :</em> Invoque un Serviteur exhumé.";
 }
@@ -7500,6 +8756,12 @@ function Effect814() {
                 await boostStats(target, 1, 1, doAnimate);
             }
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 4;
     };
     this.desc = "<em>Dernière volonté :</em> Confère +1/+1 à un autre Mort-Vivant allié.";
 }
@@ -7518,6 +8780,12 @@ function Effect815() {
             }, sender);
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 4];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Recrue :</em> Confère +0/+4 à un autre Mort-Vivant allié ciblé.";
 }
 
@@ -7527,6 +8795,12 @@ function Effect816() {
         let n = Math.min(2, c.hp - 1);
         boostStats(c, 0, -n, doAnimate);
         await boostStats(players[0], 0, n, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Vole jusqu'à 2 PV au Mort-Vivant allié ciblé.";
 }
@@ -7538,17 +8812,35 @@ function Effect817() {
         boostStats(players[0], 0, -Math.min(6, players[0].hp - 1), doAnimate);
         await boostStats(c, 0, 0, doAnimate);
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Perdez 6 PV pour donner <em>Résurrection</em> au Mort-Vivant allié ciblé.";
 }
 
 function Effect1001() {
     this.run = async (sender, args, doAnimate) => { };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "<em>Injouable</em>.";
 }
 
 function Effect1002() {
     this.run = async (sender, args, doAnimate) => {
         await boostStats(args[0].card, 2, 1, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Confère +2/+1 à la créature alliée ciblée.";
 }
@@ -7561,6 +8853,12 @@ function Effect1003() {
                 f.push(c.species);
         await boostStats(args[0].card, f.length, f.length, doAnimate);
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Confère +X/+X à la créature alliée ciblée, où X est le nombre de familles alliées différentes.";
 }
 
@@ -7572,6 +8870,12 @@ function Effect2001() {
             else
                 await boostStats(sender, 0, 1, doAnimate, false, true);
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 30;
     };
     this.desc = "Lorsqu'une autre créature meurt, gagne définitivement +1/+0 ou +0/+1.";
 }
@@ -7589,6 +8893,12 @@ function Effect2002() {
             if (n > 0)
                 await boostStats(sender, n, n, doAnimate);
         }
+    };
+    this.scaling = (c, t) => {
+        return [2, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "Au début de votre tour, change de famille et gagne +X/+X, où X est le nombre de créatures alliées de cette famille.";
 }
@@ -7608,6 +8918,12 @@ function Effect2003() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 4;
+    };
     this.desc = "<em>Frappe préventive :</em> Gagne +1/+1 pour chaque famille alliée différente.";
 }
 
@@ -7624,6 +8940,12 @@ function Effect2004() {
                     await boostStats(t, 2, 2, doAnimate);
             }
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 8, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "A la fin de chaque tour, confère +2/+2 à une créature alliée de chaque famille.";
 }
@@ -7643,6 +8965,12 @@ function Effect2005() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 12, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
     this.desc = "Lorsque vous revendez une créature, confère +2/+2 à une créature alliée de chaque autre famille.";
 }
 
@@ -7659,6 +8987,12 @@ function Effect2006() {
                     await boostStats(t, 1, 1, doAnimate);
             }
         }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 4];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
     };
     this.desc = "<em>Recrue :</em> Confère +1/+1 à une créature alliée de chaque famille.";
 }
@@ -7682,11 +9016,21 @@ function Effect2007() {
             }
         }
     };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 10;
+    };
     this.desc = "<em>Frappe préventive :</em> Gagne +5/+7 pour chaque famille alliée différente, ainsi que <em>Bouclier</em> s'il y en a au moins 2 et <em>Contact mortel</em> s'il y en a au moins 4.";
 }
 
 
 
+
+function fluctuate(val, inf, sup) {
+    return val * (inf + Math.random() * (sup - inf));
+}
 
 async function effectProcGlow(card) {
     let c = findDOMCard(card);
