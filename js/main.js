@@ -5,8 +5,13 @@ function resizeScreen() {
     let hratio = height / 864;
     let ratio = Math.max(wratio, hratio);
     document.body.style.transform = "scale(" + ratio + ")";
-    document.body.style.left = "-" + (1536 * (1 - ratio) / 2) + "px";
-    document.body.style.top = "-" + (864 * (1 - ratio) / 2) + "px";
+    if (ratio <= 1) {
+        document.body.style.left = "-" + (1536 * (1 - ratio) / 2) + "px";
+        document.body.style.top = "-" + (864 * (1 - ratio) / 2) + "px";
+    } else {
+        document.body.style.left = (1536 * (ratio - 1) / 2) + "px";
+        document.body.style.top = (864 * (ratio - 1) / 2) + "px";
+    }
 };
 
 window.onresize = resizeScreen;
