@@ -746,6 +746,17 @@ function updateEnemyTroops() {
                 }
             }
         }
+        let players2 = copy(players).sort((a, b) => { if (a.hp > b.hp) return -1; else if (a.hp < b.hp) return 1; else return 0; });
+        if (players2.findIndex(e => e.name === players[i].name) > 3) {
+            if (t.indexOf(undefined) == -1) {
+                for (let k = 0; k < round; k++) {
+                    if (Math.random() < .5)
+                        choice(t.filter(e => e)).hp += 1;
+                    else
+                        choice(t.filter(e => e)).attack += 1;
+                }
+            }
+        }
 
         budget = Math.min(10, round + 2);
         while (budget >= 3) {
@@ -806,20 +817,20 @@ function getLeastUseful(t, targetFamily) {
 
 function getMostInteresting(options, t, targetFamily) {
     let max = -99999999;
-    let res = undefined;
+    let res;
     let value;
     for (let c of options) {
         if (c && c.species !== "Sortilège") {
             value = getValue(c, t, false, targetFamily);
 
-            if (value > max) {
+            if (value > max && t.filter(e => e && e.name === c.name).length < 3) {
                 max = value;
                 res = c;
             }
         }
     }
-    /*while (!res || res.species === "Sortilège")
-        res = getCard(1);*/
+    while (!res || res.species === "Sortilège")
+        res = getCard(1);
     return res;
 }
 
@@ -848,7 +859,6 @@ function getScaling(c, t, placed) {
     let n = 0;
     let scaling;
     for (let e of c.effects) {
-        console.log(e.id)
         scaling = createEffect(e.id).scaling(c, t.filter(e => e));
         n += (scaling[0] + scaling[1]) * 3;
         if (!placed)
@@ -1370,8 +1380,14 @@ async function drawShopScene() {
         document.getElementById("enemy-commander").style.removeProperty("bottom");
 
         round++;
-        if (round % 3 == 1)
-            increaseShopTier();
+        switch(round) {
+            case 3:
+            case 5:
+            case 8:
+            case 11:
+            case 14:
+                increaseShopTier();
+        }
         spendCoins(-Math.min(10, round + 2), true);
         refreshShop(true);
         drawPlayers();
@@ -8910,6 +8926,7 @@ function Effect2001() {
     this.battleValue = (c, t) => {
         return 1000;
     };
+    this.toBack = true;
     this.desc = "Lorsqu'une autre créature meurt, gagne définitivement +1/+0 ou +0/+1.";
 }
 
