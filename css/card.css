@@ -155,7 +155,7 @@
 
     .card > .tier {
         position: relative;
-        background-image: url("../resources/ui/crest2.png");
+        background-image: url("../resources/ui/crest.png");
         background-repeat: no-repeat;
         background-size: 100% 100%;
         display: flex;
