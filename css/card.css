@@ -7,7 +7,7 @@
     width: calc(var(--size) * .96);
     height: calc(calc(var(--size) * 1.5) * .96);
     border: calc(var(--size) * .02) solid #954B30;
-    background-color: #F7C37A;
+    background-color: #f7d47a;
     background-image: url("../resources/ui/card-texture.jpg");
     background-repeat: no-repeat;
     background-size: 100% 100%;
@@ -153,6 +153,28 @@
                 padding-right: calc(var(--size) * .015)
             }
 
+    .card > .tier {
+        position: relative;
+        background-image: url("../resources/ui/crest2.png");
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        display: flex;
+        top: calc(var(--size) * -.87);
+        left: calc(var(--size) * .84);
+        height: calc(var(--size) * .13);
+        width: calc(var(--size) * .13);
+    }
+
+        .card > .tier > div {
+            font-family: Verdana;
+            font-size: calc(var(--font-very-large));
+            font-weight: bold;
+            text-align: center;
+            margin: auto;
+            color: #f7d47a;
+            padding-bottom: calc(var(--size) * .015);
+        }
+
 .small-card {
     --size: 500px;
     --global-font: Papyrus;
@@ -164,7 +186,7 @@
     border: calc(var(--size) * .02) solid #954B30;
     border-top-left-radius: calc(var(--size) * .15);
     border-top-right-radius: calc(var(--size) * .15);
-    background-color: #F7C37A;
+    background-color: #f7d47a;
     background-image: url("../resources/ui/card-texture.jpg");
     background-repeat: no-repeat;
     background-size: 100% 100%;

@@ -4648,6 +4648,15 @@ function drawCard(c, size, cancelTooltip) {
         hp.appendChild(hpVal);
     }
 
+    if (c.tier) {
+        let tier = document.createElement('div');
+        tier.className = "tier";
+        card.appendChild(tier);
+        let tierVal = document.createElement('div');
+        tierVal.innerHTML = c.tier <= 6 ? c.tier : "0";
+        tier.appendChild(tierVal);
+    }
+
     if (!cancelTooltip) {
         card.addEventListener('mouseleave', () => {
             clearTimeout(menuLeaveTimer);
