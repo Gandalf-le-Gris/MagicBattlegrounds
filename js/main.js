@@ -67,6 +67,10 @@ async function fadeTransition(interfaceBuilder) {
     document.body.removeChild(filter);
 }
 
+function toggleSettings() {
+
+}
+
 
 
 /* ------------------------------------------------------ */
@@ -141,6 +145,11 @@ async function startGame() {
             innerText += s + ", ";
         families.innerHTML = innerText.substring(0, innerText.length - 2);
         document.body.appendChild(families);
+
+        let settings = document.createElement('div');
+        settings.className ="settings-button";
+        settings.onclick = toggleSettings;
+        document.body.appendChild(settings);
     });
 }
 
