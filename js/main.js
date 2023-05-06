@@ -7112,7 +7112,7 @@ function Effect410() {
             if (doAnimate)
                 await effectProcGlow(sender);
             for (let d of document.getElementById("board").children)
-                if (d.children[0])
+                if (d.children[0] && d.children[0].card.species === "Soldat")
                     await boostStats(d.children[0].card, 1, 1, doAnimate);
         }
     };
@@ -7866,15 +7866,17 @@ function Effect606() {
 
 function Effect607() {
     this.run = async (sender, args, doAnimate) => {
-        let i = troops[0].findIndex(e => e === sender);
-        let target = troops[0][(i + 4) % 8];
-        if (target && target.species == "Machine" && (target.hp > 1 || target.attack > 0)) {
-            let atk = Math.min(6, target.attack);
-            let hp = Math.min(6, target.hp - 1);
-            if (doAnimate)
-                await effectProcGlow(sender);
-            await boostStats(target, -atk, -hp, doAnimate);
-            await boostStats(sender, atk, hp, doAnimate);
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            let i = troops[0].findIndex(e => e === sender);
+            let target = troops[0][(i + 4) % 8];
+            if (target && target.species == "Machine" && (target.hp > 1 || target.attack > 0)) {
+                let atk = Math.min(6, target.attack);
+                let hp = Math.min(6, target.hp - 1);
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await boostStats(target, -atk, -hp, doAnimate);
+                await boostStats(sender, atk, hp, doAnimate);
+            }
         }
     };
     this.scaling = (c, t) => {
@@ -8685,10 +8687,7 @@ function Effect802() {
 function Effect803() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0] === sender) {
-            let options = copy(cardList["Mort-Vivant"]);
-            console.log(options)
-            options.splice(options.findIndex(e => e == "liche-profanatrice"), 1);
-            console.log(options)
+            let options = copy(cardList["Mort-Vivant"]).filter(e => createCard(e).species === "Mort-Vivant" && e !== "liche-profanatrice");
             await battleSummon(choice(options), args[1] ? args[2] : args[3], args[4], doAnimate, args);
             await battleSummon(choice(options), args[1] ? args[2] : args[3], args[4], doAnimate, args);
             await battleSummon(choice(options), args[1] ? args[2] : args[3], args[4], doAnimate, args);
@@ -8765,7 +8764,7 @@ function Effect806() {
         return [0, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
-        return 10 + 2 * t.filter(e => e.species === "Mort-Vivant").length;
+        return 10 + 2.5 * t.filter(e => e.species === "Mort-Vivant").length;
     };
     this.toBack = true;
     this.desc = "Lorsqu'une créature alliée meurt, gagne définitivement +1/+1.";
