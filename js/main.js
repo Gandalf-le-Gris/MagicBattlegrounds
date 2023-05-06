@@ -45,6 +45,7 @@ function drawHomeScreen() {
 
     let options = document.createElement('li');
     options.innerHTML = "Options";
+    options.onclick = toggleSettings;
     homeMenu.appendChild(options);
 }
 
@@ -67,8 +68,112 @@ async function fadeTransition(interfaceBuilder) {
     document.body.removeChild(filter);
 }
 
-function toggleSettings() {
 
+
+
+/* ---------------------------------------------------- */
+/* --------------------- Settings --------------------- */
+/* ---------------------------------------------------- */
+
+document.addEventListener('keydown', function(event) {
+    if(event.key === "Escape") {
+        toggleSettings();
+    }
+});
+
+let masterVolume = 100;
+let musicVolume = 100;
+let sfxVolume = 100;
+
+function toggleSettings() {
+    if (document.getElementById('settings')) {
+        document.body.removeChild(document.getElementById('settings'));
+    } else {
+        let filter = document.createElement('div');
+        filter.id = "settings";
+        document.body.appendChild(filter);
+
+        let grid = document.createElement('div');
+        filter.appendChild(grid);
+
+        let masterVolumeOption = document.createElement('div');
+        masterVolumeOption.className = "slider-option";
+        grid.appendChild(masterVolumeOption);
+
+        let masterVolumeSlider = document.createElement('input');
+        masterVolumeSlider.type = "range";
+        masterVolumeSlider.value = Math.round(masterVolume * 100);
+        masterVolumeSlider.min = "0";
+        masterVolumeSlider.max = "100";
+        masterVolumeSlider.style.setProperty("--thumb-rotate", "0");
+        masterVolumeSlider.oninput = () => {
+            masterVolume = masterVolumeSlider.value / 100;
+            masterVolumeSlider.style.setProperty("--thumb-rotate", (masterVolume * 720) + "deg");
+        };
+        masterVolumeOption.appendChild(masterVolumeSlider);
+
+        let masterVolumeLabel = document.createElement('div');
+        masterVolumeLabel.innerHTML = "Volume général";
+        masterVolumeOption.appendChild(masterVolumeLabel);
+
+        let musicVolumeOption = document.createElement('div');
+        musicVolumeOption.className = "slider-option";
+        grid.appendChild(musicVolumeOption);
+
+        let musicVolumeSlider = document.createElement('input');
+        musicVolumeSlider.type = "range";
+        musicVolumeSlider.value = Math.round(musicVolume * 100);
+        musicVolumeSlider.min = "0";
+        musicVolumeSlider.max = "100";
+        musicVolumeSlider.style.setProperty("--thumb-rotate", "0");
+        musicVolumeSlider.oninput = () => {
+            musicVolume = musicVolumeSlider.value / 100;
+            musicVolumeSlider.style.setProperty("--thumb-rotate", (musicVolume * 720) + "deg");
+        };
+        musicVolumeOption.appendChild(musicVolumeSlider);
+
+        let musicVolumeLabel = document.createElement('div');
+        musicVolumeLabel.innerHTML = "Volume de la musique";
+        musicVolumeOption.appendChild(musicVolumeLabel);
+
+        let sfxVolumeOption = document.createElement('div');
+        sfxVolumeOption.className = "slider-option";
+        grid.appendChild(sfxVolumeOption);
+
+        let sfxVolumeSlider = document.createElement('input');
+        sfxVolumeSlider.type = "range";
+        sfxVolumeSlider.value = Math.round(sfxVolume * 100);
+        sfxVolumeSlider.min = "0";
+        sfxVolumeSlider.max = "100";
+        sfxVolumeSlider.style.setProperty("--thumb-rotate", "0");
+        sfxVolumeSlider.oninput = () => {
+            sfxVolume = sfxVolumeSlider.value / 100;
+            sfxVolumeSlider.style.setProperty("--thumb-rotate", (sfxVolume * 720) + "deg");
+        };
+        sfxVolumeOption.appendChild(sfxVolumeSlider);
+
+        let sfxVolumeLabel = document.createElement('div');
+        sfxVolumeLabel.innerHTML = "Volume des effets sonores";
+        sfxVolumeOption.appendChild(sfxVolumeLabel);
+
+        grid.appendChild(document.createElement('div'));
+
+        let buttons = document.createElement('div');
+        buttons.className = "buttons";
+        grid.appendChild(buttons);
+
+        let back = document.createElement('div');
+        back.className = "button-option";
+        back.innerHTML = "Retour";
+        back.onclick = toggleSettings;
+        buttons.appendChild(back);
+
+        let home = document.createElement('div');
+        home.className = "button-option";
+        home.innerHTML = "Quitter";
+        home.onclick = drawHomeScreen;
+        buttons.appendChild(home);
+    }
 }
 
 

@@ -1,0 +1,153 @@
+body, html {
+    overflow-y: hidden;
+    overflow-x: hidden;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-color: lightgray;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+
+    width: 1536px;
+    height: 864px;
+    margin: 0;
+
+    --global-font: Papyrus;
+    --font-very-large: 40px;
+    --font-large: 25px;
+    --font-medium: 20x;
+    --font-small: 16px;
+
+    position: absolute;
+    z-index: -999;
+}
+
+#settings {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, .8);
+    z-index: 99999999;
+}
+
+    #settings > div {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 30px;
+        border-radius: 20px;
+        border: 3px solid #954B30;
+        background-image: url("../resources/ui/card-texture.jpg");
+        background-repeat: repeat-y;
+        background-size: 100% auto;
+        text-align: center;
+        font-family: var(--global-font);
+        display: grid;
+        grid-auto-flow: row;
+        row-gap: 20px;
+    }
+
+    #settings input {
+        outline: none;
+    }
+
+    #settings .slider-option {
+        display: grid;
+        grid-template-columns: 300px auto;
+        column-gap: 20px;
+        text-align: left;
+        font-size: var(--font-large);
+        font-weight: bold;
+    }
+
+        #settings .slider-option > input[type=range] {
+            height: 10px;
+            width: 100%;
+            margin: auto;
+            appearance: none;
+            cursor: pointer;
+            background: none;
+            transition: filter .2s;
+        }
+
+            #settings .slider-option > input[type=range]::-webkit-slider-runnable-track {
+                width: 100%;
+                height: 10px;
+                cursor: pointer;
+                background: #954B30;
+                border-radius: 5px;
+            }
+
+            #settings .slider-option > input[type=range]::-webkit-slider-thumb {
+                appearance: none;
+                height: 34px;
+                width: 34px;
+                transition: height .2s, width .2s, margin-top .2s;
+                margin-top: -12px;
+                background-image: url("../resources/ui/cog.png");
+                background-size: 100% 100%;
+                transform: rotateZ(var(--thumb-rotate));
+            }
+
+                #settings .slider-option > input[type=range]::-webkit-slider-thumb:hover {
+                    height: 40px;
+                    width: 40px;
+                    margin-top: -15px;
+                }
+
+            #settings .slider-option > input[type=range]::-moz-range-track {
+                width: 100%;
+                height: 10px;
+                cursor: pointer;
+                background: #954B30;
+                border-radius: 5px;
+            }
+
+            #settings .slider-option > input[type=range]::-moz-range-thumb {
+                appearance: none;
+                height: 34px;
+                width: 34px;
+                transition: height .2s, width .2s, margin-top .2s;
+                margin-top: -12px;
+                background-image: url("../resources/ui/cog.png");
+                background-size: 100% 100%;
+                background-color: transparent;
+                border: none;
+                transform: rotateZ(var(--thumb-rotate));
+            }
+
+                #settings .slider-option > input[type=range]::-moz-range-thumb:hover {
+                    height: 40px;
+                    width: 40px;
+                    margin-top: -15px;
+                }
+    
+    #settings .buttons {
+        display: grid;
+        grid-template-columns: auto auto;
+        column-gap: 50px;
+    }
+
+    #settings .button-option {
+        width: fit-content;
+        padding: 6px 30px;
+        transition: .2s;
+        cursor: pointer;
+        background-color: transparent;
+        background-image: url("../resources/ui/paper-scroll.png");
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        font-size: var(--font-large);
+        font-weight: bold;
+        margin: auto;
+        filter: brightness(.9)
+    }
+    
+        #settings .button-option:hover {
+            transform: scale(1.1);
+            filter: brightness(1);
+        }
