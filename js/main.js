@@ -23,6 +23,11 @@ resizeScreen();
 /* -------------------- Home screen -------------------- */
 /* ----------------------------------------------------- */
 
+let baseVolume = .5;
+let masterVolume = 1;
+let musicVolume = 1;
+let sfxVolume = 1;
+
 drawHomeScreen();
 
 function drawHomeScreen() {
@@ -47,6 +52,8 @@ function drawHomeScreen() {
     options.innerHTML = "Options";
     options.onclick = toggleSettings;
     homeMenu.appendChild(options);
+
+    playMusic("resources/audio/music/home.mp3", true);
 }
 
 
@@ -55,6 +62,7 @@ async function fadeTransition(interfaceBuilder) {
     let filter = document.createElement('div');
     filter.className = "filter-black";
     document.body.appendChild(filter);
+    fadeOutMusic();
     await sleep(500);
 
     document.body.innerHTML = "";
@@ -80,10 +88,6 @@ document.addEventListener('keydown', function(event) {
         toggleSettings();
     }
 });
-
-let masterVolume = 100;
-let musicVolume = 100;
-let sfxVolume = 100;
 
 function toggleSettings() {
     if (document.getElementById('settings')) {
@@ -171,10 +175,103 @@ function toggleSettings() {
         let home = document.createElement('div');
         home.className = "button-option";
         home.innerHTML = "Quitter";
-        home.onclick = drawHomeScreen;
+        home.onclick = () => fadeTransition(drawHomeScreen);
         buttons.appendChild(home);
     }
 }
+
+
+
+
+
+/* ----------------------------------------------------- */
+/* ----------------------- Music ----------------------- */
+/* ----------------------------------------------------- */
+
+let shopMusics = ["resources/audio/music/tavern1.mp3", "resources/audio/music/tavern2.mp3", "resources/audio/music/tavern3.mp3"];
+let battleMusics = ["resources/audio/music/battle1.mp3", "resources/audio/music/battle2.mp3", "resources/audio/music/battle3.mp3"];
+
+function playMusic(src, repeat) {
+    //var music = document.getElementById(src);
+    let music = document.createElement('audio');
+    music.src = src;
+    document.body.appendChild(music);
+    if (music != undefined) {
+        music.volume = baseVolume * masterVolume;
+        if (repeat) {
+            music.volume *= musicVolume;
+            fadeInMusic();
+        } else
+            music.volume *= sfxVolume;
+        music.currentTime = 0;
+        music.loop = repeat;
+        music.play();
+    }
+}
+
+function stopMusic() {
+    var audios = document.getElementsByTagName('audio');
+    for (let a of audios)
+        a.pause();
+}
+
+function fadeOutMusic() {
+    var m;
+    var audios = document.getElementsByTagName('audio');
+    for (let a of audios) {
+        console.log(a)
+        if (a.loop && !a.paused)
+            m = a;
+    }
+    if (m != undefined) {
+        volume = m.volume;
+        interval = setInterval(fadeOutMusicAux, 10);
+    }
+    function fadeOutMusicAux() {
+        if (m == undefined)
+            clearInterval(interval);
+
+        var newVolume = m.volume - 0.04 * volume;
+        if (newVolume >= 0) {
+            m.volume = newVolume;
+        }
+        else {
+            clearInterval(interval);
+            m.volume = 0;
+            m.pause();
+            m.currentTIme = 0;
+        }
+    }
+}
+
+function fadeInMusic() {
+    var m;
+    var audios = document.getElementsByTagName('audio');
+    for (let a of audios) {
+        if (a.loop && !a.paused)
+            m = a;
+    }
+    if (m != undefined) {
+        m.volume = 0;
+        volume = baseVolume * masterVolume * musicVolume;
+        interval = setInterval(fadeInMusicAux, 15);
+    }
+    function fadeInMusicAux() {
+        if (m == undefined)
+            clearInterval(interval);
+
+        var newVolume = m.volume + 0.04 * volume;
+        if (newVolume < baseVolume * masterVolume * musicVolume) {
+            m.volume = newVolume;
+        }
+        else {
+            clearInterval(interval);
+            m.volume = baseVolume * masterVolume * musicVolume;
+        }
+    }
+}
+
+
 
 
 
@@ -255,6 +352,8 @@ async function startGame() {
         settings.className ="settings-button";
         settings.onclick = toggleSettings;
         document.body.appendChild(settings);
+
+        playMusic(choice(shopMusics), true);
     });
 }
 
@@ -1405,6 +1504,8 @@ async function drawBattleScene(t1, t2, p) {
     document.getElementById("fight").style.transform = "translateX(130px)";
     document.getElementById("hand-area").style.transform = "translate(-50%, 60%)";
 
+    fadeOutMusic();
+
     await sleep(750);
 
     document.getElementById("battle-bg").style.opacity = "1";
@@ -1420,6 +1521,8 @@ async function drawBattleScene(t1, t2, p) {
     await sleep(1500);
 
     currentScene = "battle";
+
+    playMusic(choice(battleMusics), true);
 }
 
 async function drawShopScene() {
@@ -1511,6 +1614,8 @@ async function drawShopScene() {
         refreshShop(true);
         drawPlayers();
 
+        fadeOutMusic();
+
         await sleep(750);
 
         for (let i = 0; i < 8; i++) {
@@ -1532,6 +1637,8 @@ async function drawShopScene() {
         document.getElementById("players").style.removeProperty("transform");
         document.getElementById("fight").style.removeProperty("transform");
         document.getElementById("hand-area").style.removeProperty("transform");
+
+        playMusic(choice(shopMusics), true);
 
         await sleep(750);
 
