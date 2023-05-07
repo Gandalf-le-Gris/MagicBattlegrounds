@@ -19,16 +19,160 @@ resizeScreen();
 
 
 
+
+
+/* ----------------------------------------------------- */
+/* ------------------- Asset loading-------------------- */
+/* ----------------------------------------------------- */
+
+let audios = [];
+
+function loadResources() {
+    var filter = document.createElement('div');
+    filter.className = "filter-black";
+    document.body.appendChild(filter);
+
+    async function loadAssets(imageUrlArray, isImage) {
+        const promiseArray = [];
+
+        for (let imageUrl of imageUrlArray) {
+            promiseArray.push(new Promise(resolve => {
+                const img = isImage ? new Image() : document.createElement('audio');
+                if (isImage)
+                    img.onload = () => {
+                        assetsLoaded++;
+                        var progress = 100 * assetsLoaded / totalAssets;
+                        progressSpan.style.width = progress + "%";
+                        progressText.innerHTML = Math.floor(progress) + "%";
+                        if (progress == 100) {
+                            text.innerHTML = "Click to continue";
+                            filter.onclick = () => {
+                                window.addEventListener('keydown', (e) => {
+                                    if (e.key === "Escape") {
+                                        toggleSettings();
+                                    }
+                                });
+                                fadeTransition(drawHomeScreen);
+                            }
+                        }
+                        resolve();
+                    }
+                else
+                    img.addEventListener('canplay', () => {
+                        assetsLoaded++;
+                        var progress = 100 * assetsLoaded / totalAssets;
+                        progressSpan.style.width = progress + "%";
+                        progressText.innerHTML = Math.floor(progress) + "%";
+                        img.id = imageUrl;
+                        audios.push(img);
+                        if (progress == 100) {
+                            text.innerHTML = "Click to continue";
+                            filter.onclick = () => {
+                                window.addEventListener('keydown', function(event) {
+                                    if(event.key === "Escape") {
+                                        toggleSettings();
+                                    }
+                                });
+                                fadeTransition(drawHomeScreen);
+                            }
+                        }
+                        resolve();
+                    });
+                img.src = imageUrl;
+            }));
+        }
+
+        await Promise.all(promiseArray);
+        return;
+    }
+
+    imgs = [];
+    sounds = [];
+
+    imgs.push("resources/ui/battle-bg.jpg");
+    imgs.push("resources/ui/brick-texture.jpg");
+    imgs.push("resources/ui/card-description.jpg");
+    imgs.push("resources/ui/card-texture.jpg");
+    imgs.push("resources/ui/card-texture-horizontal.jpg");
+    imgs.push("resources/ui/cog.png");
+    imgs.push("resources/ui/coin.png");
+    imgs.push("resources/ui/crest.png");
+    imgs.push("resources/ui/deathtouch.png");
+    imgs.push("resources/ui/emerald.png");
+    imgs.push("resources/ui/fight.png");
+    imgs.push("resources/ui/freeze.png");
+    imgs.push("resources/ui/home-screen-bg.jpg");
+    imgs.push("resources/ui/lock.png");
+    imgs.push("resources/ui/metal-texture.jpg");
+    imgs.push("resources/ui/paper-scroll.png");
+    imgs.push("resources/ui/parchment.png");
+    imgs.push("resources/ui/range.png");
+    imgs.push("resources/ui/revive.png");
+    imgs.push("resources/ui/ruby.png");
+    imgs.push("resources/ui/search.png");
+    imgs.push("resources/ui/shield.png");
+    imgs.push("resources/ui/team-builder-bg.jpg");
+    imgs.push("resources/ui/wood-texture.jpg");
+
+    for (let s of speciesList)
+        for (let c of cardList[s])
+            imgs.push("resources/cards/" + createCard(c).src);
+
+    sounds.push("resources/audio/music/battle1.mp3");
+    sounds.push("resources/audio/music/battle2.mp3");
+    sounds.push("resources/audio/music/battle3.mp3");
+    sounds.push("resources/audio/music/home.mp3");
+    sounds.push("resources/audio/music/tavern1.mp3");
+    sounds.push("resources/audio/music/tavern2.mp3");
+    sounds.push("resources/audio/music/tavern3.mp3");
+
+    var assetsLoaded = 0;
+    var totalAssets = imgs.length + sounds.length;
+
+    var grid = document.createElement('div');
+    grid.className = "settings-grid";
+    filter.appendChild(grid);
+
+    var progressBar = document.createElement('div');
+    progressBar.className = "meter";
+    grid.appendChild(progressBar);
+    var progressSpan = document.createElement('span');
+    progressSpan.style.width = 0;
+    progressBar.appendChild(progressSpan);
+    var progressText = document.createElement('div');
+    progressText.innerHTML = "0%";
+    progressBar.appendChild(progressText);
+
+    var text = document.createElement('div');
+    text.innerHTML = "Loading assets...";
+    text.style.fontSize = "3vw";
+    grid.appendChild(text);
+
+    var advice = document.createElement('div');
+    advice.className = "advice";
+    advice.innerHTML = "This game is better played in fullscreen mode (F11).</br>You can turn music off anytime from the settings menu."
+    filter.appendChild(advice);
+
+    var disclaimer = document.createElement('div');
+    disclaimer.className = "disclaimer";
+    disclaimer.innerHTML = "Loading speed may depend on the network. Please ensure you have a good Internet connection if loading takes too long.";
+    filter.appendChild(disclaimer);
+
+    masterVolume = window.localStorage.getItem('masterVolume') != null ? JSON.parse(window.localStorage.getItem('masterVolume')) : 1;
+    musicVolume = window.localStorage.getItem('musicVolume') != null ? JSON.parse(window.localStorage.getItem('musicVolume')) : 1;
+    sfxVolume = window.localStorage.getItem('sfxVolume') != null ? JSON.parse(window.localStorage.getItem('sfxVolume')) : 1;
+
+    loadAssets(imgs, true);
+    loadAssets(sounds, false);
+}
+
+
+
+
+
 /* ----------------------------------------------------- */
 /* -------------------- Home screen -------------------- */
 /* ----------------------------------------------------- */
-
-let baseVolume = .5;
-let masterVolume = 1;
-let musicVolume = 1;
-let sfxVolume = 1;
-
-drawHomeScreen();
 
 function drawHomeScreen() {
     document.body.innerHTML = "";
@@ -83,12 +227,6 @@ async function fadeTransition(interfaceBuilder) {
 /* --------------------- Settings --------------------- */
 /* ---------------------------------------------------- */
 
-document.addEventListener('keydown', function(event) {
-    if(event.key === "Escape") {
-        toggleSettings();
-    }
-});
-
 function toggleSettings() {
     if (document.getElementById('settings')) {
         document.body.removeChild(document.getElementById('settings'));
@@ -113,6 +251,12 @@ function toggleSettings() {
         masterVolumeSlider.oninput = () => {
             masterVolume = masterVolumeSlider.value / 100;
             masterVolumeSlider.style.setProperty("--thumb-rotate", (masterVolume * 720) + "deg");
+            for (let a of audios)
+                if (a.loop)
+                    a.volume = baseVolume * masterVolume * musicVolume;
+                else
+                    a.volume = baseVolume * masterVolume * sfxVolume;
+            window.localStorage.setItem("masterVolume", masterVolume);
         };
         masterVolumeOption.appendChild(masterVolumeSlider);
 
@@ -133,6 +277,10 @@ function toggleSettings() {
         musicVolumeSlider.oninput = () => {
             musicVolume = musicVolumeSlider.value / 100;
             musicVolumeSlider.style.setProperty("--thumb-rotate", (musicVolume * 720) + "deg");
+            for (let a of audios)
+                if (a.loop)
+                    a.volume = baseVolume * masterVolume * musicVolume;
+            window.localStorage.setItem("musicVolume", musicVolume);
         };
         musicVolumeOption.appendChild(musicVolumeSlider);
 
@@ -153,6 +301,10 @@ function toggleSettings() {
         sfxVolumeSlider.oninput = () => {
             sfxVolume = sfxVolumeSlider.value / 100;
             sfxVolumeSlider.style.setProperty("--thumb-rotate", (sfxVolume * 720) + "deg");
+            for (let a of audios)
+                if (!a.loop)
+                    a.volume = baseVolume * masterVolume * sfxVolume;
+            window.localStorage.setItem("sfxVolume", sfxVolume);
         };
         sfxVolumeOption.appendChild(sfxVolumeSlider);
 
@@ -188,14 +340,16 @@ function toggleSettings() {
 /* ----------------------- Music ----------------------- */
 /* ----------------------------------------------------- */
 
+let baseVolume = .5;
+let masterVolume = 1;
+let musicVolume = 1;
+let sfxVolume = 1;
+
 let shopMusics = ["resources/audio/music/tavern1.mp3", "resources/audio/music/tavern2.mp3", "resources/audio/music/tavern3.mp3"];
 let battleMusics = ["resources/audio/music/battle1.mp3", "resources/audio/music/battle2.mp3", "resources/audio/music/battle3.mp3"];
 
 function playMusic(src, repeat) {
-    //var music = document.getElementById(src);
-    let music = document.createElement('audio');
-    music.src = src;
-    document.body.appendChild(music);
+    let music = audios[audios.findIndex(e => e.id === src)];
     if (music != undefined) {
         music.volume = baseVolume * masterVolume;
         if (repeat) {
@@ -209,17 +363,9 @@ function playMusic(src, repeat) {
     }
 }
 
-function stopMusic() {
-    var audios = document.getElementsByTagName('audio');
-    for (let a of audios)
-        a.pause();
-}
-
 function fadeOutMusic() {
     var m;
-    var audios = document.getElementsByTagName('audio');
     for (let a of audios) {
-        console.log(a)
         if (a.loop && !a.paused)
             m = a;
     }
@@ -246,7 +392,6 @@ function fadeOutMusic() {
 
 function fadeInMusic() {
     var m;
-    var audios = document.getElementsByTagName('audio');
     for (let a of audios) {
         if (a.loop && !a.paused)
             m = a;
@@ -268,6 +413,25 @@ function fadeInMusic() {
             clearInterval(interval);
             m.volume = baseVolume * masterVolume * musicVolume;
         }
+    }
+}
+
+function shuffleMusics() {
+    shuffle(shopMusics);
+    shuffle(battleMusics);
+}
+
+let currentShopMusic = 0;
+let currentBattleMusic = 0;
+
+function getNextMusic(category) {
+    switch (category) {
+        case "shop":
+            return shopMusics[currentShopMusic++ % shopMusics.length];
+        case "battle":
+            return battleMusics[currentBattleMusic++ % battleMusics.length];
+        default:
+            return "";
     }
 }
 
@@ -353,7 +517,8 @@ async function startGame() {
         settings.onclick = toggleSettings;
         document.body.appendChild(settings);
 
-        playMusic(choice(shopMusics), true);
+        shuffleMusics();
+        playMusic(getNextMusic("shop"), true);
     });
 }
 
@@ -1518,11 +1683,11 @@ async function drawBattleScene(t1, t2, p) {
     document.getElementById("commander").style.transition = ".5s";
     document.getElementById("enemy-commander").style.bottom = "415px";
 
+    playMusic(getNextMusic("battle"), true);
+
     await sleep(1500);
 
     currentScene = "battle";
-
-    playMusic(choice(battleMusics), true);
 }
 
 async function drawShopScene() {
@@ -1638,7 +1803,7 @@ async function drawShopScene() {
         document.getElementById("fight").style.removeProperty("transform");
         document.getElementById("hand-area").style.removeProperty("transform");
 
-        playMusic(choice(shopMusics), true);
+        playMusic(getNextMusic("shop"), true);
 
         await sleep(750);
 
@@ -9573,3 +9738,22 @@ function removeArr(arr, x) {
 function copy(x) {
     return JSON.parse(JSON.stringify(x));
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+loadResources();
