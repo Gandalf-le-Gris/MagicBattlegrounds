@@ -114,7 +114,7 @@ function loadResources() {
     imgs.push("resources/ui/team-builder-bg.jpg");
     imgs.push("resources/ui/wood-texture.jpg");
 
-    for (let s of speciesList)
+    for (let s of speciesList.concat(["Commandant", "Autre"]))
         for (let c of cardList[s])
             imgs.push("resources/cards/" + createCard(c).src);
 
@@ -125,6 +125,14 @@ function loadResources() {
     sounds.push("resources/audio/music/tavern1.mp3");
     sounds.push("resources/audio/music/tavern2.mp3");
     sounds.push("resources/audio/music/tavern3.mp3");
+    sounds.push("resources/audio/sfx/pieces.mp3");
+    sounds.push("resources/audio/sfx/impact.mp3");
+    sounds.push("resources/audio/sfx/effect-proc.mp3");
+    sounds.push("resources/audio/sfx/stat-boost.mp3")
+
+    for (let s of speciesList.concat(["Autre", "Sortilège"]))
+        for (let c of battleCries[s])
+            sounds.push(c);
 
     var assetsLoaded = 0;
     var totalAssets = imgs.length + sounds.length;
@@ -347,6 +355,18 @@ let sfxVolume = 1;
 
 let shopMusics = ["resources/audio/music/tavern1.mp3", "resources/audio/music/tavern2.mp3", "resources/audio/music/tavern3.mp3"];
 let battleMusics = ["resources/audio/music/battle1.mp3", "resources/audio/music/battle2.mp3", "resources/audio/music/battle3.mp3"];
+let battleCries = {
+    "Dragon": ["resources/audio/sfx/dragon1.mp3", "resources/audio/sfx/dragon2.mp3", "resources/audio/sfx/dragon3.mp3", "resources/audio/sfx/dragon4.mp3"],
+    "Gobelin": ["resources/audio/sfx/gobelin1.mp3", "resources/audio/sfx/gobelin2.mp3", "resources/audio/sfx/gobelin3.mp3", "resources/audio/sfx/gobelin4.mp3"],
+    "Sorcier": ["resources/audio/sfx/sorcier1.mp3", "resources/audio/sfx/sorcier2.mp3", "resources/audio/sfx/sorcier3.mp3", "resources/audio/sfx/sorcier4.mp3"],
+    "Soldat": ["resources/audio/sfx/soldat1.mp3", "resources/audio/sfx/soldat2.mp3", "resources/audio/sfx/soldat3.mp3", "resources/audio/sfx/soldat4.mp3"],
+    "Bandit": ["resources/audio/sfx/bandit1.mp3", "resources/audio/sfx/bandit2.mp3", "resources/audio/sfx/bandit3.mp3"],
+    "Machine": ["resources/audio/sfx/machine1.mp3", "resources/audio/sfx/machine2.mp3", "resources/audio/sfx/machine3.mp3"],
+    "Bête": ["resources/audio/sfx/bete1.mp3", "resources/audio/sfx/bete2.mp3", "resources/audio/sfx/bete3.mp3"],
+    "Mort-Vivant": ["resources/audio/sfx/mort-vivant1.mp3", "resources/audio/sfx/mort-vivant2.mp3", "resources/audio/sfx/mort-vivant3.mp3"],
+    "Autre": ["resources/audio/sfx/autre1.mp3"],
+    "Sortilège": ["resources/audio/sfx/sortilege1.mp3"]
+}
 
 function playMusic(src, repeat) {
     let music = audios[audios.findIndex(e => e.id === src)];
@@ -384,8 +404,10 @@ function fadeOutMusic() {
         else {
             clearInterval(interval);
             m.volume = 0;
-            m.pause();
-            m.currentTIme = 0;
+            for (let a of audios) {
+                a.pause();
+                a.currentTime = 0;
+            }
         }
     }
 }
@@ -791,8 +813,10 @@ function freezeShop() {
 }
 
 async function buyCard(c, free) {
-    if (!free)
+    if (!free) {
+        playMusic("resources/audio/sfx/pieces.mp3", false);
         await spendCoins(3, false);
+    }
     let shop = document.getElementById("shop");
     shop.removeChild(c);
     shop.style.setProperty("--shop-size", parseInt(shop.style.getPropertyValue("--shop-size")) - 1);
@@ -808,6 +832,7 @@ async function sellCard(c) {
     cardSold = c;
 
     c.parentNode.removeChild(c);
+    playMusic("resources/audio/sfx/pieces.mp3", false);
     await spendCoins(-1, false);
 
     updateTroops();
@@ -833,6 +858,8 @@ async function placeCard(spot, c) {
     card.addEventListener('dragend', dragEnd);
     spot.appendChild(card);
     document.getElementById("hand").removeChild(c);
+
+    playMusic(choice(battleCries[c.card.species]), false);
 
     updateTroops();
 
@@ -1016,6 +1043,7 @@ function canPlaySpell(card, target, area) {
 async function playSpell(c, t) {
     if (c.parentElement)
         c.parentElement.removeChild(c);
+    playMusic(choice(battleCries["Sortilège"]), false);
     for (let e of c.card.effects)
         await createEffect(e.id).run(c.card, [t], true);
 
@@ -1107,7 +1135,7 @@ function updateEnemyTroops() {
                             c.attack += 1;
                     }
                     if (t.indexOf(undefined) == -1) {
-                        for (let k = 0; k < scaling[1]; k++) {
+                        for (let k = 0; k < scaling[1] - (round < 4 && scaling[1] > 1); k++) {
                             if (Math.random() < .5)
                                 choice(t.filter(e => e)).hp += 1;
                             else
@@ -1120,7 +1148,6 @@ function updateEnemyTroops() {
         for (let e of players[i].effects) {
             let scaling = createEffect(e.id).scaling(players[i], t.filter(e => e));
             if (t.indexOf(undefined) == -1) {
-                console.log(t)
                 for (let k = 0; k < scaling[1]; k++) {
                     if (Math.random() < .5)
                         choice(t.filter(e => e)).hp += 1;
@@ -1130,7 +1157,7 @@ function updateEnemyTroops() {
             }
         }
         let players2 = copy(players).sort((a, b) => { if (a.hp > b.hp) return -1; else if (a.hp < b.hp) return 1; else return 0; });
-        if (players2.findIndex(e => e.name === players[i].name) > 3) {
+        if (players2.findIndex(e => e.name === players[i].name) > 3 && round > 3) {
             if (t.indexOf(undefined) == -1) {
                 for (let k = 0; k < round; k++) {
                     if (Math.random() < .5)
@@ -1422,6 +1449,7 @@ async function attack(t1, t2, p1, p2, turn, doAnimate) {
         if (doAnimate) {
             updateCardStats(findCardPos(attacker).children[0]);
             updateCardStats(findCardPos(attacked).children[0]);
+            playMusic("resources/audio/sfx/impact.mp3", false);
         }
 
         if (doAnimate) {
@@ -1577,6 +1605,7 @@ async function dealHeroDamage(finish, t1, t2, p1, p2, doAnimate) {
                 o.style.transform = "scale(.7)";
             else
                 o.style.removeProperty("transform");
+            playMusic("resources/audio/sfx/impact.mp3", false);
             await sleep(200);
             o.style.removeProperty("transition");
             o.classList.remove("attacking");
@@ -9304,10 +9333,13 @@ function Effect1003() {
 function Effect2001() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0] !== sender) {
-            if (Math.random() < .5)
-                await boostStats(sender, 1, 0, doAnimate, false, true);
-            else
-                await boostStats(sender, 0, 1, doAnimate, false, true);
+            let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            if (t.includes(sender)) {
+                if (Math.random() < .5)
+                    await boostStats(sender, 1, 0, doAnimate, false, true);
+                else
+                    await boostStats(sender, 0, 1, doAnimate, false, true);
+            }
         }
     };
     this.scaling = (c, t) => {
@@ -9317,7 +9349,7 @@ function Effect2001() {
         return 1000;
     };
     this.toBack = true;
-    this.desc = "Lorsqu'une autre créature meurt, gagne définitivement +1/+0 ou +0/+1.";
+    this.desc = "Lorsqu'une créature alliée meurt, gagne définitivement +1/+0 ou +0/+1.";
 }
 
 function Effect2002() {
@@ -9481,6 +9513,7 @@ async function effectProcGlow(card) {
         c.style.transition = ".4s";
         c.style.boxShadow = "0 0 30px white";
         c.style.filter = "brightness(1.8)";
+        playMusic("resources/audio/sfx/effect-proc.mp3", false);
         await sleep(400);
         if (oldTransition)
             c.style.transition = oldTransition;
@@ -9508,6 +9541,7 @@ async function boostStats(card, atk, hp, doAnimate, preserveHP, permanent) {
         oldFilter = c.style.filter;
         c.style.transition = ".2s";
         c.style.filter = "brightness(1.6)";
+        playMusic("resources/audio/sfx/stat-boost.mp3", false);
         await sleep(200);
     }
 
