@@ -1369,7 +1369,7 @@ async function repositionTroops(t1, t2, doAnimate) {
     let board = document.getElementById("board");
     for (let i = 0; i < 4; i++) {
         if (!t1[0][i] && t1[1][i]) {
-            t1[0][i] = copy(t1[1][i]);
+            t1[0][i] = t1[1][i];
             t1[1][i] = undefined;
 
             if (doAnimate) {
@@ -1387,7 +1387,7 @@ async function repositionTroops(t1, t2, doAnimate) {
     board = document.getElementById("enemy-board");
     for (let i = 0; i < 4; i++) {
         if (!t2[0][i] && t2[1][i]) {
-            t2[0][i] = copy(t2[1][i]);
+            t2[0][i] = t2[1][i];
             t2[1][i] = undefined;
 
             if (doAnimate) {
@@ -1532,7 +1532,7 @@ function getWinner(t1, t2) {
         return 1;
     else if (w2 && !w1)
         return 2;
-    else if (!w1 && !w2)
+    else if (!w1 && !w2 || t1[0].findIndex(e => e && e.attack > 0) == -1 && t2[0].findIndex(e => e && e.attack > 0) == -1)
         return 3;
     else
         return 0;
