@@ -137,6 +137,7 @@ function loadResources() {
     sounds.push("resources/audio/sfx/effect-proc.mp3");
     sounds.push("resources/audio/sfx/stat-boost.mp3");
     sounds.push("resources/audio/sfx/battle.mp3");
+    sounds.push("resources/audio/sfx/explosion.mp3");
 
     for (let s of speciesList.concat(["Autre", "Sortilège"]))
         for (let c of battleCries[s])
@@ -664,6 +665,14 @@ async function selectHero(n) {
         moneyVal.id = "moneyVal";
         money.appendChild(moneyVal);
 
+        let tier = document.createElement('div');
+        tier.className = "shop-tier";
+        tier.id = "shop-tier";
+        document.body.appendChild(tier);
+        let tierVal = document.createElement('div');
+        tierVal.innerHTML = shopTier;
+        tier.appendChild(tierVal);
+
         let hand = document.createElement('div');
         hand.className = "hand";
         hand.id = "hand-area";
@@ -943,6 +952,7 @@ async function updateTroops() {
 async function increaseShopTier() {
     if (shopTier < 6) {
         shopTier++;
+        document.getElementById("shop-tier").children[0].innerHTML = shopTier;
         await sleep(1000);
 
         let banner = document.createElement('div');
@@ -1087,13 +1097,13 @@ let lastResult = 0;
 
 async function startBattle() {
     if (animating == 0) {
+        playMusic("resources/audio/sfx/battle.mp3", false);
+
         await broadcastShopEvent("turn-end", []);
 
         matchmaking();
 
         updateEnemyTroops();
-
-        playMusic("resources/audio/sfx/battle.mp3", false);
 
         for (let m of nextFights)
             await runBattle(m[0], m[1], m.includes(0));
@@ -1711,6 +1721,7 @@ async function drawBattleScene(t1, t2, p) {
     document.getElementById("freeze").style.transform = "translateY(-284px)";
     document.getElementById("refresh").style.transform = "translateY(-284px)";
     document.getElementById("money").style.transform = "translateY(-284px)";
+    document.getElementById("shop-tier").style.transform = "translateY(-284px)";
     document.getElementById("players").style.transform = "translateX(100%)";
     document.getElementById("fight").style.transform = "translateX(130px)";
     document.getElementById("hand-area").style.transform = "translate(-50%, 60%)";
@@ -1848,6 +1859,7 @@ async function drawShopScene() {
         document.getElementById("players").style.removeProperty("transform");
         document.getElementById("fight").style.removeProperty("transform");
         document.getElementById("hand-area").style.removeProperty("transform");
+        document.getElementById("shop-tier").style.removeProperty("transform");
 
         playMusic(getNextMusic("shop"), true);
 
@@ -9678,6 +9690,7 @@ async function dealDamage(card, damage, doAnimate, state) {
         oldFilter = c.style.filter;
         c.style.transition = ".2s";
         c.style.filter = "grayscale(100%) brightness(40%) sepia(100%) hue-rotate(-50deg) saturate(600%) contrast(0.8)";
+        playMusic("resources/audio/sfx/explosion.mp3", false);
         await sleep(200);
     }
 

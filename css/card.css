@@ -167,7 +167,7 @@
 
         .card > .tier > div {
             font-family: Verdana;
-            font-size: calc(var(--font-very-large));
+            font-size: var(--font-very-large);
             font-weight: bold;
             text-align: center;
             margin: auto;
