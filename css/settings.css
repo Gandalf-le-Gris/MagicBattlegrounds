@@ -1,28 +1,3 @@
-body, html {
-    overflow-y: hidden;
-    overflow-x: hidden;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    background-color: lightgray;
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
-
-    width: 1536px;
-    height: 864px;
-    margin: 0;
-
-    --global-font: Papyrus;
-    --font-very-large: 40px;
-    --font-large: 25px;
-    --font-medium: 20x;
-    --font-small: 16px;
-
-    position: absolute;
-    z-index: -999;
-}
-
 #settings {
     position: absolute;
     top: 0;

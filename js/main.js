@@ -17,15 +17,22 @@ function resizeScreen() {
 window.onresize = resizeScreen;
 resizeScreen();
 
-
+function clearBody() {
+    let nodes = Array.prototype.slice.call(document.body.childNodes);
+    for (let i = 0; i < nodes.length; i++) {
+        if (nodes[i].id !== "audios") {
+            document.body.removeChild(nodes[i]);
+        }
+    }
+    for (let a of document.getElementById("audios").children)
+        a.pause();
+}
 
 
 
 /* ----------------------------------------------------- */
 /* ------------------- Asset loading-------------------- */
 /* ----------------------------------------------------- */
-
-let audios = [];
 
 function loadResources() {
     var filter = document.createElement('div');
@@ -64,7 +71,7 @@ function loadResources() {
                         progressSpan.style.width = progress + "%";
                         progressText.innerHTML = Math.floor(progress) + "%";
                         img.id = imageUrl;
-                        audios.push(img);
+                        document.getElementById("audios").appendChild(img);
                         if (progress == 100) {
                             text.innerHTML = "Cliquez pour continuer";
                             filter.onclick = () => {
@@ -128,7 +135,8 @@ function loadResources() {
     sounds.push("resources/audio/sfx/pieces.mp3");
     sounds.push("resources/audio/sfx/impact.mp3");
     sounds.push("resources/audio/sfx/effect-proc.mp3");
-    sounds.push("resources/audio/sfx/stat-boost.mp3")
+    sounds.push("resources/audio/sfx/stat-boost.mp3");
+    sounds.push("resources/audio/sfx/battle.mp3");
 
     for (let s of speciesList.concat(["Autre", "Sortilège"]))
         for (let c of battleCries[s])
@@ -183,7 +191,7 @@ function loadResources() {
 /* ----------------------------------------------------- */
 
 function drawHomeScreen() {
-    document.body.innerHTML = "";
+    clearBody();
     document.body.style.backgroundImage = 'url("resources/ui/home-screen-bg.jpg")';
 
     let title = document.createElement('div');
@@ -217,7 +225,7 @@ async function fadeTransition(interfaceBuilder) {
     fadeOutMusic();
     await sleep(500);
 
-    document.body.innerHTML = "";
+    clearBody();
     interfaceBuilder();
 
     filter = document.createElement('div');
@@ -259,7 +267,7 @@ function toggleSettings() {
         masterVolumeSlider.oninput = () => {
             masterVolume = masterVolumeSlider.value / 100;
             masterVolumeSlider.style.setProperty("--thumb-rotate", (masterVolume * 720) + "deg");
-            for (let a of audios)
+            for (let a of document.getElementById("audios").children)
                 if (a.loop)
                     a.volume = baseVolume * masterVolume * musicVolume;
                 else
@@ -285,7 +293,7 @@ function toggleSettings() {
         musicVolumeSlider.oninput = () => {
             musicVolume = musicVolumeSlider.value / 100;
             musicVolumeSlider.style.setProperty("--thumb-rotate", (musicVolume * 720) + "deg");
-            for (let a of audios)
+            for (let a of document.getElementById("audios").children)
                 if (a.loop)
                     a.volume = baseVolume * masterVolume * musicVolume;
             window.localStorage.setItem("musicVolume", musicVolume);
@@ -309,7 +317,7 @@ function toggleSettings() {
         sfxVolumeSlider.oninput = () => {
             sfxVolume = sfxVolumeSlider.value / 100;
             sfxVolumeSlider.style.setProperty("--thumb-rotate", (sfxVolume * 720) + "deg");
-            for (let a of audios)
+            for (let a of document.getElementById("audios").children)
                 if (!a.loop)
                     a.volume = baseVolume * masterVolume * sfxVolume;
             window.localStorage.setItem("sfxVolume", sfxVolume);
@@ -369,22 +377,24 @@ let battleCries = {
 }
 
 function playMusic(src, repeat) {
-    let music = audios[audios.findIndex(e => e.id === src)];
+    let music = document.getElementById(src);
     if (music != undefined) {
         music.volume = baseVolume * masterVolume;
-        if (repeat) {
+        if (repeat)
             music.volume *= musicVolume;
-            fadeInMusic();
-        } else
+        else
             music.volume *= sfxVolume;
         music.currentTime = 0;
         music.loop = repeat;
         music.play();
+        if (repeat)
+            fadeInMusic();
     }
 }
 
 function fadeOutMusic() {
     var m;
+    let audios = document.getElementById("audios").children;
     for (let a of audios) {
         if (a.loop && !a.paused)
             m = a;
@@ -414,6 +424,7 @@ function fadeOutMusic() {
 
 function fadeInMusic() {
     var m;
+    let audios = document.getElementById("audios").children;
     for (let a of audios) {
         if (a.loop && !a.paused)
             m = a;
@@ -1081,6 +1092,8 @@ async function startBattle() {
         matchmaking();
 
         updateEnemyTroops();
+
+        playMusic("resources/audio/sfx/battle.mp3", false);
 
         for (let m of nextFights)
             await runBattle(m[0], m[1], m.includes(0));
