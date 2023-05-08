@@ -4869,7 +4869,7 @@ function ProieFacile() {
     this.name = "Proie facile";
     this.species = "Bête";
     this.attack = 0;
-    this.hp = 1;
+    this.hp = 2;
     this.src = "betes/proie-facile.jpg";
     this.tier = 7;
     this.effects = [
@@ -6597,7 +6597,7 @@ function Effect211() {
         }
     };
     this.scaling = (c, t) => {
-        return [3, 0, 0, 0];
+        return [fluctuate(2, 1, 1.5), 0, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -9068,7 +9068,7 @@ function Effect804() {
         return [0, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
-        return 10;
+        return 8;
     };
     this.toBack = true;
     this.desc = "Lorsqu'une créature ennemie meurt, gagne +2/+0.";
