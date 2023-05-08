@@ -1023,6 +1023,10 @@ async function dragDrop() {
         moveCard(this, card);
     else if (document.getElementById("hand").contains(card) && this.name === "position" && this.children[0] && card.card.species === "Sortilège" && canPlaySpell(card.card, this.children[0].card, "board"))
         playSpell(card, this.children[0]);
+    else if (document.getElementById("hand").contains(card) && this.name === "position" && this.children[0] && card.card.effects.findIndex(e => e.id == 2008) != -1 && this.children[0].card.effects.findIndex(e => e.id == 2008) != -1) {
+        boostStats(this.children[0].card, card.card.attack, card.card.hp, true);
+        card.parentElement.removeChild(card);
+    }
 }
 
 function dragOver(e) {
@@ -1130,16 +1134,16 @@ function updateEnemyTroops() {
                     let scaling = createEffect(e.id).scaling(c, t.filter(e => e));
                     for (let k = 0; k < scaling[0]; k++) {
                         if (Math.random() < .5)
-                            c.hp += 1;
+                            boostStats(c, 0, 1, false);
                         else
-                            c.attack += 1;
+                        boostStats(c, 1, 0, false);
                     }
                     if (t.indexOf(undefined) == -1) {
                         for (let k = 0; k < scaling[1] - (round < 4 && scaling[1] > 1); k++) {
                             if (Math.random() < .5)
-                                choice(t.filter(e => e)).hp += 1;
+                                boostStats(choice(t.filter(e => e)), 0, 1, false);
                             else
-                                choice(t.filter(e => e)).attack += 1;
+                                boostStats(choice(t.filter(e => e)), 1, 0, false);
                         }
                     }
                 }
@@ -1150,9 +1154,9 @@ function updateEnemyTroops() {
             if (t.indexOf(undefined) == -1) {
                 for (let k = 0; k < scaling[1]; k++) {
                     if (Math.random() < .5)
-                        choice(t.filter(e => e)).hp += 1;
+                        boostStats(choice(t.filter(e => e)), 0, 1, false);
                     else
-                        choice(t.filter(e => e)).attack += 1;
+                        boostStats(choice(t.filter(e => e)), 1, 0, false);
                 }
             }
         }
@@ -2352,6 +2356,10 @@ function TyranDraconique() {
         {
             trigger: "card-buy",
             id: 1
+        },
+        {
+            trigger: "turn-start",
+            id: 14
         }
     ];
 }
@@ -2426,6 +2434,10 @@ function MonarqueInflexible() {
         {
             trigger: "card-sell",
             id: 9
+        },
+        {
+            trigger: "turn-start",
+            id: 15
         }
     ];
 }
@@ -4381,7 +4393,7 @@ function HydreEnragee() {
 
 function MastodonteGalopant() {
     this.name = "Mastodonte galopant";
-    this.species = "Autre";
+    this.species = "Bête";
     this.attack = 8;
     this.hp = 8;
     this.src = "betes/mastodonte-galopant.jpg";
@@ -4860,7 +4872,10 @@ function ProieFacile() {
     this.src = "betes/proie-facile.jpg";
     this.tier = 7;
     this.effects = [
-
+        {
+            trigger: "",
+            id: 2008
+        }
     ];
 }
 
@@ -5360,6 +5375,10 @@ function createEffect(id) {
             return new Effect12();
         case 13:
             return new Effect13();
+        case 14:
+            return new Effect14();
+        case 15:
+            return new Effect15();
         case 101:
             return new Effect101();
         case 102:
@@ -5698,6 +5717,8 @@ function createEffect(id) {
             return new Effect2006();
         case 2007:
             return new Effect2007();
+        case 2008:
+            return new Effect2008();
         default:
             alert("Effet inconnu : " + id);
     }
@@ -5705,10 +5726,11 @@ function createEffect(id) {
 
 function Effect1() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0].card.species === "Dragon") {
+        if (args[0].card.species === "Dragon" && (!sender.effect1 || sender.effect1 == 0)) {
             if (doAnimate)
                 await effectProcGlow(sender);
             await spendCoins(-1, false);
+            sender.effect1 = 1;
         }
     };
     this.scaling = (c, t) => {
@@ -5717,7 +5739,7 @@ function Effect1() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "Gagnez 1 pièce d'or à chaque fois que vous achetez un Dragon.";
+    this.desc = "Gagnez 1 pièce d'or la première fois que vous achetez un Dragon à chaque tour.";
 }
 
 function Effect2() {
@@ -5864,7 +5886,7 @@ function Effect8() {
 function Effect9() {
     this.run = async (sender, args, doAnimate) => {
         let c = args[0].card;
-        if (c.species !== "Sortilège" && c.species !== "Autre") {
+        if (c.species !== "Sortilège" && c.species !== "Autre" && (!sender.effect9 || sender.effect9 == 0)) {
             if (doAnimate)
                 await effectProcGlow(sender);
             let sp = copy(species);
@@ -5875,6 +5897,7 @@ function Effect9() {
                 if (t)
                     await boostStats(t, 2, 2, doAnimate);
             }
+            sender.effect9 = 1;
         }
     };
     this.scaling = (c, t) => {
@@ -5883,7 +5906,7 @@ function Effect9() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "Lorsque vous revendez une créature d'une famille, confère +1/+1 à une créature alliée de chaque autre famille.";
+    this.desc = "La première fois à chaque tour que vous revendez une créature d'une famille, confère +1/+1 à une créature alliée de chaque autre famille.";
 }
 
 function Effect10() {
@@ -5966,6 +5989,32 @@ function Effect13() {
         return 0;
     };
     this.desc = "Lorsque vous recherchez des recrues, leur donne +1/+1 puis mélange leurs statistiques.";
+}
+
+function Effect14() {
+    this.run = async (sender, args, doAnimate) => {
+        sender.effect1 = 0;
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "";
+}
+
+function Effect15() {
+    this.run = async (sender, args, doAnimate) => {
+        sender.effect9 = 0;
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "";
 }
 
 function Effect101() {
@@ -7076,7 +7125,7 @@ function Effect320() {
     this.scaling = (c, t) => {
         if (!c.effect320)
             c.effect320 = 0;
-        c.effect320 += 1 + (Math.random() < .5);
+        c.effect320 += 0 + (Math.random() < .5);
         return [0, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
@@ -7219,7 +7268,7 @@ function Effect401() {
             if (doAnimate)
                 effectProcGlow(sender);
             chooseTarget((target) => {
-                boostStats(target, 1, 2, doAnimate);
+                boostStats(target, 1, 3, doAnimate);
             }, {
                 area: "board",
                 species: "Soldat",
@@ -7233,7 +7282,7 @@ function Effect401() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "<em>Recrue :</em> Confère +1/+2 à un autre Soldat allié ciblé.";
+    this.desc = "<em>Recrue :</em> Confère +1/+3 à un autre Soldat allié ciblé.";
 }
 
 function Effect402() {
@@ -7748,7 +7797,8 @@ function Effect506() {
                 if (target) {
                     if (doAnimate)
                         await effectProcGlow(sender);
-                    let card = copy(target);
+                    let name = target.src.substring(target.src.indexOf("/") + 1, target.src.indexOf("."));
+                    let card = createCard(name);
                     card.species = "Bandit";
                     card.created = true;
                     addToHand(drawCard(card, 176));
@@ -8017,7 +8067,8 @@ function Effect518() {
                 if (target) {
                     if (doAnimate)
                         await effectProcGlow(sender);
-                    let card = copy(target);
+                    let name = target.src.substring(target.src.indexOf("/") + 1, target.src.indexOf("."));
+                    let card = createCard(name);
                     card.created = true;
                     addToHand(drawCard(card, 176));
                 }
@@ -8561,7 +8612,7 @@ function Effect703() {
                 c.style.transition = ".5s";
                 c.style.opacity = "0";
                 await boostStats(sender, target.attack, target.hp, doAnimate);
-                await boostStats(sender, 2, 2, doAnimate);
+                await boostStats(sender, 3, 3, doAnimate);
                 c.parentElement.removeChild(c);
                 updateTroops();
             }, {
@@ -8576,7 +8627,7 @@ function Effect703() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "<em>Recrue :</em> <em>Dévore</em> une créature alliée ciblée, puis gagne +2/+2.";
+    this.desc = "<em>Recrue :</em> <em>Dévore</em> une créature alliée ciblée, puis gagne +3/+3.";
 }
 
 function Effect704() {
@@ -9357,10 +9408,10 @@ function Effect2002() {
         if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             if (doAnimate)
                 await effectProcGlow(sender);
-            sender.species = choice(copy(species).filter(x => x != sender.species));
+            sender.species = choice(copy(species).filter(x => x !== sender.species));
             let n = 0;
             for (let c of troops[0])
-                if (c && c.species == sender.species && c !== sender)
+                if (c && c.species === sender.species && c !== sender)
                     n++;
             if (n > 0)
                 await boostStats(sender, n, n, doAnimate);
@@ -9381,7 +9432,7 @@ function Effect2003() {
             let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
             let f = [];
             for (let c of t)
-                if (c && !f.includes(c.species) && c.species != "Autre")
+                if (c && !f.includes(c.species) && c.species !== "Autre")
                     f.push(c.species);
             if (f.length > 0) {
                 if (doAnimate)
@@ -9407,7 +9458,7 @@ function Effect2004() {
             let sp = copy(species);
             shuffle(sp);
             for (let s of sp) {
-                let t = choice(troops[0].filter(x => x && x.species == s));
+                let t = choice(troops[0].filter(x => x && x.species === s));
                 if (t)
                     await boostStats(t, 2, 2, doAnimate);
             }
@@ -9424,15 +9475,15 @@ function Effect2004() {
 
 function Effect2005() {
     this.run = async (sender, args, doAnimate) => {
-        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+        if (args[0].card !== sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             if (doAnimate)
                 await effectProcGlow(sender);
             let card = args[0].card;
             let sp = copy(species);
             shuffle(sp);
             for (let s of sp) {
-                let t = choice(troops[0].filter(x => x && x.species == s));
-                if (t && s != card.species)
+                let t = choice(troops[0].filter(x => x && x.species === s));
+                if (t && s !== card.species)
                     await boostStats(t, 2, 2, doAnimate);
             }
         }
@@ -9454,7 +9505,7 @@ function Effect2006() {
             let sp = copy(species);
             shuffle(sp);
             for (let s of sp) {
-                let t = choice(troops[0].filter(x => x && x.species == s));
+                let t = choice(troops[0].filter(x => x && x.species === s));
                 if (t)
                     await boostStats(t, 1, 1, doAnimate);
             }
@@ -9475,7 +9526,7 @@ function Effect2007() {
             let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
             let f = [];
             for (let c of t)
-                if (c && !f.includes(c.species) && c.species != "Autre")
+                if (c && !f.includes(c.species) && c.species !== "Autre")
                     f.push(c.species);
             if (f.length > 0) {
                 if (doAnimate)
@@ -9495,6 +9546,19 @@ function Effect2007() {
         return 15;
     };
     this.desc = "<em>Frappe préventive :</em> Gagne +5/+7 pour chaque famille alliée différente, ainsi que <em>Bouclier</em> s'il y en a au moins 2 et <em>Contact mortel</em> s'il y en a au moins 4.";
+}
+
+function Effect2008() {
+    this.run = async (sender, args, doAnimate) => {
+        
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Peut être joué comme un Sortilège sur une autre Proie facile pour lui conférer ses statistiques.";
 }
 
 
@@ -9709,7 +9773,10 @@ function closeEffectSelector() {
 }
 
 function isValidEffectTarget(card, param, sender) {
-    if (param.species && !param.species == card.species)
+    console.log(card)
+    console.log(param)
+    console.log(sender)
+    if (param.species && param.species !== card.species)
         return false;
     if (param.notself && card === sender)
         return false;
