@@ -45,7 +45,7 @@ function loadResources() {
                         progressSpan.style.width = progress + "%";
                         progressText.innerHTML = Math.floor(progress) + "%";
                         if (progress == 100) {
-                            text.innerHTML = "Click to continue";
+                            text.innerHTML = "Cliquez pour continuer";
                             filter.onclick = () => {
                                 window.addEventListener('keydown', (e) => {
                                     if (e.key === "Escape") {
@@ -66,7 +66,7 @@ function loadResources() {
                         img.id = imageUrl;
                         audios.push(img);
                         if (progress == 100) {
-                            text.innerHTML = "Click to continue";
+                            text.innerHTML = "Cliquez pour continuer";
                             filter.onclick = () => {
                                 window.addEventListener('keydown', function(event) {
                                     if(event.key === "Escape") {
@@ -114,7 +114,7 @@ function loadResources() {
     imgs.push("resources/ui/team-builder-bg.jpg");
     imgs.push("resources/ui/wood-texture.jpg");
 
-    for (let s of speciesList.concat(["Commandant", "Autre"]))
+    for (let s of speciesList.concat(["Commandant", "Autre", "Token"]))
         for (let c of cardList[s])
             imgs.push("resources/cards/" + createCard(c).src);
 
@@ -152,18 +152,18 @@ function loadResources() {
     progressBar.appendChild(progressText);
 
     var text = document.createElement('div');
-    text.innerHTML = "Loading assets...";
+    text.innerHTML = "Chargement en cours...";
     text.style.fontSize = "3vw";
     grid.appendChild(text);
 
     var advice = document.createElement('div');
     advice.className = "advice";
-    advice.innerHTML = "This game is better played in fullscreen mode (F11).</br>You can turn music off anytime from the settings menu."
+    advice.innerHTML = "Pour une meilleur expérience, il est conseillé de jouer en plein écran (F11).</br>Vous pouvez ajuster la musique à tout moment depuis les paramètres."
     filter.appendChild(advice);
 
     var disclaimer = document.createElement('div');
     disclaimer.className = "disclaimer";
-    disclaimer.innerHTML = "Loading speed may depend on the network. Please ensure you have a good Internet connection if loading takes too long.";
+    disclaimer.innerHTML = "La vitesse de chargement dépend de votre connexion Internet. Assurez-vous d'avoir une bonne connexion si le chargement prend trop de temps.";
     filter.appendChild(disclaimer);
 
     masterVolume = window.localStorage.getItem('masterVolume') != null ? JSON.parse(window.localStorage.getItem('masterVolume')) : 1;
@@ -1885,7 +1885,8 @@ const cardList = {
     "Machine": ["planeur-de-fortune", "renard-mecanique", "colosse-adaptatif", "protecteur-de-la-cite", "golem-cinetique", "carcasse-mecanophage", "automate-replicateur", "artisan-gadgetiste", "baliste-ambulante", "automate-manaforme", "auto-duplicateur", "chef-de-la-proliferation", "ouvrier-assembleur", "garde-de-fer", "robot-astiqueur"],
     "Bête": ["predateur-en-chasse", "devoreur-sauvage", "chasseur-bondissant", "guivre-colossale", "gardien-de-la-foret", "ame-rugissante", "colonie-de-rats", "hydre-vorace", "hydre-enragee", "avatar-de-la-predation", "alligator-charognard", "meneuse-de-betes", "hurleur-des-sylves", "chargeur-cuirasse", "mastodonte-galopant"],
     "Mort-Vivant": ["serviteur-exhume", "squelette-reconstitue", "archer-squelette", "liche-profanatrice", "devoreur-pourrissant", "eveilleur-d-ames", "creation-abjecte", "necromancienne-corrompue", "raccommodeur-de-cadavres", "guerrier-maudit", "crane-possede", "dragon-decharne", "marcheur-eternel", "soldat-revenu-a-la-vie", "assistant-du-raccommodeur"],
-    "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"]
+    "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"],
+    "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble"]
 };
 
 let species = [];
@@ -9313,6 +9314,7 @@ function Effect816() {
         let c = args[0].card;
         let n = Math.min(2, c.hp - 1);
         boostStats(c, 0, -n, doAnimate);
+        drawPlayers();
         await boostStats(players[0], 0, n, doAnimate);
     };
     this.scaling = (c, t) => {
@@ -9329,6 +9331,7 @@ function Effect817() {
         let c = args[0].card;
         c.revive = true;
         boostStats(players[0], 0, -Math.min(6, players[0].hp - 1), doAnimate);
+        drawPlayers();
         await boostStats(c, 0, 0, doAnimate);
     };
     this.scaling = (c, t) => {
