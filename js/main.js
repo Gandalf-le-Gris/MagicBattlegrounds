@@ -5,13 +5,8 @@ function resizeScreen() {
     let hratio = height / 864;
     let ratio = Math.max(wratio, hratio);
     document.body.style.transform = "scale(" + ratio + ")";
-    if (ratio <= 1) {
-        document.body.style.left = "-" + (1536 * (1 - ratio) / 2) + "px";
-        document.body.style.top = "-" + (864 * (1 - ratio) / 2) + "px";
-    } else {
-        document.body.style.left = (1536 * (ratio - 1) / 2) + "px";
-        document.body.style.top = (864 * (ratio - 1) / 2) + "px";
-    }
+    document.body.style.left = (1536 * (ratio - 1) / 2) + "px";
+    document.body.style.top = (864 * (ratio - 1) / 2) + "px";
 };
 
 window.onresize = resizeScreen;
@@ -24,8 +19,6 @@ function clearBody() {
             document.body.removeChild(nodes[i]);
         }
     }
-    for (let a of document.getElementById("audios").children)
-        a.pause();
 }
 
 
@@ -357,7 +350,7 @@ function toggleSettings() {
 /* ----------------------- Music ----------------------- */
 /* ----------------------------------------------------- */
 
-let baseVolume = .5;
+let baseVolume = .8;
 let masterVolume = 1;
 let musicVolume = 1;
 let sfxVolume = 1;
@@ -415,10 +408,8 @@ function fadeOutMusic() {
         else {
             clearInterval(interval);
             m.volume = 0;
-            for (let a of audios) {
-                a.pause();
-                a.currentTime = 0;
-            }
+            m.pause();
+            m.currentTime = 0;
         }
     }
 }
@@ -1620,6 +1611,8 @@ async function dealHeroDamage(finish, t1, t2, p1, p2, doAnimate) {
             let o = finish == 1 ? document.getElementById("commander") : document.getElementById("enemy-commander").children[0];
             let t = finish == 2 ? document.getElementById("commander") : document.getElementById("enemy-commander").children[0];
             o.classList.add("attacking");
+            if (o.classList.contains("commander"))
+                o.style.transform = "scale(.77)";
             await sleep(500);
             let or = o.getBoundingClientRect();
             let tr = t.getBoundingClientRect();
@@ -1634,9 +1627,9 @@ async function dealHeroDamage(finish, t1, t2, p1, p2, doAnimate) {
                 o.style.removeProperty("transform");
             playMusic("resources/audio/sfx/impact.mp3", false);
             await sleep(200);
-            o.style.removeProperty("transition");
             o.classList.remove("attacking");
             await sleep(500);
+            o.style.removeProperty("transition");
         }
     }
 }
