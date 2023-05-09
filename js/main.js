@@ -1893,7 +1893,7 @@ async function drawShopScene() {
 const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant"];
 
 const cardList = {
-    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou"],
+    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion"],
     "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
@@ -1987,6 +1987,8 @@ function createCard(card) {
             return new CollectionneurDAmes();
         case "inventeur-fou":
             return new InventeurFou();
+        case "meneuse-de-la-rebellion":
+            return new MeneuseDeLaRebellion();
 
         case "dragonnet-ardent":
             return new DragonnetArdent();
@@ -2514,6 +2516,24 @@ function InventeurFou() {
         {
             trigger: "shop-refresh",
             id: 13
+        }
+    ];
+}
+
+function MeneuseDeLaRebellion() {
+    this.name = "Meneuse de la Rébellion";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 31;
+    this.src = "commandants/meneuse-de-la-rebellion.jpg";
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 16
+        },
+        {
+            trigger: "turn-start",
+            id: 17
         }
     ];
 }
@@ -5398,6 +5418,10 @@ function createEffect(id) {
             return new Effect14();
         case 15:
             return new Effect15();
+        case 16:
+            return new Effect16();
+        case 17:
+            return new Effect17();
         case 101:
             return new Effect101();
         case 102:
@@ -6036,6 +6060,37 @@ function Effect15() {
     this.desc = "";
 }
 
+function Effect16() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card.effects.findIndex(e => createEffect(e.id).desc.startsWith("<em>Recrue :</em>")) != -1 && (!sender.effect16 || sender.effect16 == 0)) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await createEffect(args[0].card.effects[args[0].card.effects.findIndex(e => createEffect(e.id).desc.startsWith("<em>Recrue :</em>"))].id).run(args[0].card, args, doAnimate);
+            sender.effect16 = 1;
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Le premier effet de <em>Recrue</em> est doublé à chaque tour.";
+}
+
+function Effect17() {
+    this.run = async (sender, args, doAnimate) => {
+        sender.effect16 = 0;
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "";
+}
+
 function Effect101() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0].card === sender) {
@@ -6404,7 +6459,7 @@ function Effect201() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0].card === sender) {
             if (doAnimate)
-                effectProcGlow(sender);
+                await effectProcGlow(sender);
             document.getElementById("refresh").style.boxShadow = "0 0 15px green";
             discountedRefreshes++;
         }
