@@ -483,9 +483,9 @@ let enemyFamilies = [];
 async function startGame() {
     await fadeTransition(() => {
         initCards();
-        shopTier = 1; //!!!
+        shopTier = 6; //!!!
         round = 1;
-        coins = 3; //!!!
+        coins = 999; //!!!
         players = [];
         for (let i = 0; i < 8; i++) {
             lastFights.push([]);
@@ -1181,14 +1181,14 @@ function updateEnemyTroops() {
             if (t.indexOf(undefined) == -1) {
                 for (let k = 0; k < round; k++) {
                     if (Math.random() < .5)
-                        choice(t.filter(e => e)).hp += 1;
+                        boostStats(choice(t.filter(e => e)), 0, 1, false);
                     else
-                        choice(t.filter(e => e)).attack += 1;
+                        boostStats(choice(t.filter(e => e)), 1, 0, false);
                 }
             }
         }
 
-        budget = Math.min(10, round + 2) + 20;
+        budget = Math.min(10, round + 2);
         while (budget >= 3) {
             let options = [];
             for (let k = 0; k < 4; k++)
@@ -1471,9 +1471,8 @@ async function attack(t1, t2, p1, p2, turn, doAnimate) {
     let attacker = pickAttacker(t1, t2, turn);
     let o = findCardPos(attacker);
     if (doAnimate) {
-        let d = findCardPos(attacker);
-        d.classList.add("attacking");
-        d.parentElement.style.zIndex = "10";
+        o.classList.add("attacking");
+        o.parentElement.style.zIndex = "10";
         await sleep(500);
     }
     let attacked = pickTarget(t1, t2, turn, attacker.range);
@@ -1603,7 +1602,7 @@ function getWinner(t1, t2) {
 function pickAttacker(t1, t2, turn) {
     let t = turn ? t1 : t2;
     for (let c of t[0]) {
-        if (c && !c.hasAttacked) {
+        if (c && !c.hasAttacked && c.attack > 0) {
             c.hasAttacked = true;
             return c;
         }
@@ -1612,12 +1611,11 @@ function pickAttacker(t1, t2, turn) {
         if (c)
             c.hasAttacked = false;
     }
-    for (let c of t[0]) {
-        if (c) {
-            c.hasAttacked = true;
-            return c;
-        }
-    }
+    let attacker = t[0][t[0].findIndex(e => e && e.attack > 0)];
+    if (!attacker)
+        attacker = t[0][t[0].findIndex(e => e)];
+    attacker.hasAttacked = true;
+    return attacker;
 }
 
 function pickTarget(t1, t2, turn, range) {
@@ -1951,7 +1949,7 @@ const cardList = {
     "Machine": ["planeur-de-fortune", "renard-mecanique", "colosse-adaptatif", "protecteur-de-la-cite", "golem-cinetique", "carcasse-mecanophage", "automate-replicateur", "artisan-gadgetiste", "baliste-ambulante", "automate-manaforme", "auto-duplicateur", "chef-de-la-proliferation", "ouvrier-assembleur", "garde-de-fer", "robot-astiqueur"],
     "Bête": ["predateur-en-chasse", "devoreur-sauvage", "chasseur-bondissant", "guivre-colossale", "gardien-de-la-foret", "ame-rugissante", "colonie-de-rats", "hydre-vorace", "hydre-enragee", "avatar-de-la-predation", "alligator-charognard", "meneuse-de-betes", "hurleur-des-sylves", "chargeur-cuirasse", "mastodonte-galopant"],
     "Mort-Vivant": ["serviteur-exhume", "squelette-reconstitue", "archer-squelette", "liche-profanatrice", "devoreur-pourrissant", "eveilleur-d-ames", "creation-abjecte", "necromancienne-corrompue", "raccommodeur-de-cadavres", "guerrier-maudit", "crane-possede", "dragon-decharne", "marcheur-eternel", "soldat-revenu-a-la-vie", "assistant-du-raccommodeur"],
-    "Sylvain": [],
+    "Sylvain": ["invocation-sylvestre", "chamane-des-lignes-de-vie", "gardien-de-noirepine"],
     "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"],
     "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble"]
 };
@@ -1969,6 +1967,8 @@ function initCards() {
             species.push(s);
     }
 
+    species = ["Sylvain"]; //!!!
+
     //for (let s of speciesList)
     //    cardList[s] = [cardList[s][0]]; //!!!
 
@@ -1985,7 +1985,7 @@ function initCards() {
     commanders = [];
     for (let c of cardList["Commandant"]) {
         let card = createCard(c);
-        if (!card.requirement || species.includes(card.requirement))
+        //if (!card.requirement || species.includes(card.requirement)) //!!!
             commanders.push(card);
     }
 
@@ -2338,6 +2338,13 @@ function createCard(card) {
             return new RegainDeVie();
         case "rite-de-sang":
             return new RiteDeSang();
+
+        case "invocation-sylvestre":
+            return new InvocationSylvestre();
+        case "chamane-des-lignes-de-vie":
+            return new ChamaneDesLignesDeVie();
+        case "gardien-de-noirepine":
+            return new GardienDeNoirepine();
 
         case "changeforme-masque":
             return new ChangeformeMasque();
@@ -4839,6 +4846,58 @@ function RiteDeSang() {
 }
 
 
+// Sylvain
+
+function InvocationSylvestre() {
+    this.name = "Invocation sylvestre";
+    this.species = "Sylvain";
+    this.attack = 1;
+    this.hp = 3;
+    this.src = "sylvains/invocation-sylvestre.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "attacked",
+            id: 901
+        }
+    ];
+}
+
+function ChamaneDesLignesDeVie() {
+    this.name = "Chamane des lignes de vie";
+    this.species = "Sylvain";
+    this.attack = 2;
+    this.hp = 3;
+    this.src = "sylvains/chamane-des-lignes-de-vie.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "card-sell",
+            id: 902
+        }
+    ];
+}
+
+function GardienDeNoirepine() {
+    this.name = "Gardien de Noirépine";
+    this.species = "Sylvain";
+    this.attack = 0;
+    this.hp = 6;
+    this.src = "sylvains/gardien-de-noirepine.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "attacked",
+            id: 903
+        },
+        {
+            trigger: "",
+            id: 323
+        }
+    ];
+}
+
+
 // Autre
 
 function AngeDeLUnite() {
@@ -5841,6 +5900,14 @@ function createEffect(id) {
             return new Effect816();
         case 817:
             return new Effect817();
+        case 901:
+            return new Effect901();
+        case 902:
+            return new Effect902();
+        case 903:
+            return new Effect903();
+        case 904:
+            return new Effect904();
         case 1001:
             return new Effect1001();
         case 1002:
@@ -9605,6 +9672,65 @@ function Effect817() {
         return 0;
     };
     this.desc = "Perdez 6 PV pour donner <em>Résurrection</em> au Mort-Vivant allié ciblé.";
+}
+
+function Effect901() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, 0, 1, doAnimate, true, true);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 2;
+    };
+    this.toFront = true;
+    this.desc = "Lorsque cette créature est attaquée, elle gagne définitivement +0/+1.";
+}
+
+function Effect902() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                effectProcGlow(sender);
+            await chooseTarget((target) => {
+                boostStats(target, 0, 2, doAnimate);
+            }, {
+                area: "board"
+            }, sender);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 1];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous revendez cette carte, confère +0/+2 à la créature alliée ciblée.";
+}
+
+function Effect903() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let n = Math.ceil(args[0].hp / 2);
+            if (n > 0)
+                await dealDamage(args[1], n, doAnimate, args.slice(2));
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return c.hp / 2;
+    };
+    this.toFront = true;
+    this.desc = "Lorsque cette créature est attaquée, elle inflige des dégâts équivalents à la moitié de ses propres PV à l'attaquant.";
 }
 
 function Effect1001() {
