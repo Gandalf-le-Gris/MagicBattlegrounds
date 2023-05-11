@@ -366,6 +366,7 @@ let battleCries = {
     "Machine": ["resources/audio/sfx/machine1.mp3", "resources/audio/sfx/machine2.mp3", "resources/audio/sfx/machine3.mp3"],
     "Bête": ["resources/audio/sfx/bete1.mp3", "resources/audio/sfx/bete2.mp3", "resources/audio/sfx/bete3.mp3"],
     "Mort-Vivant": ["resources/audio/sfx/mort-vivant1.mp3", "resources/audio/sfx/mort-vivant2.mp3", "resources/audio/sfx/mort-vivant3.mp3"],
+    "Sylvain": [],
     "Autre": ["resources/audio/sfx/autre1.mp3"],
     "Sortilège": ["resources/audio/sfx/sortilege1.mp3"]
 }
@@ -1420,6 +1421,10 @@ async function repositionTroops(t1, t2, doAnimate) {
     }
 }
 
+async function swapPositions(c1, c2, args, doAnimate) {
+    //await broadcastEvent("reposition", t1, t2, p1, p2, turn, doAnimate, [attacker, attacked, t1, t2, p1, p2, turn]);
+}
+
 async function attack(t1, t2, p1, p2, turn, doAnimate) {
     let attacker = pickAttacker(t1, t2, turn);
     let o = findCardPos(attacker);
@@ -1894,7 +1899,7 @@ async function drawShopScene() {
 const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant"];
 
 const cardList = {
-    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent"],
+    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret"],
     "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
@@ -1904,6 +1909,7 @@ const cardList = {
     "Machine": ["planeur-de-fortune", "renard-mecanique", "colosse-adaptatif", "protecteur-de-la-cite", "golem-cinetique", "carcasse-mecanophage", "automate-replicateur", "artisan-gadgetiste", "baliste-ambulante", "automate-manaforme", "auto-duplicateur", "chef-de-la-proliferation", "ouvrier-assembleur", "garde-de-fer", "robot-astiqueur"],
     "Bête": ["predateur-en-chasse", "devoreur-sauvage", "chasseur-bondissant", "guivre-colossale", "gardien-de-la-foret", "ame-rugissante", "colonie-de-rats", "hydre-vorace", "hydre-enragee", "avatar-de-la-predation", "alligator-charognard", "meneuse-de-betes", "hurleur-des-sylves", "chargeur-cuirasse", "mastodonte-galopant"],
     "Mort-Vivant": ["serviteur-exhume", "squelette-reconstitue", "archer-squelette", "liche-profanatrice", "devoreur-pourrissant", "eveilleur-d-ames", "creation-abjecte", "necromancienne-corrompue", "raccommodeur-de-cadavres", "guerrier-maudit", "crane-possede", "dragon-decharne", "marcheur-eternel", "soldat-revenu-a-la-vie", "assistant-du-raccommodeur"],
+    "Sylvain": [],
     "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"],
     "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble"]
 };
@@ -1943,8 +1949,8 @@ function initCards() {
 
     shuffle(cards);
     shuffle(commanders);
-    //while (commanders.findIndex(e => e.name.startsWith("Géomancien")) > 2) //!!!
-    //    shuffle(commanders);
+    while (commanders.findIndex(e => e.name.startsWith("Protecteur")) > 2) //!!!
+        shuffle(commanders);
 }
 
 function getCard(tier, spec, name) {
@@ -1994,6 +2000,8 @@ function createCard(card) {
             return new MeneuseDeLaRebellion();
         case "geomancien-ardent":
             return new GeomancienArdent();
+        case "protecteur-de-la-foret":
+            return new ProtecteurDeLaForet();
 
         case "dragonnet-ardent":
             return new DragonnetArdent();
@@ -2557,6 +2565,21 @@ function GeomancienArdent() {
         {
             trigger: "battle-start",
             id: 19
+        }
+    ];
+}
+
+function ProtecteurDeLaForet() {
+    this.name = "Protecteur de la forêt";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 36;
+    this.src = "commandants/protecteur-de-la-foret.jpg";
+    this.requirement = "Sylvain";
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 20
         }
     ];
 }
@@ -5456,6 +5479,8 @@ function createEffect(id) {
             return new Effect18();
         case 19:
             return new Effect19();
+        case 20:
+            return new Effect20();
         case 101:
             return new Effect101();
         case 102:
@@ -6179,6 +6204,39 @@ function Effect19() {
         return 0;
     };
     this.desc = "<em>Frappe préventive :</em> L'attaque de la créature alliée sur la zone de puissance est triplée.";
+}
+
+function Effect20() {
+    this.run = async (sender, args, doAnimate) => {
+        if (doAnimate)
+            await effectProcGlow(sender);
+        let t = (players[args[2]] === sender ? args[1] : args[0]);
+        if (t[1].findIndex(e => e) != -1) {
+            let options = [];
+            for (let i = 0; i < 4; i++)
+                if (t[0][i] && t[1][i])
+                    options.push(i);
+            let i = choice(options);
+            console.log(args);
+            await swapPositions(t[0][i], t[1][i], doAnimate);
+            if (t[0][i])
+                await dealDamage(t[0][i], 1, doAnimate, args);
+            if (t[1][i])
+                await dealDamage(t[1][i], 1, doAnimate, args);
+        } else {
+            let target = choice(t[0].concat(t[1]).filter(e => e));
+            console.log(args);
+            if (target)
+                await dealDamage(target, 1, doAnimate, args);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Frappe préventive :</em> Echange la position d'une créature adverse et de la créature derrière elle, puis leur inflige 1 dégât.";
 }
 
 function Effect101() {
@@ -9888,7 +9946,7 @@ async function chooseTarget(callback, param, sender) {
         let board = document.getElementById("board");
         board.style.zIndex = "100";
 
-        let casting = drawCard(sender, 240);
+        let casting = drawCard(copy(sender), 240);
         casting.id = "casting";
         casting.className += " casting";
         document.body.appendChild(casting);
