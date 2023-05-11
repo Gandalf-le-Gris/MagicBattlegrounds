@@ -1188,7 +1188,7 @@ function updateEnemyTroops() {
             }
         }
 
-        budget = Math.min(10, round + 2);
+        budget = Math.min(10, round + 2) + 20;
         while (budget >= 3) {
             let options = [];
             for (let k = 0; k < 4; k++)
@@ -1421,8 +1421,47 @@ async function repositionTroops(t1, t2, doAnimate) {
     }
 }
 
-async function swapPositions(c1, c2, args, doAnimate) {
-    //await broadcastEvent("reposition", t1, t2, p1, p2, turn, doAnimate, [attacker, attacked, t1, t2, p1, p2, turn]);
+async function swapPositions(i, t, doAnimate, args) {
+    if (doAnimate) {
+        let c0 = findCardPos(t[0][i]).children[0];
+        let c1 = findCardPos(t[1][i]).children[0];
+        let top = false;
+        for (let d of document.getElementById("enemy-board").children)
+            if (d.children[0] && d.children[0] == c0)
+                top = true;
+        if (!top) {
+            c0 = findCardPos(t[1][i]).children[0];
+            c1 = findCardPos(t[0][i]).children[0];
+        }
+        console.log(top)
+        c0.style.transform = "translateY(-189px)";
+        c0.style.setProperty("z-index", "5");
+        c1.style.transform = "translateY(189px)";
+        c1.style.setProperty("z-index", "5");
+        await sleep(500);
+        await sleep(1000000)
+        c0.style.removeProperty("transform");
+        c0.style.removeProperty("z-index");
+        c1.style.removeProperty("transform");
+        c1.style.removeProperty("z-index");
+        let card0 = c0.card;
+        let card1 = c1.card;
+        let c = drawSmallCard(card1, 200);
+        c.style.animation = "none";
+        let parent = c0.parentElement;
+        parent.innerHTML = "";
+        parent.appendChild(c);
+        c = drawSmallCard(card0, 200);
+        c.style.animation = "none";
+        parent = c1.parentElement;
+        parent.innerHTML = "";
+        parent.appendChild(c);
+    }
+    let temp = t[0][i];
+    t[0][i] = t[1][i];
+    t[1][i] = temp;
+    await broadcastEvent("reposition", args[0], args[1], args[2], args[3], args[4], doAnimate, [t[0][i]].concat(args));
+    await broadcastEvent("reposition", args[0], args[1], args[2], args[3], args[4], doAnimate, [t[1][i]].concat(args));
 }
 
 async function attack(t1, t2, p1, p2, turn, doAnimate) {
@@ -1896,7 +1935,7 @@ async function drawShopScene() {
 /* ------------------ Card management ------------------ */
 /* ----------------------------------------------------- */
 
-const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant"];
+const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant", "Sylvain"];
 
 const cardList = {
     "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret"],
@@ -1949,7 +1988,7 @@ function initCards() {
 
     shuffle(cards);
     shuffle(commanders);
-    while (commanders.findIndex(e => e.name.startsWith("Protecteur")) > 2) //!!!
+    while (commanders.findIndex(e => e.name.startsWith("Protecteur")) > 2 && species.includes("Sylvain")) //!!!
         shuffle(commanders);
 }
 
@@ -6218,7 +6257,7 @@ function Effect20() {
                     options.push(i);
             let i = choice(options);
             console.log(args);
-            await swapPositions(t[0][i], t[1][i], doAnimate);
+            await swapPositions(i, t, doAnimate, args);
             if (t[0][i])
                 await dealDamage(t[0][i], 1, doAnimate, args);
             if (t[1][i])

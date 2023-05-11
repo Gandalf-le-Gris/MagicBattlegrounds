@@ -409,6 +409,7 @@ img {
             width: 100%;
             border-top-left-radius: 30px;
             border-top-right-radius: 30px;
+            transition: .5s;
         }
 
         .board > .power-spot:after {
