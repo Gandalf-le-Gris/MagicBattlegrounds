@@ -397,6 +397,24 @@ img {
                 box-shadow: 0 0 10px white;
             }
 
+        .board > div:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            z-index: -1;
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            border: 4px solid rgba(0, 0, 0, 0);
+            height: 100%;
+            width: 100%;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+        }
+
+        .board > .power-spot:after {
+            animation: glowRed 2.5s infinite;
+        }
+
 .players {
     position: absolute;
     top: 0;
@@ -754,5 +772,15 @@ img {
     100% {
         opacity: 0;
         transform: translate(-40%, -50%);
+    }
+}
+
+@keyframes glowRed {
+    45% {
+        box-shadow: 0 0 30px red;
+    }
+
+    55% {
+        box-shadow: 0 0 30px red;
     }
 }

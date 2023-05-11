@@ -730,6 +730,7 @@ async function selectHero(n) {
         currentScene = "shop";
 
         await broadcastShopEvent("game-start", []);
+        await broadcastShopEvent("turn-start", []);
     }, 4000);
 }
 
@@ -1893,7 +1894,7 @@ async function drawShopScene() {
 const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant"];
 
 const cardList = {
-    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion"],
+    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent"],
     "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
@@ -1942,7 +1943,7 @@ function initCards() {
 
     shuffle(cards);
     shuffle(commanders);
-    //while (commanders.findIndex(e => e.name.startsWith("Meneuse")) > 2) //!!!
+    //while (commanders.findIndex(e => e.name.startsWith("Géomancien")) > 2) //!!!
     //    shuffle(commanders);
 }
 
@@ -1991,6 +1992,8 @@ function createCard(card) {
             return new InventeurFou();
         case "meneuse-de-la-rebellion":
             return new MeneuseDeLaRebellion();
+        case "geomancien-ardent":
+            return new GeomancienArdent();
 
         case "dragonnet-ardent":
             return new DragonnetArdent();
@@ -2536,6 +2539,24 @@ function MeneuseDeLaRebellion() {
         {
             trigger: "turn-start",
             id: 17
+        }
+    ];
+}
+
+function GeomancienArdent() {
+    this.name = "Géomancien ardent";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 34;
+    this.src = "commandants/geomancien-ardent.jpg";
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 18
+        },
+        {
+            trigger: "battle-start",
+            id: 19
         }
     ];
 }
@@ -5424,6 +5445,10 @@ function createEffect(id) {
             return new Effect16();
         case 17:
             return new Effect17();
+        case 18:
+            return new Effect18();
+        case 19:
+            return new Effect19();
         case 101:
             return new Effect101();
         case 102:
@@ -6093,11 +6118,65 @@ function Effect17() {
     this.desc = "";
 }
 
+function Effect18() {
+    this.run = async (sender, args, doAnimate) => {
+        if (doAnimate)
+            await effectProcGlow(sender);
+        let d = choice(document.getElementById("board").children);
+        d.classList.add("power-spot");
+        await sleep(500);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Au début de chaque tour, crée une zone de puissance à un emplacement aléatoire.";
+}
+
+function Effect19() {
+    this.run = async (sender, args, doAnimate) => {
+        if (doAnimate)
+            await effectProcGlow(sender);
+        if (sender !== players[0] && doAnimate) {
+            let d = choice(document.getElementById("enemy-board").children);
+            d.classList.add("power-spot");
+            await sleep(500);
+            if (d.children[0])
+                await boostStats(d.children[0].card, d.children[0].card.attack * 2, 0, doAnimate);
+            d.classList.remove("power-spot");
+            await sleep(500);
+        } else if (sender !== players[0]) {
+            let t = (players[args[2]] === sender ? args[0] : args[1]);
+            let target = choice(t[0].concat(t[1]));
+            if (target)
+                await boostStats(target, target.attack * 2, 0, doAnimate);
+        } else {
+            let d;
+            for (let div of document.getElementById("board").children)
+                if (div.classList.contains("power-spot"))
+                    d = div;
+            if (d.children[0])
+                await boostStats(d.children[0].card, d.children[0].card.attack * 2, 0, doAnimate);
+            d.classList.remove("power-spot");
+            await sleep(500);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Frappe préventive :</em> L'attaque de la créature alliée sur la zone de puissance est triplée.";
+}
+
 function Effect101() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0].card === sender) {
             if (doAnimate)
-                effectProcGlow(sender);
+                await effectProcGlow(sender);
             let card = new PieceDOr();
             card.created = true;
             await addToHand(drawCard(card, 176));
@@ -6842,7 +6921,7 @@ function Effect301() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0].card === sender) {
             if (doAnimate)
-                effectProcGlow(sender);
+                await effectProcGlow(sender);
             let card = new ConnaissancesArcaniques();
             card.created = true;
             await addToHand(drawCard(card, 176));
@@ -7700,13 +7779,13 @@ function Effect417() {
         for (let d of document.getElementById("board").children)
             t.push(d.children[0] ? d.children[0].card : undefined);
         let i = t.findIndex(e => e === args[0].card);
-        boostStats(t[i], 1, 1, doAnimate);
         if (i % 4 > 0 && t[i - 1])
             boostStats(t[i - 1], 1, 1, doAnimate);
         if (t[(i + 4) % 8])
             boostStats(t[(i + 4) % 8], 1, 1, doAnimate);
         if (i % 4 < 3 && t[i + 1])
             boostStats(t[i + 1], 1, 1, doAnimate);
+        await boostStats(t[i], 1, 1, doAnimate);
     };
     this.scaling = (c, t) => {
         return [0, 0, 0, 0];
