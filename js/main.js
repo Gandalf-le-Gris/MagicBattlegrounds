@@ -5129,7 +5129,7 @@ function drawCard(c, size, cancelTooltip) {
     descDiv.className = "description";
     card.appendChild(descDiv);
     let desc = document.createElement('div');
-    desc.innerHTML = getDescription(c);
+    desc.innerHTML = getDescription(c, cancelTooltip);
     descDiv.appendChild(desc);
 
     let footer = document.createElement('div');
@@ -5272,7 +5272,7 @@ function updateCardStats(c) {
         if (footer.children[2].classList.contains("hp"))
             footer.children[2].children[0].innerHTML = c.card.hp;
     } else {
-        c.children[2].children[0].innerHTML = getDescription(c.card);
+        c.children[2].children[0].innerHTML = getDescription(c.card, false);
         let footer = c.children[3];
         if (footer.children[0].classList.contains("attack"))
             footer.children[0].children[0].innerHTML = c.card.attack;
@@ -5371,7 +5371,7 @@ function hideCardTooltip() {
     }
 }
 
-function getDescription(c) {
+function getDescription(c, cancelTooltip) {
     let res = "";
     if (c.shield)
         res += "<em>Bouclier</em>.</br>";
@@ -5381,9 +5381,16 @@ function getDescription(c) {
         res += "<em>Portée</em>.</br>";
     if (c.deathtouch)
         res += "<em>Contact mortel</em>.</br>";
-    for (let e of c.effects)
-        if (createEffect(e.id).desc != "")
-            res += createEffect(e.id).desc + "</br>";
+    let effect;
+    for (let e of c.effects) {
+        effect = createEffect(e.id);
+        if (effect.desc != "") {
+            res += effect.desc;
+            if (effect.dynamicDesc && cancelTooltip && effect.dynamicDesc(c) !== "")
+                res += " " + effect.dynamicDesc(c);
+            res += "</br>";
+        }
+    }
     return res;
 }
 
@@ -5910,6 +5917,7 @@ function Effect6() {
         return 0;
     };
     this.desc = "Tous les 2 tours, ajoute un Sortilège aléatoire dans votre main.";
+    this.dynamicDesc = (c) => round % 2 == 0 ? "<em>(Ce tour-ci)</em>" : "<em>(Au prochain tour)</em>";
 }
 
 function Effect7() {
@@ -5951,6 +5959,7 @@ function Effect8() {
         return 0;
     };
     this.desc = "Tous les 2 tours, ajoute une Proie facile dans votre main.";
+    this.dynamicDesc = (c) => round % 2 == 0 ? "<em>(Ce tour-ci)</em>" : "<em>(Au prochain tour)</em>";
 }
 
 function Effect9() {
@@ -6215,7 +6224,7 @@ function Effect103() {
                 sender.effect103 = 1;
             else
                 sender.effect103++;
-            if (sender.effect103 >= 5) {
+            if (sender.effect103 >= 4) {
                 for (let d of document.getElementById("board").children) {
                     if (d.children[0] && d.children[0].card === sender) {
                         d.innerHTML = "";
@@ -6232,7 +6241,8 @@ function Effect103() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "Après avoir joué 5 autres Dragons, se transforme en Dragon d'or.";
+    this.desc = "Après avoir joué 4 autres Dragons, se transforme en Dragon d'or.";
+    this.dynamicDesc = (c) => "<em>(Encore " + (4 - (c.effect103 ? c.effect103 : 0)) + ")</em>";
 }
 
 function Effect104() {
@@ -7287,6 +7297,7 @@ function Effect320() {
         return c.effect320 ? c.effect320 : 0;
     };
     this.desc = "<em>Frappe préventive :</em> Inflige 1 dégât à une cible adverse aléatoire pour chaque Sortilège joué depuis que cette carte est en jeu.";
+    this.dynamicDesc = (c) => "<em>(Actuellement " + (c.effect320 ? c.effect320 : 0) + ")</em>";
 }
 
 function Effect321() {
@@ -8497,8 +8508,6 @@ function Effect612() {
             let cards = [];
             if (i % 4 > 0 && t[i - 1])
                 cards.push(t[i - 1]);
-            if (t[(i + 4) % 8])
-                cards.push(t[(i + 4) % 8]);
             if (i % 4 < 3 && t[i + 1])
                 cards.push(t[i + 1]);
 
@@ -8824,6 +8833,7 @@ function Effect704() {
         return 0;
     };
     this.desc = "Au début de chaque tour, <em>Dévore</em> la créature alliée la moins forte, puis gagne +3/+3. Gagne <em>Contact mortel</em> la 5<sup>ème</sup> fois.";
+    this.dynamicDesc = (c) => c.effect704 && c.effect704 >= 5 ? "" : "<em>(Encore " + (5 - (c.effect704 ? c.effect704 : 0)) + ")</em>";
 }
 
 function Effect705() {
@@ -9003,7 +9013,7 @@ function Effect711() {
         if (args[0].card.species == "Bête" && args[0].card !== sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             if (doAnimate)
                 await effectProcGlow(sender);
-            await boostStats(args[0].card, 4, 3, doAnimate);
+            await boostStats(args[0].card, 5, 4, doAnimate);
         }
     };
     this.scaling = (c, t) => {
@@ -9012,7 +9022,7 @@ function Effect711() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "Les Bêtes que vous jouez gagnent +4/+3.";
+    this.desc = "Les Bêtes que vous jouez gagnent +5/+4.";
 }
 
 function Effect712() {
@@ -9109,7 +9119,7 @@ function Effect716() {
 function Effect717() {
     this.run = async (sender, args, doAnimate) => {
         for (let c of document.getElementById("shop").children)
-            if (c.card && c.card.species == "Bête")
+            if (c.card && c.card.species === "Bête")
                 await boostStats(c.card, 3, 3, doAnimate);
         players[0].effects.push({
             trigger: "shop-refresh",
@@ -9132,7 +9142,7 @@ function Effect717() {
 function Effect718() {
     this.run = async (sender, args, doAnimate) => {
         for (let c of document.getElementById("shop").children)
-            if (c.card && c.card.species == "Bête")
+            if (c.card && c.card.species === "Bête")
                 await boostStats(c.card, 3, 3, doAnimate);
     };
     this.scaling = (c, t) => {
