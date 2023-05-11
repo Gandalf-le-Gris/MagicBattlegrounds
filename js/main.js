@@ -1166,7 +1166,7 @@ function updateEnemyTroops() {
         for (let e of players[i].effects) {
             let scaling = createEffect(e.id).scaling(players[i], t.filter(e => e));
             if (t.indexOf(undefined) == -1) {
-                for (let k = 0; k < scaling[1]; k++) {
+                for (let k = 0; k < scaling[1] - (round < 4 && scaling[1] > 1); k++) {
                     if (Math.random() < .5)
                         boostStats(choice(t.filter(e => e)), 0, 1, false);
                     else
@@ -1942,6 +1942,8 @@ function initCards() {
 
     shuffle(cards);
     shuffle(commanders);
+    //while (commanders.findIndex(e => e.name.startsWith("Meneuse")) > 2) //!!!
+    //    shuffle(commanders);
 }
 
 function getCard(tier, spec, name) {
@@ -5899,7 +5901,7 @@ function Effect7() {
         }
     };
     this.scaling = (c, t) => {
-        return [0, t.filter(e => e.species === "Machine").length, 0, 0];
+        return [0, 1 + t.filter(e => e.species === "Machine").length, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -5918,7 +5920,7 @@ function Effect8() {
         }
     };
     this.scaling = (c, t) => {
-        return [0, t.filter(e => e.species === "Bête").length, 0, 0];
+        return [0, 1 + t.filter(e => e.species === "Bête").length, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -5944,7 +5946,7 @@ function Effect9() {
         }
     };
     this.scaling = (c, t) => {
-        return [0, fluctuate(5, 0, 2), 0, 0];
+        return [0, fluctuate(4, 0, 2), 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -6070,7 +6072,7 @@ function Effect16() {
         }
     };
     this.scaling = (c, t) => {
-        return [0, 0, 0, 0];
+        return [0, fluctuate(4, 0, 2), 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -7341,7 +7343,7 @@ function Effect401() {
         if (args[0].card === sender) {
             if (doAnimate)
                 effectProcGlow(sender);
-            chooseTarget((target) => {
+            await chooseTarget((target) => {
                 boostStats(target, 1, 3, doAnimate);
             }, {
                 area: "board",
@@ -7424,7 +7426,7 @@ function Effect405() {
         if (args[0].card === sender) {
             if (doAnimate)
                 effectProcGlow(sender);
-            chooseTarget((target) => {
+            await chooseTarget((target) => {
                 target.shield = true;
                 boostStats(target, 0, 0, doAnimate);
             }, {
@@ -7973,7 +7975,7 @@ function Effect511() {
         if (args[0].card === sender) {
             if (doAnimate)
                 effectProcGlow(sender);
-            chooseTarget((target) => {
+            await chooseTarget((target) => {
                 target.range = true;
                 boostStats(target, 0, 0, doAnimate);
             }, {
@@ -8681,7 +8683,7 @@ function Effect703() {
         if (args[0].card === sender) {
             if (doAnimate)
                 effectProcGlow(sender);
-            chooseTarget(async (target) => {
+            await chooseTarget(async (target) => {
                 let c = findDOMCard(target);
                 c.style.transition = ".5s";
                 c.style.opacity = "0";
@@ -8769,7 +8771,7 @@ function Effect706() {
         if (args[0].card === sender) {
             if (doAnimate)
                 effectProcGlow(sender);
-            chooseTarget(async (target) => {
+            await chooseTarget(async (target) => {
                 let shop = document.getElementById("shop");
                 let options = [];
                 for (let c of shop.children)
@@ -9364,7 +9366,7 @@ function Effect815() {
         if (args[0].card === sender) {
             if (doAnimate)
                 effectProcGlow(sender);
-            chooseTarget((target) => {
+            await chooseTarget((target) => {
                 boostStats(target, 0, 4, doAnimate);
             }, {
                 area: "board",
@@ -9785,7 +9787,7 @@ function pickRandomTarget(t) {
     return choice(options);
 }
 
-function chooseTarget(callback, param, sender) {
+async function chooseTarget(callback, param, sender) {
     if (param.area == "board") {
         showDelay = 9999999;
 
@@ -9813,9 +9815,10 @@ function chooseTarget(callback, param, sender) {
                 let c = d.children[0];
                 c.draggable = false;
                 if (isValidEffectTarget(c.card, param, sender)) {
-                    c.onclick = () => {
-                        callback(c.card);
-                        closeEffectSelector();
+                    c.onclick = async () => {
+                        await callback(c.card);
+                        await closeEffectSelector();
+                        nextTargetSelection = true;
                     };
                 } else {
                     c.style.transform = "none";
@@ -9825,11 +9828,12 @@ function chooseTarget(callback, param, sender) {
             }
         }
 
+        await waitForTargetSelection();
         filter.onclick = closeEffectSelector;
     }
 }
 
-function closeEffectSelector() {
+async function closeEffectSelector() {
     showDelay = 800;
 
     for (let d of board.children) {
@@ -9847,6 +9851,8 @@ function closeEffectSelector() {
     document.body.removeChild(document.getElementById("filter"));
     document.body.removeChild(document.getElementById("casting"));
     document.body.removeChild(document.getElementById("target-banner"));
+
+    await sleep(500);
 }
 
 function isValidEffectTarget(card, param, sender) {
@@ -9858,6 +9864,15 @@ function isValidEffectTarget(card, param, sender) {
     if (param.notself && card === sender)
         return false;
     return true;
+}
+
+const targetSelectionTimeout = async ms => new Promise(res => setTimeout(res, ms));
+let nextTargetSelection = false;
+
+async function waitForTargetSelection() {
+    while (!nextTargetSelection)
+        await targetSelectionTimeout(20);
+    nextTargetSelection = false;
 }
 
 async function battleSummon(name, t, p, doAnimate, args) {
