@@ -1381,7 +1381,7 @@ async function runBattle(p1, p2, doAnimate) {
         drawShopScene();
 }
 
-async function repositionTroops(t1, t2, doAnimate) {
+async function repositionTroops(t1, t2, doAnimate, args) {
     let board = document.getElementById("board");
     for (let i = 0; i < 4; i++) {
         if (!t1[0][i] && t1[1][i]) {
@@ -1397,6 +1397,8 @@ async function repositionTroops(t1, t2, doAnimate) {
                 board.children[i].appendChild(c);
                 await sleep(250);
             }
+            if (args)
+                await broadcastEvent("reposition", args[0], args[1], args[2], args[3], args[4], doAnimate, [t1[0][i]].concat(args));
         }
     }
 
@@ -1417,6 +1419,8 @@ async function repositionTroops(t1, t2, doAnimate) {
                 board.children[4 + i].appendChild(c);
                 await sleep(250);
             }
+            if (args)
+                await broadcastEvent("reposition", args[0], args[1], args[2], args[3], args[4], doAnimate, [t2[0][i]].concat(args));
         }
     }
 }
@@ -1435,15 +1439,14 @@ async function swapPositions(i, t, doAnimate, args) {
         }
         console.log(top)
         c0.style.transform = "translateY(-189px)";
-        c0.style.setProperty("z-index", "5");
+        c0.parentElement.style.setProperty("z-index", "5");
         c1.style.transform = "translateY(189px)";
-        c1.style.setProperty("z-index", "5");
+        c1.parentElement.style.setProperty("z-index", "10");
         await sleep(500);
-        await sleep(1000000)
         c0.style.removeProperty("transform");
-        c0.style.removeProperty("z-index");
+        c0.parentElement.style.removeProperty("z-index");
         c1.style.removeProperty("transform");
-        c1.style.removeProperty("z-index");
+        c1.parentElement.style.removeProperty("z-index");
         let card0 = c0.card;
         let card1 = c1.card;
         let c = drawSmallCard(card1, 200);
@@ -1727,7 +1730,7 @@ async function checkKO(c, d, t1, t2, p1, p2, turn, doAnimate) {
 
         await broadcastEvent("ko", t1, t2, p1, p2, turn, doAnimate, [c, owner, t1, t2, (owner ? p1 : p2), [t1, t2, p1, p2, turn]]);
 
-        await repositionTroops(t1, t2, doAnimate);
+        await repositionTroops(t1, t2, doAnimate, [t1, t2, p1, p2, turn]);
     }
 }
 
