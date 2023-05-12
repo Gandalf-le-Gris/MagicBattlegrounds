@@ -1974,7 +1974,7 @@ const cardList = {
     "Machine": ["planeur-de-fortune", "renard-mecanique", "colosse-adaptatif", "protecteur-de-la-cite", "golem-cinetique", "carcasse-mecanophage", "automate-replicateur", "artisan-gadgetiste", "baliste-ambulante", "automate-manaforme", "auto-duplicateur", "chef-de-la-proliferation", "ouvrier-assembleur", "garde-de-fer", "robot-astiqueur"],
     "Bête": ["predateur-en-chasse", "devoreur-sauvage", "chasseur-bondissant", "guivre-colossale", "gardien-de-la-foret", "ame-rugissante", "colonie-de-rats", "hydre-vorace", "hydre-enragee", "avatar-de-la-predation", "alligator-charognard", "meneuse-de-betes", "hurleur-des-sylves", "chargeur-cuirasse", "mastodonte-galopant"],
     "Mort-Vivant": ["serviteur-exhume", "squelette-reconstitue", "archer-squelette", "liche-profanatrice", "devoreur-pourrissant", "eveilleur-d-ames", "creation-abjecte", "necromancienne-corrompue", "raccommodeur-de-cadavres", "guerrier-maudit", "crane-possede", "dragon-decharne", "marcheur-eternel", "soldat-revenu-a-la-vie", "assistant-du-raccommodeur"],
-    "Sylvain": ["invocation-sylvestre", "chamane-des-lignes-de-vie", "gardien-de-noirepine", "brisesort-elfique", "colosse-centenaire", "faconneur-de-forets", "combattant-embusque", "druidesse-des-lignes-de-vie", "archere-de-noirepine", "vengeur-des-sylves", "sage-fongimancien"],
+    "Sylvain": ["invocation-sylvestre", "chamane-des-lignes-de-vie", "gardien-de-noirepine", "brisesort-elfique", "colosse-centenaire", "faconneur-de-forets", "combattant-embusque", "druidesse-des-lignes-de-vie", "archere-de-noirepine", "vengeur-des-sylves", "sage-fongimancien", "chevaucheur-sauvage"],
     "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"],
     "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble", "jeune-fongus"]
 };
@@ -2386,6 +2386,8 @@ function createCard(card) {
             return new VengeurDesSylves();
         case "sage-fongimancien":
             return new SageFongimancien();
+        case "chevaucheur-sauvage":
+            return new ChevaucheurSauvage();
 
         case "changeforme-masque":
             return new ChangeformeMasque();
@@ -5060,6 +5062,21 @@ function SageFongimancien() {
     ];
 }
 
+function ChevaucheurSauvage() {
+    this.name = "Chevaucheur sauvage";
+    this.species = "Sylvain";
+    this.attack = 3;
+    this.hp = 2;
+    this.src = "sylvains/chevaucheur-sauvage.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "reposition",
+            id: 912
+        }
+    ];
+}
+
 
 // Autre
 
@@ -6097,6 +6114,8 @@ function createEffect(id) {
             return new Effect910();
         case 911:
             return new Effect911();
+        case 912:
+            return new Effect912();
         case 1001:
             return new Effect1001();
         case 1002:
@@ -10101,6 +10120,27 @@ function Effect911() {
     };
     this.toFront = true;
     this.desc = "<em>Dernière volonté :</em> Remplit la première ligne de Jeunes fongus, et repousse les créatures alliées au besoin.";
+}
+
+function Effect912() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = (args[1][0].concat(args[1][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[1][0].concat(args[1][1]));
+        if (args[0] && t.includes(args[0]) && sender.hp > 0) {
+            console.log(args)
+            alert(args[0])
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await attack(args[1], args[2], args[3], args[4], args[5]);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 2 + 2 * (t.filter(e => e.species === "Sylvain").length > 3);
+    };
+    this.toBack = true;
+    this.desc = "Lorsqu'une créature ennemie change de position, gagne +0/+5 puis l'attaque.";
 }
 
 function Effect1001() {
