@@ -403,7 +403,7 @@ function fadeOutMusic() {
             clearInterval(interval);
 
         var newVolume = m.volume - 0.04 * volume;
-        if (newVolume >= 0) {
+        if (newVolume > 0) {
             m.volume = newVolume;
         }
         else {
