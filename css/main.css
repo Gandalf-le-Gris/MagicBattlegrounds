@@ -777,11 +777,19 @@ img {
 }
 
 @keyframes glowRed {
+    0% {
+        box-shadow: 0 0 30px #ff7777;
+    }
+
     45% {
-        box-shadow: 0 0 30px red;
+        box-shadow: 0 0 40px red;
     }
 
     55% {
-        box-shadow: 0 0 30px red;
+        box-shadow: 0 0 40px red;
+    }
+
+    100% {
+        box-shadow: 0 0 30px #ff7777;
     }
 }

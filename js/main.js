@@ -1462,7 +1462,6 @@ async function swapPositions(i, t, doAnimate, args) {
     let temp = t[0][i];
     t[0][i] = t[1][i];
     t[1][i] = temp;
-    console.log(args)
     await broadcastEvent("reposition", args[0], args[1], args[2], args[3], args[4], doAnimate, [t[0][i]].concat(args));
     await broadcastEvent("reposition", args[0], args[1], args[2], args[3], args[4], doAnimate, [t[1][i]].concat(args));
 }
@@ -1488,11 +1487,10 @@ async function pushBack(i, t, doAnimate, args) {
 
     t[1][i] = t[0][i];
     t[0][i] = undefined;
-    console.log(args)
     await broadcastEvent("reposition", args[0], args[1], args[2], args[3], args[4], doAnimate, [t1[1][i]].concat(args));
 }
 
-async function attack(t1, t2, p1, p2, turn, doAnimate, defaultAttacker) {
+async function attack(t1, t2, p1, p2, turn, doAnimate, defaultAttacker, defaultAttacked) {
     let attacker = defaultAttacker ? defaultAttacker : pickAttacker(t1, t2, turn);
     let o = findCardPos(attacker);
     if (doAnimate) {
@@ -1500,7 +1498,7 @@ async function attack(t1, t2, p1, p2, turn, doAnimate, defaultAttacker) {
         o.parentElement.style.zIndex = "10";
         await sleep(500);
     }
-    let attacked = pickTarget(t1, t2, turn, attacker.range);
+    let attacked = defaultAttacked ? defaultAttacked : pickTarget(t1, t2, turn, attacker.range);
 
     await broadcastEvent("attack", t1, t2, p1, p2, turn, doAnimate, [attacker, attacked, t1, t2, p1, p2, turn]);
     await broadcastEvent("attacked", t1, t2, p1, p2, turn, doAnimate, [attacked, attacker, t1, t2, p1, p2, turn]);
@@ -9687,7 +9685,6 @@ function Effect808() {
             if (sender.effect807.length > 0) {
                 let c = sender.effect807[0];
                 let name = Array.from(c.src.matchAll("^.*\/([^/]+)\.jpg$"), m => m[1])[0];
-                console.log(name);
                 await battleSummon(name, args[1] ? args[2] : args[3], args[4], doAnimate, args);
             }
             if (sender.effect807.length > 1) {
@@ -10093,14 +10090,10 @@ function Effect910() {
     this.desc = "Lorsqu'un Sylvain allié meurt, gagne défintivement +0/+2.";
 }
 
-let debug;
 function Effect911() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0] === sender) {
             let t = args[1] ? args[2] : args[3];
-            if (doAnimate) {
-                debug = t;
-            }
             for (let i = 0; i < 4; i++) {
                 if (!t[1][i] || !t[0][i]) {
                     if (t[0][i])
@@ -10126,18 +10119,18 @@ function Effect912() {
         if (args[0] && t.includes(args[0]) && sender.hp > 0) {
             if (doAnimate)
                 await effectProcGlow(sender);
-            await boostStats(sender, 0, 5, doAnimate);
-            await attack(args[1], args[2], args[3], args[4], args[5], doAnimate, sender);
+            await boostStats(sender, 0, 3, doAnimate);
+            await attack(args[1], args[2], args[3], args[4], args[5], doAnimate, sender, args[0]);
         }
     };
     this.scaling = (c, t) => {
         return [0, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
-        return 2 + 2 * (t.filter(e => e.species === "Sylvain").length > 3);
+        return 200 + 2 * (t.filter(e => e.species === "Sylvain").length > 3);
     };
     this.toBack = true;
-    this.desc = "Lorsqu'une créature ennemie change de position, gagne +0/+5 puis l'attaque.";
+    this.desc = "Lorsqu'une créature ennemie change de position, gagne +0/+3 puis l'attaque.";
 }
 
 function Effect1001() {
@@ -10578,9 +10571,6 @@ async function closeEffectSelector() {
 }
 
 function isValidEffectTarget(card, param, sender) {
-    console.log(card)
-    console.log(param)
-    console.log(sender)
     if (param.species && param.species !== card.species)
         return false;
     if (param.notself && card === sender)
