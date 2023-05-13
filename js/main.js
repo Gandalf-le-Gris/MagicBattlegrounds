@@ -1492,8 +1492,8 @@ async function pushBack(i, t, doAnimate, args) {
     await broadcastEvent("reposition", args[0], args[1], args[2], args[3], args[4], doAnimate, [t1[1][i]].concat(args));
 }
 
-async function attack(t1, t2, p1, p2, turn, doAnimate) {
-    let attacker = pickAttacker(t1, t2, turn);
+async function attack(t1, t2, p1, p2, turn, doAnimate, defaultAttacker) {
+    let attacker = defaultAttacker ? defaultAttacker : pickAttacker(t1, t2, turn);
     let o = findCardPos(attacker);
     if (doAnimate) {
         o.classList.add("attacking");
@@ -6534,7 +6534,6 @@ function Effect20() {
                 if (t[0][i] && t[1][i])
                     options.push(i);
             let i = choice(options);
-            console.log(args);
             await swapPositions(i, t, doAnimate, args);
             if (t[0][i])
                 await dealDamage(t[0][i], 1, doAnimate, args);
@@ -6542,7 +6541,6 @@ function Effect20() {
                 await dealDamage(t[1][i], 1, doAnimate, args);
         } else {
             let target = choice(t[0].concat(t[1]).filter(e => e));
-            console.log(args);
             if (target)
                 await dealDamage(target, 1, doAnimate, args);
         }
@@ -10126,11 +10124,10 @@ function Effect912() {
     this.run = async (sender, args, doAnimate) => {
         let t = (args[1][0].concat(args[1][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[1][0].concat(args[1][1]));
         if (args[0] && t.includes(args[0]) && sender.hp > 0) {
-            console.log(args)
-            alert(args[0])
             if (doAnimate)
                 await effectProcGlow(sender);
-            await attack(args[1], args[2], args[3], args[4], args[5]);
+            await boostStats(sender, 0, 5, doAnimate);
+            await attack(args[1], args[2], args[3], args[4], args[5], doAnimate, sender);
         }
     };
     this.scaling = (c, t) => {
