@@ -350,7 +350,7 @@ function toggleSettings() {
 /* ----------------------- Music ----------------------- */
 /* ----------------------------------------------------- */
 
-let baseVolume = .8;
+let baseVolume = .65;
 let masterVolume = 1;
 let musicVolume = 1;
 let sfxVolume = 1;
@@ -508,18 +508,21 @@ async function startGame() {
         heroSelector1.id = "heroSelector1";
         heroSelector1.onclick = () => { selectHero(1); };
         document.body.appendChild(heroSelector1);
+        fitDescription(heroSelector1);
 
         let heroSelector2 = drawCard(commanders[1], 270);
         heroSelector2.className += " hero-selector hero-selector2";
         heroSelector2.id = "heroSelector2";
         heroSelector2.onclick = () => { selectHero(2); };
         document.body.appendChild(heroSelector2);
+        fitDescription(heroSelector2);
 
         let heroSelector3 = drawCard(commanders[2], 270);
         heroSelector3.className += " hero-selector hero-selector3";
         heroSelector3.id = "heroSelector3";
         heroSelector3.onclick = () => { selectHero(3); };
         document.body.appendChild(heroSelector3);
+        fitDescription(heroSelector3);
 
         document.body.style.backgroundImage = 'url("resources/ui/team-builder-bg.jpg")';
 
@@ -5608,6 +5611,16 @@ function drawCard(c, size, cancelTooltip) {
     card.card = c;
 
     return card;
+}
+
+function fitDescription(c) {
+    let desc = c.children[2];
+    let maxY = desc.clientHeight;
+    let text = desc.children[0];
+    while (text.clientHeight > maxY) {
+        let size = parseInt(window.getComputedStyle(text).fontSize);
+        text.style.fontSize = (size - 1).toString() + "px";
+    }
 }
 
 function drawSmallCard(c, size) {
