@@ -366,7 +366,7 @@ let battleCries = {
     "Machine": ["resources/audio/sfx/machine1.mp3", "resources/audio/sfx/machine2.mp3", "resources/audio/sfx/machine3.mp3"],
     "Bête": ["resources/audio/sfx/bete1.mp3", "resources/audio/sfx/bete2.mp3", "resources/audio/sfx/bete3.mp3"],
     "Mort-Vivant": ["resources/audio/sfx/mort-vivant1.mp3", "resources/audio/sfx/mort-vivant2.mp3", "resources/audio/sfx/mort-vivant3.mp3"],
-    "Sylvain": [],
+    "Sylvain": ["resources/audio/sfx/sylvain1.mp3", "resources/audio/sfx/sylvain2.mp3", "resources/audio/sfx/sylvain3.mp3", "resources/audio/sfx/sylvain4.mp3"],
     "Autre": ["resources/audio/sfx/autre1.mp3"],
     "Sortilège": ["resources/audio/sfx/sortilege1.mp3"]
 }
@@ -483,9 +483,9 @@ let enemyFamilies = [];
 async function startGame() {
     await fadeTransition(() => {
         initCards();
-        shopTier = 6; //!!!
+        shopTier = 1; //!!!
         round = 1;
-        coins = 999; //!!!
+        coins = 3; //!!!
         players = [];
         for (let i = 0; i < 8; i++) {
             lastFights.push([]);
@@ -1092,6 +1092,8 @@ async function startBattle() {
     if (animating == 0) {
         playMusic("resources/audio/sfx/battle.mp3", false);
 
+        await sleep(800);
+
         await broadcastShopEvent("turn-end", []);
 
         matchmaking();
@@ -1188,7 +1190,7 @@ function updateEnemyTroops() {
             }
         }
 
-        budget = Math.min(10, round + 2) + 20;
+        budget = Math.min(10, round + 2);
         while (budget >= 3) {
             let options = [];
             for (let k = 0; k < 4; k++)
@@ -1410,7 +1412,7 @@ async function repositionTroops(t1, t2, doAnimate, args) {
 
             if (doAnimate) {
                 board.children[i].children[0].style.transform = "translateY(189px)";
-                board.children[i].style.setProperty("z-index", "5");
+                board.children[i].style.setProperty("z-index", "15");
                 await sleep(500);
                 board.children[i].innerHTML = "";
                 board.children[i].style.removeProperty("z-index");
@@ -1437,27 +1439,39 @@ async function swapPositions(i, t, doAnimate, args) {
             c0 = findCardPos(t[1][i]).children[0];
             c1 = findCardPos(t[0][i]).children[0];
         }
-        c0.style.transform = "translateY(-189px)";
-        c0.parentElement.style.setProperty("z-index", "5");
-        c1.style.transform = "translateY(189px)";
-        c1.parentElement.style.setProperty("z-index", "10");
+        let nc0 = drawSmallCard(c0.card, 200);
+        let nc1 = drawSmallCard(c1.card, 200);
+        document.body.appendChild(nc0);
+        document.body.appendChild(nc1);
+        nc0.style.position = "absolute";
+        nc0.style.top = c0.getBoundingClientRect().top + "px";
+        nc0.style.left = c0.getBoundingClientRect().left + "px";
+        nc0.style.animation = "none";
+        nc0.style.zIndex = 15;
+        nc1.style.position = "absolute";
+        nc1.style.top = c1.getBoundingClientRect().top + "px";
+        nc1.style.left = c1.getBoundingClientRect().left + "px";
+        nc1.style.animation = "none";
+        nc1.style.zIndex = 15;
+        nc0.style.transform = "translateY(-189px)";
+        nc1.style.transform = "translateY(189px)";
+        let parent0 = c0.parentElement;
+        let parent1 = c1.parentElement;
+        c0.parentElement.removeChild(c0);
+        c1.parentElement.removeChild(c1);
         await sleep(500);
-        c0.style.removeProperty("transform");
-        c0.parentElement.style.removeProperty("z-index");
-        c1.style.removeProperty("transform");
-        c1.parentElement.style.removeProperty("z-index");
-        let card0 = c0.card;
-        let card1 = c1.card;
+        document.body.removeChild(nc0);
+        document.body.removeChild(nc1);
+        let card0 = nc0.card;
+        let card1 = nc1.card;
         let c = drawSmallCard(card1, 200);
         c.style.animation = "none";
-        let parent = c0.parentElement;
-        parent.innerHTML = "";
-        parent.appendChild(c);
+        parent0.innerHTML = "";
+        parent0.appendChild(c);
         c = drawSmallCard(card0, 200);
         c.style.animation = "none";
-        parent = c1.parentElement;
-        parent.innerHTML = "";
-        parent.appendChild(c);
+        parent1.innerHTML = "";
+        parent1.appendChild(c);
     }
     let temp = t[0][i];
     t[0][i] = t[1][i];
@@ -1963,7 +1977,7 @@ const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machin
 
 const cardList = {
     "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
@@ -1972,7 +1986,7 @@ const cardList = {
     "Machine": ["planeur-de-fortune", "renard-mecanique", "colosse-adaptatif", "protecteur-de-la-cite", "golem-cinetique", "carcasse-mecanophage", "automate-replicateur", "artisan-gadgetiste", "baliste-ambulante", "automate-manaforme", "auto-duplicateur", "chef-de-la-proliferation", "ouvrier-assembleur", "garde-de-fer", "robot-astiqueur"],
     "Bête": ["predateur-en-chasse", "devoreur-sauvage", "chasseur-bondissant", "guivre-colossale", "gardien-de-la-foret", "ame-rugissante", "colonie-de-rats", "hydre-vorace", "hydre-enragee", "avatar-de-la-predation", "alligator-charognard", "meneuse-de-betes", "hurleur-des-sylves", "chargeur-cuirasse", "mastodonte-galopant"],
     "Mort-Vivant": ["serviteur-exhume", "squelette-reconstitue", "archer-squelette", "liche-profanatrice", "devoreur-pourrissant", "eveilleur-d-ames", "creation-abjecte", "necromancienne-corrompue", "raccommodeur-de-cadavres", "guerrier-maudit", "crane-possede", "dragon-decharne", "marcheur-eternel", "soldat-revenu-a-la-vie", "assistant-du-raccommodeur"],
-    "Sylvain": ["invocation-sylvestre", "chamane-des-lignes-de-vie", "gardien-de-noirepine", "brisesort-elfique", "colosse-centenaire", "faconneur-de-forets", "combattant-embusque", "druidesse-des-lignes-de-vie", "archere-de-noirepine", "vengeur-des-sylves", "sage-fongimancien", "chevaucheur-sauvage"],
+    "Sylvain": ["invocation-sylvestre", "chamane-des-lignes-de-vie", "gardien-de-noirepine", "brisesort-elfique", "colosse-centenaire", "faconneur-de-forets", "combattant-embusque", "druidesse-des-lignes-de-vie", "archere-de-noirepine", "vengeur-des-sylves", "sage-fongimancien", "chevaucheur-sauvage", "cavalier-des-ronces", "incarnation-de-la-foret", "elue-des-sylves"],
     "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"],
     "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble", "jeune-fongus"]
 };
@@ -1990,7 +2004,7 @@ function initCards() {
             species.push(s);
     }
 
-    species = ["Sylvain"]; //!!!
+    //species = ["Sylvain"]; //!!!
 
     //for (let s of speciesList)
     //    cardList[s] = [cardList[s][0]]; //!!!
@@ -2008,14 +2022,14 @@ function initCards() {
     commanders = [];
     for (let c of cardList["Commandant"]) {
         let card = createCard(c);
-        //if (!card.requirement || species.includes(card.requirement)) //!!!
+        if (!card.requirement || species.includes(card.requirement)) //!!!
             commanders.push(card);
     }
 
     shuffle(cards);
     shuffle(commanders);
-    while (commanders.findIndex(e => e.name.startsWith("Protecteur")) > 2 && species.includes("Sylvain")) //!!!
-        shuffle(commanders);
+    //while (commanders.findIndex(e => e.name.startsWith("Protecteur")) > 2 && species.includes("Sylvain")) //!!!
+    //    shuffle(commanders);
 }
 
 function getCard(tier, spec, name) {
@@ -2386,6 +2400,16 @@ function createCard(card) {
             return new SageFongimancien();
         case "chevaucheur-sauvage":
             return new ChevaucheurSauvage();
+        case "cavalier-des-ronces":
+            return new CavalierDesRonces();
+        case "incarnation-de-la-foret":
+            return new IncarnationDeLaForet();
+        case "elue-des-sylves":
+            return new ElueDesSylves();
+        case "malediction-vegetale":
+            return new MaledictionVegetale();
+        case "armure-de-ronces":
+            return new ArmureDeRonces();
 
         case "changeforme-masque":
             return new ChangeformeMasque();
@@ -5015,6 +5039,26 @@ function DruidesseDesLignesDeVie() {
     ];
 }
 
+function MaledictionVegetale() {
+    this.name = "Malédiction végétale";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "sylvains/malediction-vegetale.jpg";
+    this.tier = 3;
+    this.requirement = "Sylvain";
+    this.effects = [
+        {
+            trigger: "",
+            id: 916
+        }
+    ];
+    this.validTarget = {
+        area: "board",
+        species: "Sylvain"
+    };
+}
+
 function ArchereDeNoirepine() {
     this.name = "Archère de Noirépine";
     this.species = "Sylvain";
@@ -5048,7 +5092,7 @@ function VengeurDesSylves() {
 function SageFongimancien() {
     this.name = "Sage fongimancien";
     this.species = "Sylvain";
-    this.attack = 3;
+    this.attack = 4;
     this.hp = 2;
     this.src = "sylvains/sage-fongimancien.jpg";
     this.tier = 4;
@@ -5064,13 +5108,78 @@ function ChevaucheurSauvage() {
     this.name = "Chevaucheur sauvage";
     this.species = "Sylvain";
     this.attack = 3;
-    this.hp = 2;
+    this.hp = 6;
     this.src = "sylvains/chevaucheur-sauvage.jpg";
-    this.tier = 4;
+    this.tier = 5;
     this.effects = [
         {
             trigger: "reposition",
             id: 912
+        }
+    ];
+}
+
+function CavalierDesRonces() {
+    this.name = "Cavalier des ronces";
+    this.species = "Sylvain";
+    this.attack = 5;
+    this.hp = 5;
+    this.src = "sylvains/cavalier-des-ronces.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "attacked",
+            id: 913
+        }
+    ];
+}
+
+function ArmureDeRonces() {
+    this.name = "Armure de ronces";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "sylvains/armure-de-ronces.jpg";
+    this.tier = 5;
+    this.requirement = "Sylvain";
+    this.effects = [
+        {
+            trigger: "",
+            id: 918
+        }
+    ];
+    this.validTarget = {
+        area: "board",
+        species: "Sylvain"
+    };
+}
+
+function IncarnationDeLaForet() {
+    this.name = "Incarnation de la forêt";
+    this.species = "Sylvain";
+    this.attack = 3;
+    this.hp = 8;
+    this.src = "sylvains/incarnation-de-la-foret.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 914
+        }
+    ];
+}
+
+function ElueDesSylves() {
+    this.name = "Elue des sylves";
+    this.species = "Sylvain";
+    this.attack = 6;
+    this.hp = 6;
+    this.src = "sylvains/elue-des-sylves.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "reposition",
+            id: 915
         }
     ];
 }
@@ -6114,6 +6223,20 @@ function createEffect(id) {
             return new Effect911();
         case 912:
             return new Effect912();
+        case 913:
+            return new Effect913();
+        case 914:
+            return new Effect914();
+        case 915:
+            return new Effect915();
+        case 916:
+            return new Effect916();
+        case 917:
+            return new Effect917();
+        case 918:
+            return new Effect918();
+        case 919:
+            return new Effect919();
         case 1001:
             return new Effect1001();
         case 1002:
@@ -6853,7 +6976,7 @@ function Effect115() {
 
 function Effect116() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0] === sender) {
+        if (args[0] === sender && (args[2][0].concat(args[2][1]).includes(args[1]) || args[3][0].concat(args[3][1]).includes(args[1]))) {
             if (doAnimate)
                 await effectProcGlow(sender);
             await dealDamage(args[1], 3, doAnimate, [args[2], args[3], args[4], args[5], args[6]]);
@@ -9708,7 +9831,7 @@ function Effect809() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0] !== sender && args[0].species == "Mort-Vivant") {
             let t = (args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]));
-            let undead = t.filter(x => x && x.species == "Mort-Vivant");
+            let undead = t.filter(x => x && x.species == "Mort-Vivant" && x.hp > 0);
             if (t.includes(sender) && undead.length > 0) {
                 if (doAnimate)
                     await effectProcGlow(sender);
@@ -9745,7 +9868,7 @@ function Effect810() {
 
 function Effect811() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0] === sender) {
+        if (args[0] === sender && (args[2][0].concat(args[2][1]).includes(args[1]) || args[3][0].concat(args[3][1]).includes(args[1]))) {
             if (doAnimate)
                 await effectProcGlow(sender);
             let n = Math.floor(args[1].attack / 2);
@@ -9918,7 +10041,7 @@ function Effect902() {
 
 function Effect903() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0] === sender) {
+        if (args[0] === sender && (args[2][0].concat(args[2][1]).includes(args[1]) || args[3][0].concat(args[3][1]).includes(args[1]))) {
             if (doAnimate)
                 await effectProcGlow(sender);
             let n = Math.ceil(args[0].hp / 2);
@@ -9968,7 +10091,7 @@ function Effect905() {
         }
     };
     this.scaling = (c, t) => {
-        return [2 * t.filter(e => e.species === "Sylvain").length, 0, 0, 0];
+        return [4 * (t.filter(e => e.species === "Sylvain").length > 3), 0, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -10127,10 +10250,151 @@ function Effect912() {
         return [0, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
-        return 200 + 2 * (t.filter(e => e.species === "Sylvain").length > 3);
+        return 4 + 4 * (t.filter(e => e.species === "Sylvain").length > 3);
     };
     this.toBack = true;
     this.desc = "Lorsqu'une créature ennemie change de position, gagne +0/+3 puis l'attaque.";
+}
+
+function Effect913() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[3] : args[2];
+            let target = choice(t[0].filter(e => e && e !== args[1]));
+            if (target) {
+                await dealDamage(target, 2, doAnimate, args.slice(2));
+                let i = t[0].indexOf(target);
+                if (i != -1) {
+                    if (t[1][i])
+                        await swapPositions(i, t, doAnimate, args.slice(2));
+                    else
+                        await pushBack(i, t, doAnimate, args.slice(2));
+                } 
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 4 + 4 * t.filter(e => e.species === "Sylvain").length;
+    };
+    this.toFront = true;
+    this.desc = "Lorsque cette créature est attaquée, inflige 2 dégâts à une créature ennemie non attaquante et la repousse.";
+}
+
+function Effect914() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card !== sender && args[0].card.species === "Sylvain" && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, 0, args[0].card.hp, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [7 * (t.filter(e => e.species === "Sylvain").length > 3), 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous jouez un autre Sylvain, gagne des PV équivalents à ses PV.";
+}
+
+function Effect915() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = (args[1][0].concat(args[1][1]).includes(sender) ? args[1][0].concat(args[1][1]) : args[2][0].concat(args[2][1]));
+        if (args[0] && !t.includes(args[0]) && sender.hp > 0) {
+            let options = t.filter(x => x && x.species == "Sylvain" && x.hp > 0);
+            if (t.includes(sender) && options.length > 0) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                shuffle(options);
+                options = options.slice(0, 3);
+                for (let c of options)
+                    await boostStats(c, 1, 2, doAnimate, false, true);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 8 * t.filter(e => e.species === "Sylvain").length;
+    };
+    this.toBack = true;
+    this.desc = "Lorsqu'une créature ennemie change de position, confère définitivement +1/+2 à trois Sylvains alliés.";
+}
+
+function Effect916() {
+    this.run = async (sender, args, doAnimate) => {
+        args[0].card.effects.push({
+            id: 917,
+            trigger: "attacked"
+        });
+        await boostStats(args[0].card, 0, 3, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Confère \"Lorsque cette créature est attaquée, confère -1/-0 à l'attaquant.\" et +0/+3 au Sylvain allié ciblé.";
+}
+
+function Effect917() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && (args[2][0].concat(args[2][1]).includes(args[1]) || args[3][0].concat(args[3][1]).includes(args[1]))) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(args[1], -1, 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 2;
+    };
+    this.toFront = true;
+    this.desc = "Lorsque cette créature est attaquée, confère -1/-0 à l'attaquant.";
+}
+
+function Effect918() {
+    this.run = async (sender, args, doAnimate) => {
+        args[0].card.effects.push({
+            id: 919,
+            trigger: "attacked"
+        });
+        await boostStats(args[0].card, 3, 1, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Confère \"Lorsque cette créature est attaquée, inflige 2 dégâts à l'attaquant.\" et +3/+1 au Sylvain allié ciblé.";
+}
+
+function Effect919() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && (args[2][0].concat(args[2][1]).includes(args[1]) || args[3][0].concat(args[3][1]).includes(args[1]))) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await dealDamage(args[1], 2, doAnimate, [args[2], args[3], args[4], args[5], args[6]]);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 5;
+    };
+    this.toFront = true;
+    this.desc = "Lorsque cette créature est attaquée, inflige 2 dégâts à l'attaquant.";
 }
 
 function Effect1001() {
@@ -10394,6 +10658,8 @@ async function boostStats(card, atk, hp, doAnimate, preserveHP, permanent) {
     let c;
     if (doAnimate) {
         c = findDOMCard(card);
+        if (!c)
+            return;
         oldTransition = c.style.transition;
         oldFilter = c.style.filter;
         c.style.transition = ".2s";
@@ -10451,6 +10717,8 @@ async function dealDamage(card, damage, doAnimate, state) {
     let c;
     if (doAnimate) {
         c = findDOMCard(card);
+        if (!c)
+            return;
         oldTransition = c.style.transition;
         oldFilter = c.style.filter;
         c.style.transition = ".2s";
