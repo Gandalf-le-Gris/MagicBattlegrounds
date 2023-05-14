@@ -174,6 +174,34 @@
             color: #f7d47a;
             padding-bottom: calc(var(--size) * .015);
         }
+    
+    .card > .reputation {
+        position: relative;
+        background-image: url("../resources/ui/reputation.png");
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        display: flex;
+        top: calc(var(--size) * -1.12);
+        left: calc(var(--size) * .855);
+        height: calc(var(--size) * .1);
+        width: calc(var(--size) * .1);
+    }
+
+        .card > .reputation > div {
+            font-family: Verdana;
+            font-size: calc(var(--font-very-large) * .8);
+            font-weight: bold;
+            text-align: center;
+            margin: auto;
+            color: #f7d47a;
+            -webkit-text-stroke-width: 1px;
+            -webkit-text-stroke-color: #954B30;
+            padding-bottom: calc(var(--size) * .02);
+        }
+
+    .card > .reputation.star {
+        background-image: url("../resources/ui/reputation-gold.png");
+    }
 
 .small-card {
     --size: 500px;
@@ -258,3 +286,36 @@
                 padding: calc(var(--size) * .01);
                 margin-top: calc(var(--size) * .04);
             }
+
+    .small-card > .reputation {
+        position: relative;
+        background-image: url("../resources/ui/reputation.png");
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        display: flex;
+        top: calc(var(--size) * .17);
+        left: calc(var(--size) * .87);
+        height: calc(var(--size) * .15);
+        width: calc(var(--size) * .15);
+    }
+
+        .small-card > .reputation > div {
+            font-family: Verdana;
+            font-size: calc(var(--font-very-large) * 1.2);
+            font-weight: bold;
+            text-align: center;
+            margin: auto;
+            color: #f7d47a;
+            -webkit-text-stroke-width: 1px;
+            -webkit-text-stroke-color: #954B30;
+            padding-bottom: calc(var(--size) * .035);
+        }
+
+    .small-card > .reputation.star {
+        background-image: url("../resources/ui/reputation-gold.png");
+    }
+
+        .small-card > .reputation.star > div {
+            color: white;
+            -webkit-text-stroke-color: black;
+        }
