@@ -367,6 +367,7 @@ let battleCries = {
     "Bête": ["resources/audio/sfx/bete1.mp3", "resources/audio/sfx/bete2.mp3", "resources/audio/sfx/bete3.mp3"],
     "Mort-Vivant": ["resources/audio/sfx/mort-vivant1.mp3", "resources/audio/sfx/mort-vivant2.mp3", "resources/audio/sfx/mort-vivant3.mp3"],
     "Sylvain": ["resources/audio/sfx/sylvain1.mp3", "resources/audio/sfx/sylvain2.mp3", "resources/audio/sfx/sylvain3.mp3", "resources/audio/sfx/sylvain4.mp3"],
+    "Horde": ["resources/audio/sfx/horde1.mp3", "resources/audio/sfx/horde2.mp3", "resources/audio/sfx/horde3.mp3", "resources/audio/sfx/horde4.mp3"],
     "Autre": ["resources/audio/sfx/autre1.mp3"],
     "Sortilège": ["resources/audio/sfx/sortilege1.mp3"]
 }
@@ -508,18 +509,21 @@ async function startGame() {
         heroSelector1.id = "heroSelector1";
         heroSelector1.onclick = () => { selectHero(1); };
         document.body.appendChild(heroSelector1);
+        fitDescription(heroSelector1);
 
         let heroSelector2 = drawCard(commanders[1], 270);
         heroSelector2.className += " hero-selector hero-selector2";
         heroSelector2.id = "heroSelector2";
         heroSelector2.onclick = () => { selectHero(2); };
         document.body.appendChild(heroSelector2);
+        fitDescription(heroSelector2);
 
         let heroSelector3 = drawCard(commanders[2], 270);
         heroSelector3.className += " hero-selector hero-selector3";
         heroSelector3.id = "heroSelector3";
         heroSelector3.onclick = () => { selectHero(3); };
         document.body.appendChild(heroSelector3);
+        fitDescription(heroSelector3);
 
         document.body.style.backgroundImage = 'url("resources/ui/team-builder-bg.jpg")';
 
@@ -620,6 +624,7 @@ async function selectHero(n) {
                 c.addEventListener('dragend', dragEnd);
             }
             shop.appendChild(c);
+            fitDescription(c);
         }
         shop.addEventListener('dragover', dragOver);
         shop.addEventListener('drop', dragDrop);
@@ -793,6 +798,7 @@ async function refreshShop(auto) {
                     c.addEventListener('dragend', dragEnd);
                 }
                 shop.appendChild(c);
+                fitDescription(c);
                 setTimeout(() => {
                     c.style.removeProperty("animation");
                 }, 150);
@@ -860,6 +866,7 @@ async function addToHand(c) {
         c.addEventListener('dragstart', dragStart);
         c.addEventListener('dragend', dragEnd);
         c.classList.remove("frozen");
+        fitDescription(c);
         await broadcastShopEvent("card-obtain", [c]);
     }
 }
@@ -1150,14 +1157,14 @@ function updateEnemyTroops() {
             if (c) {
                 for (let e of c.effects) {
                     let scaling = createEffect(e.id).scaling(c, t.filter(e => e));
-                    for (let k = 0; k < scaling[0]; k++) {
+                    for (let k = 0; k < scaling[0] * 2/3 * (1 + round / 15); k++) {
                         if (Math.random() < .5)
                             boostStats(c, 0, 1, false);
                         else
                         boostStats(c, 1, 0, false);
                     }
                     if (t.indexOf(undefined) == -1) {
-                        for (let k = 0; k < scaling[1] - (round < 4 && scaling[1] > 1); k++) {
+                        for (let k = 0; k < scaling[1] * 2/3 * (1 + round / 15); k++) {
                             if (Math.random() < .5)
                                 boostStats(choice(t.filter(e => e)), 0, 1, false);
                             else
@@ -1170,7 +1177,7 @@ function updateEnemyTroops() {
         for (let e of players[i].effects) {
             let scaling = createEffect(e.id).scaling(players[i], t.filter(e => e));
             if (t.indexOf(undefined) == -1) {
-                for (let k = 0; k < scaling[1] - (round < 4 && scaling[1] > 1); k++) {
+                for (let k = 0; k < scaling[1] * 2/3 * (1 + round / 15); k++) {
                     if (Math.random() < .5)
                         boostStats(choice(t.filter(e => e)), 0, 1, false);
                     else
@@ -1190,7 +1197,7 @@ function updateEnemyTroops() {
             }
         }
 
-        budget = Math.min(10, round + 2);
+        budget = Math.min(10, round + 2 - (Math.random() < .7 && round > 1));
         while (budget >= 3) {
             let options = [];
             for (let k = 0; k < 4; k++)
@@ -1206,16 +1213,16 @@ function updateEnemyTroops() {
                         let scaling = createEffect(e.id).scaling(newCard, t.filter(e => e));
                         for (let k = 0; k < scaling[2]; k++) {
                             if (Math.random() < .5)
-                                newCard.hp += 1;
+                                boostStats(newCard, 0, 1, false);
                             else
-                                newCard.attack += 1;
+                            boostStats(newCard, 1, 0, false);
                         }
                         if (choice(t)) {
                             for (let k = 0; k < scaling[3]; k++) {
                                 if (Math.random() < .5)
-                                    choice(t.filter(e => e)).hp += 1;
+                                    boostStats(choice(t.filter(e => e)), 0, 1, false);
                                 else
-                                    choice(t.filter(e => e)).attack += 1;
+                                    boostStats(choice(t.filter(e => e)), 1, 0, false);
                             }
                         }
                     }
@@ -1353,6 +1360,25 @@ async function runBattle(p1, p2, doAnimate) {
     if (doAnimate)
         await drawBattleScene(t1, t2, p1 == 0 ? p2 : p1);
 
+    for (let c of t1[0].concat(t1[1]))
+        if (c && c.reputation > 0) {
+            for (let i = 0; i < c.reputation; i++)
+                if (Math.random() < .5)
+                    boostStats(c, 0, 1, false);
+                else
+                    boostStats(c, 1, 0, false);
+            await boostStats(c, 0, 0, doAnimate);
+        }
+    for (let c of t2[0].concat(t2[1]))
+        if (c && c.reputation > 0) {
+            for (let i = 0; i < c.reputation; i++)
+                if (Math.random() < .5)
+                    boostStats(c, 0, 1, false);
+                else
+                    boostStats(c, 1, 0, false);
+            await boostStats(c, 0, 0, doAnimate);
+        }
+
     await broadcastEvent("battle-start", t1, t2, p1, p2, turn, doAnimate, [t1, t2, p1, p2, turn]);
 
     await repositionTroops(t1, t2, doAnimate);
@@ -1375,6 +1401,15 @@ async function runBattle(p1, p2, doAnimate) {
     else
         console.log(p1 + " and " + p2 + " tied");
     await dealHeroDamage(finish, t1, t2, p1, p2, doAnimate);
+
+    if (finish == 1 || finish == 3)
+        for (let c of troops[p1])
+            if (c && c.reputation != undefined)
+                c.reputation++;
+    if (finish == 2 || finish == 3)
+        for (let c of troops[p2])
+            if (c && c.reputation != undefined)
+                c.reputation++;
 
     if (p1 == 0)
         lastResult = finish;
@@ -1774,6 +1809,8 @@ async function drawBattleScene(t1, t2, p) {
 
     document.getElementById("enemy-commander").innerHTML = "";
     document.getElementById("enemy-commander").appendChild(drawCard(players[p], 270));
+    fitDescription(document.getElementById("enemy-commander").children[0]);
+    
 
     let board = document.getElementById("board");
     for (let i = 0; i < 8; i++) {
@@ -1973,11 +2010,11 @@ async function drawShopScene() {
 /* ------------------ Card management ------------------ */
 /* ----------------------------------------------------- */
 
-const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant", "Sylvain"];
+const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant", "Sylvain", "Horde"];
 
 const cardList = {
-    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces"],
+    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces", "masse-de-la-brutalite", "summum-de-la-gloire"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
@@ -1987,6 +2024,7 @@ const cardList = {
     "Bête": ["predateur-en-chasse", "devoreur-sauvage", "chasseur-bondissant", "guivre-colossale", "gardien-de-la-foret", "ame-rugissante", "colonie-de-rats", "hydre-vorace", "hydre-enragee", "avatar-de-la-predation", "alligator-charognard", "meneuse-de-betes", "hurleur-des-sylves", "chargeur-cuirasse", "mastodonte-galopant"],
     "Mort-Vivant": ["serviteur-exhume", "squelette-reconstitue", "archer-squelette", "liche-profanatrice", "devoreur-pourrissant", "eveilleur-d-ames", "creation-abjecte", "necromancienne-corrompue", "raccommodeur-de-cadavres", "guerrier-maudit", "crane-possede", "dragon-decharne", "marcheur-eternel", "soldat-revenu-a-la-vie", "assistant-du-raccommodeur"],
     "Sylvain": ["invocation-sylvestre", "chamane-des-lignes-de-vie", "gardien-de-noirepine", "brisesort-elfique", "colosse-centenaire", "faconneur-de-forets", "combattant-embusque", "druidesse-des-lignes-de-vie", "archere-de-noirepine", "vengeur-des-sylves", "sage-fongimancien", "chevaucheur-sauvage", "cavalier-des-ronces", "incarnation-de-la-foret", "elue-des-sylves"],
+    "Horde": ["minotaure-chargeur", "assiegeant-orc", "ravageur-des-falaises", "massacreur-de-fracassecrane", "brute-a-deux-tetes", "geant-ecrabouilleur", "pyromane-de-la-horde", "meneuse-du-clan-sylvegarde", "executeur-implacable", "exhorteur-de-la-horde", "batailleur-brisefer", "veteran-de-fracassecrane", "geant-destructeur", "obliterateur-goliath", "annihilateur-minotaure"],
     "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"],
     "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble", "jeune-fongus"]
 };
@@ -2004,7 +2042,7 @@ function initCards() {
             species.push(s);
     }
 
-    //species = ["Sylvain"]; //!!!
+    //species = ["Horde"]; //!!!
 
     //for (let s of speciesList)
     //    cardList[s] = [cardList[s][0]]; //!!!
@@ -2028,7 +2066,7 @@ function initCards() {
 
     shuffle(cards);
     shuffle(commanders);
-    //while (commanders.findIndex(e => e.name.startsWith("Protecteur")) > 2 && species.includes("Sylvain")) //!!!
+    //while (commanders.findIndex(e => e.name.startsWith("Chamanes")) > 2 && species.includes("Horde")) //!!!
     //    shuffle(commanders);
 }
 
@@ -2081,6 +2119,8 @@ function createCard(card) {
             return new GeomancienArdent();
         case "protecteur-de-la-foret":
             return new ProtecteurDeLaForet();
+        case "chamanes-de-la-horde":
+            return new ChamanesDeLaHorde();
 
         case "dragonnet-ardent":
             return new DragonnetArdent();
@@ -2411,6 +2451,41 @@ function createCard(card) {
         case "armure-de-ronces":
             return new ArmureDeRonces();
 
+        case "minotaure-chargeur":
+            return new MinotaureChargeur();
+        case "assiegeant-orc":
+            return new AssiegeantOrc();
+        case "ravageur-des-falaises":
+            return new RavageurDesFalaises();
+        case "massacreur-de-fracassecrane":
+            return new MassacreurDeFracassecrane();
+        case "brute-a-deux-tetes":
+            return new BruteADeuxTetes();
+        case "geant-ecrabouilleur":
+            return new GeantEcrabouilleur();
+        case "pyromane-de-la-horde":
+            return new PyromaneDeLaHorde();
+        case "meneuse-du-clan-sylvegarde":
+            return new MeneuseDuClanSylvegarde();
+        case "executeur-implacable":
+            return new ExecuteurImplacable();
+        case "exhorteur-de-la-horde":
+            return new ExhorteurDeLaHorde();
+        case "batailleur-brisefer":
+            return new BatailleurBrisefer();
+        case "veteran-de-fracassecrane":
+            return new VeteranDeFracassecrane();
+        case "geant-destructeur":
+            return new GeantDestructeur();
+        case "obliterateur-goliath":
+            return new ObliterateurGoliath();
+        case "annihilateur-minotaure":
+            return new AnnihilateurMinotaure();
+        case "masse-de-la-brutalite":
+            return new MasseDeLaBrutalite();
+        case "summum-de-la-gloire":
+            return new SummumDeLaGloire();
+
         case "changeforme-masque":
             return new ChangeformeMasque();
         case "ange-guerrier":
@@ -2563,7 +2638,7 @@ function ZoomancienneSylvestre() {
     this.name = "Zoomancienne sylvestre";
     this.species = "Commandant";
     this.attack = -1;
-    this.hp = 30;
+    this.hp = 34;
     this.src = "commandants/zoomancienne-sylvestre.jpg";
     this.requirement = "Bête";
     this.effects = [
@@ -2610,7 +2685,7 @@ function ChefDuClanFracassecrane() {
     this.name = "Chef du clan Fracassecrâne";
     this.species = "Commandant";
     this.attack = -1;
-    this.hp = 40;
+    this.hp = 38;
     this.src = "commandants/chef-du-clan-fracassecrane.jpg";
     this.effects = [
         {
@@ -2696,6 +2771,21 @@ function ProtecteurDeLaForet() {
         {
             trigger: "battle-start",
             id: 20
+        }
+    ];
+}
+
+function ChamanesDeLaHorde() {
+    this.name = "Chamanes de la Horde";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 33;
+    this.src = "commandants/chamanes-de-la-horde.jpg";
+    this.requirement = "Horde";
+    this.effects = [
+        {
+            trigger: "",
+            id: 21
         }
     ];
 }
@@ -2948,7 +3038,7 @@ function TresorDuDragon() {
     this.effects = [
         {
             trigger: "",
-            id: 1001
+            id: 10001
         },
         {
             trigger: "card-sell",
@@ -5185,6 +5275,300 @@ function ElueDesSylves() {
 }
 
 
+// Horde
+
+function MinotaureChargeur() {
+    this.name = "Minotaure chargeur";
+    this.species = "Horde";
+    this.attack = 2;
+    this.hp = 3;
+    this.src = "horde/minotaure-chargeur.jpg";
+    this.tier = 1;
+    this.reputation = 0;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 1001
+        }
+    ];
+}
+
+function AssiegeantOrc() {
+    this.name = "Assiegeant orc";
+    this.species = "Horde";
+    this.attack = 3;
+    this.hp = 1;
+    this.src = "horde/assiegeant-orc.jpg";
+    this.tier = 1;
+    this.reputation = 0;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 1002
+        }
+    ];
+}
+
+function RavageurDesFalaises() {
+    this.name = "Ravageur des falaises";
+    this.species = "Horde";
+    this.attack = 3;
+    this.hp = 3;
+    this.src = "horde/ravageur-des-falaises.jpg";
+    this.tier = 2;
+    this.reputation = 0;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 1003
+        },
+        {
+            trigger: "turn-end",
+            id: 1004
+        }
+    ];
+}
+
+function MassacreurDeFracassecrane() {
+    this.name = "Massacreur de Fracassecrâne";
+    this.species = "Horde";
+    this.attack = 4;
+    this.hp = 2;
+    this.src = "horde/massacreur-de-fracassecrane.jpg";
+    this.tier = 2;
+    this.reputation = 0;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1005
+        }
+    ];
+}
+
+function BruteADeuxTetes() {
+    this.name = "Brute à deux têtes";
+    this.species = "Horde";
+    this.attack = 4;
+    this.hp = 2;
+    this.src = "horde/brute-a-deux-tetes.jpg";
+    this.tier = 2;
+    this.reputation = 0;
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 1006
+        }
+    ];
+}
+
+function GeantEcrabouilleur() {
+    this.name = "Géant écrabouilleur";
+    this.species = "Horde";
+    this.attack = 2;
+    this.hp = 5;
+    this.src = "horde/geant-ecrabouilleur.jpg";
+    this.tier = 3;
+    this.reputation = 0;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 1007
+        },
+        {
+            trigger: "battle-start",
+            id: 1008
+        }
+    ];
+}
+
+function PyromaneDeLaHorde() {
+    this.name = "Pyromane de la Horde";
+    this.species = "Horde";
+    this.attack = 5;
+    this.hp = 3;
+    this.src = "horde/pyromane-de-la-horde.jpg";
+    this.tier = 3;
+    this.reputation = 0;
+    this.effects = [
+        {
+            trigger: "card-sell",
+            id: 1009
+        }
+    ];
+}
+
+function MasseDeLaBrutalite() {
+    this.name = "Masse de la brutalité";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "horde/masse-de-la-brutalite.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1019
+        }
+    ];
+    this.validTarget = {
+        area: "board",
+        species: "Horde"
+    };
+}
+
+function MeneuseDuClanSylvegarde() {
+    this.name = "Meneuse du clan Sylvegarde";
+    this.species = "Horde";
+    this.attack = 5;
+    this.hp = 6;
+    this.src = "horde/meneuse-du-clan-sylvegarde.jpg";
+    this.tier = 4;
+    this.reputation = 8;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1010
+        }
+    ];
+}
+
+function ExecuteurImplacable() {
+    this.name = "Exécuteur implacable";
+    this.species = "Horde";
+    this.attack = 6;
+    this.hp = 3;
+    this.src = "horde/executeur-implacable.jpg";
+    this.tier = 4;
+    this.reputation = 0;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1011
+        }
+    ];
+}
+
+function ExhorteurDeLaHorde() {
+    this.name = "Exhorteur de la Horde";
+    this.species = "Horde";
+    this.attack = 4;
+    this.hp = 4;
+    this.src = "horde/exhorteur-de-la-horde.jpg";
+    this.tier = 4;
+    this.reputation = 0;
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 1012
+        }
+    ];
+}
+
+function BatailleurBrisefer() {
+    this.name = "Batailleur brisefer";
+    this.species = "Horde";
+    this.attack = 5;
+    this.hp = 5;
+    this.src = "horde/batailleur-brisefer.jpg";
+    this.tier = 5;
+    this.reputation = 0;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1013
+        }
+    ];
+}
+
+function VeteranDeFracassecrane() {
+    this.name = "Vétéran de Fracassecrâne";
+    this.species = "Horde";
+    this.attack = 4;
+    this.hp = 6;
+    this.src = "horde/veteran-de-fracassecrane.jpg";
+    this.tier = 5;
+    this.reputation = 2;
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 1014
+        }
+    ];
+}
+
+function GeantDestructeur() {
+    this.name = "Géant destructeur";
+    this.species = "Horde";
+    this.attack = 8;
+    this.hp = 2;
+    this.src = "horde/geant-destructeur.jpg";
+    this.tier = 5;
+    this.shield = true;
+    this.reputation = 0;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 1015
+        }
+    ];
+}
+
+function SummumDeLaGloire() {
+    this.name = "Summum de la gloire";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "horde/summum-de-la-gloire.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1020
+        }
+    ];
+    this.validTarget = {
+        area: "board",
+        species: "Horde"
+    };
+}
+
+function ObliterateurGoliath() {
+    this.name = "Oblitérateur goliath";
+    this.species = "Horde";
+    this.attack = 1;
+    this.hp = 1;
+    this.src = "horde/obliterateur-goliath.jpg";
+    this.tier = 6;
+    this.reputation = 0;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 1016
+        }
+    ];
+}
+
+function AnnihilateurMinotaure() {
+    this.name = "Annihilateur minotaure";
+    this.species = "Horde";
+    this.attack = 9;
+    this.hp = 3;
+    this.src = "horde/annihilateur-minotaure.jpg";
+    this.tier = 6;
+    this.reputation = 0;
+    this.effects = [
+        {
+            trigger: "attack",
+            id: 1017
+        },
+        {
+            trigger: "attacked",
+            id: 1018
+        }
+    ];
+}
+
+
 // Autre
 
 function AngeDeLUnite() {
@@ -5290,7 +5674,7 @@ function Aiguisage() {
     this.effects = [
         {
             trigger: "",
-            id: 1002
+            id: 10002
         }
     ];
     this.validTarget = {
@@ -5308,7 +5692,7 @@ function ReunionCeleste() {
     this.effects = [
         {
             trigger: "",
-            id: 1003
+            id: 10003
         }
     ];
     this.validTarget = {
@@ -5329,7 +5713,7 @@ function PieceDOr() {
     this.effects = [
         {
             trigger: "",
-            id: 1001
+            id: 10001
         }
     ];
     this.validTarget = {
@@ -5593,6 +5977,25 @@ function drawCard(c, size, cancelTooltip) {
         tier.appendChild(tierVal);
     }
 
+    if (c.reputation != undefined) {
+        let reputation = document.createElement('div');
+        reputation.className = "reputation";
+        card.appendChild(reputation);
+        let reputationVal = document.createElement('div');
+        let player = 0;
+        for (let i = 1; i < 8; i++) {
+            let t = troops[i];
+            if (t.includes(c) || c.original && t.includes(c.original)) {
+                player = i;
+                break;
+            }
+        }
+        reputationVal.innerHTML = c.reputation;
+        if (isWarchief(c, player))
+            reputation.classList.add("star");
+        reputation.appendChild(reputationVal);
+    }
+
     if (!cancelTooltip) {
         card.addEventListener('mouseleave', () => {
             clearTimeout(menuLeaveTimer);
@@ -5641,6 +6044,25 @@ function drawSmallCard(c, size) {
         let hpVal = document.createElement('div');
         hpVal.innerHTML = c.hp;
         hp.appendChild(hpVal);
+    }
+
+    if (c.reputation != undefined) {
+        let reputation = document.createElement('div');
+        reputation.className = "reputation";
+        card.appendChild(reputation);
+        let reputationVal = document.createElement('div');
+        let player = 0;
+        for (let i = 1; i < 8; i++) {
+            let t = troops[i];
+            if (t.includes(c) || c.original && t.includes(c.original)) {
+                player = i;
+                break;
+            }
+        }
+        reputationVal.innerHTML = c.reputation;
+        if (isWarchief(c, player))
+            reputation.classList.add("star");
+        reputation.appendChild(reputationVal);
     }
 
     card.addEventListener('mouseleave', () => {
@@ -5703,6 +6125,24 @@ function updateCardStats(c) {
         if (footer.children[2].classList.contains("hp"))
             footer.children[2].children[0].innerHTML = c.card.hp;
     }
+    if (c.card.reputation != undefined) {
+        for (let d of c.children)
+            if (d.classList.contains("reputation")) {
+                let player = 0;
+                for (let i = 1; i < 8; i++) {
+                    let t = troops[i];
+                    if (t.includes(c.card) || c.original && t.includes(c.card.original)) {
+                        player = i;
+                        break;
+                    }
+                }
+                d.children[0].innerHTML = c.card.reputation;
+                if (isWarchief(c.card, player))
+                    d.classList.add("star");
+                else
+                    d.classList.remove("star");
+            }
+    }
 }
 
 function showCardTooltip(c) {
@@ -5719,7 +6159,7 @@ function showCardTooltip(c) {
     let text = desc.children[0];
     while (text.clientHeight > maxY) {
         let size = parseInt(window.getComputedStyle(text).fontSize);
-        text.style.fontSize = (size - 1).toString() + "px";
+        text.style.fontSize = (size - .5).toString() + "px";
     }
 
     let tips = document.createElement('div');
@@ -5763,7 +6203,7 @@ function showCardTooltip(c) {
     }
     if (containsKeyword(c, "Rage")) {
         let shield = document.createElement('div');
-        shield.innerHTML = "<em>Rage :</em> Se produit lorsque la créature subit des dégâts.";
+        shield.innerHTML = "<em>Rage :</em> Se produit lorsque la créature survit à des dégâts.";
         tips.appendChild(shield);
     }
     if (containsKeyword(c, "Reconfiguration")) {
@@ -5774,6 +6214,19 @@ function showCardTooltip(c) {
     if (containsKeyword(c, "Dévore")) {
         let shield = document.createElement('div');
         shield.innerHTML = "<em>Dévore :</em> Détruit la créature ciblée et gagne ses statistiques.";
+        tips.appendChild(shield);
+    }
+    if (containsKeyword(c, "Réputation")) {
+        let shield = document.createElement('div');
+        shield.innerHTML = "<em>Réputation :</em> Augmente de 1 suite à une victoire ou une égalité (1/2).";
+        tips.appendChild(shield);
+        let shield2 = document.createElement('div');
+        shield2.innerHTML = "<em>Réputation :</em> En début de combat, gagne un point de statistique pour chaque point de <em>Réputation</em> (2/2).";
+        tips.appendChild(shield2);
+    }
+    if (containsKeyword(c, "Chef de guerre")) {
+        let shield = document.createElement('div');
+        shield.innerHTML = "<em>Chef de guerre :</em> Devient actif lorsque la créature atteint une <em>Réputation</em> de 8.";
         tips.appendChild(shield);
     }
     if (containsKeyword(c, "Injouable")) {
@@ -5822,6 +6275,16 @@ function containsKeyword(c, word) {
         if (createEffect(e.id).desc.includes(word))
             return true;
     return false;
+}
+
+function fitDescription(card) {
+    let desc = card.children[2];
+    let maxY = desc.clientHeight - 2 * parseInt(window.getComputedStyle(desc).padding);
+    let text = desc.children[0];
+    while (text.clientHeight > maxY) {
+        let size = parseInt(window.getComputedStyle(text).fontSize);
+        text.style.fontSize = (size - .5).toString() + "px";
+    }
 }
 
 
@@ -5881,6 +6344,8 @@ function createEffect(id) {
             return new Effect19();
         case 20:
             return new Effect20();
+        case 21:
+            return new Effect21();
         case 101:
             return new Effect101();
         case 102:
@@ -6238,11 +6703,45 @@ function createEffect(id) {
         case 919:
             return new Effect919();
         case 1001:
-            return new Effect1001();
+            return new Effect1001()
         case 1002:
             return new Effect1002();
         case 1003:
             return new Effect1003();
+        case 1004:
+            return new Effect1004();
+        case 1005:
+            return new Effect1005();
+        case 1006:
+            return new Effect1006();
+        case 1007:
+            return new Effect1007();
+        case 1008:
+            return new Effect1008();
+        case 1009:
+            return new Effect1009();
+        case 1010:
+            return new Effect1010();
+        case 1011:
+            return new Effect1011();
+        case 1012:
+            return new Effect1012();
+        case 1013:
+            return new Effect1013();
+        case 1014:
+            return new Effect1014();
+        case 1015:
+            return new Effect1015();
+        case 1016:
+            return new Effect1016();
+        case 1017:
+            return new Effect1017();
+        case 1018:
+            return new Effect1018();
+        case 1019:
+            return new Effect1019();
+        case 1020:
+            return new Effect1020();
         case 2001:
             return new Effect2001();
         case 2002:
@@ -6259,6 +6758,12 @@ function createEffect(id) {
             return new Effect2007();
         case 2008:
             return new Effect2008();
+        case 10001:
+            return new Effect10001();
+        case 10002:
+            return new Effect10002();
+        case 10003:
+            return new Effect10003();
         default:
             alert("Effet inconnu : " + id);
     }
@@ -6370,7 +6875,8 @@ function Effect6() {
                 await effectProcGlow(sender);
             let card = getCard(shopTier, "Sortilège");
             card.created = true;
-            await addToHand(drawCard(card, 176));
+            let c = drawCard(card, 176)
+            await addToHand(c);
         }
     };
     this.scaling = (c, t) => {
@@ -6412,7 +6918,8 @@ function Effect8() {
                 await effectProcGlow(sender);
             let card = new ProieFacile();
             card.created = true;
-            await addToHand(drawCard(card, 176));
+            let c = drawCard(card, 176);
+            await addToHand(c);
         }
     };
     this.scaling = (c, t) => {
@@ -6485,7 +6992,8 @@ function Effect12() {
             await effectProcGlow(sender);
         let card = new ScionAspirame();
         card.created = true;
-        await addToHand(drawCard(card, 176));
+        let c = drawCard(card, 176);
+        await addToHand(c);
     };
     this.scaling = (c, t) => {
         return [0, 0, 0, 0];
@@ -6675,6 +7183,19 @@ function Effect20() {
     this.desc = "<em>Frappe préventive :</em> Echange la position d'une créature adverse et de la créature derrière elle, puis leur inflige 1 dégât.";
 }
 
+function Effect21() {
+    this.run = async (sender, args, doAnimate) => {
+
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Réduit de 2 la <em>Réputation</em> requise pour qu'une créature de la Horde devienne <em>Chef de guerre</em>.";
+}
+
 function Effect101() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0].card === sender) {
@@ -6682,7 +7203,8 @@ function Effect101() {
                 await effectProcGlow(sender);
             let card = new PieceDOr();
             card.created = true;
-            await addToHand(drawCard(card, 176));
+            let c = drawCard(card, 176);
+            await addToHand(c);
         }
     };
     this.scaling = (c, t) => {
@@ -6803,7 +7325,8 @@ function Effect107() {
                 await effectProcGlow(sender);
             let card = new PieceDOr();
             card.created = true;
-            await addToHand(drawCard(card, 176));
+            let c = drawCard(card, 176);
+            await addToHand(c);
         }
     };
     this.scaling = (c, t) => {
@@ -6862,7 +7385,7 @@ function Effect110() {
         }
     };
     this.scaling = (c, t) => {
-        return [2, 0, 0, 0];
+        return [1, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -7409,7 +7932,8 @@ function Effect218() {
         let card = getCard(shopTier, "Gobelin");
         card.created = true;
         card.range = true;
-        addToHand(drawCard(card, 176));
+        let c = drawCard(card, 176);
+        await addToHand(c);
         await boostStats(card, 0, 0, doAnimate);
     };
     this.scaling = (c, t) => {
@@ -7428,7 +7952,8 @@ function Effect301() {
                 await effectProcGlow(sender);
             let card = new ConnaissancesArcaniques();
             card.created = true;
-            await addToHand(drawCard(card, 176));
+            let c = drawCard(card, 176);
+            await addToHand(c);
         }
     };
     this.scaling = (c, t) => {
@@ -7556,7 +8081,8 @@ function Effect308() {
                 await effectProcGlow(sender);
             let card = new CatalyseurDePuissance();
             card.created = true;
-            await addToHand(drawCard(card, 176));
+            let c = drawCard(card, 176);
+            await addToHand(c);
         }
     };
     this.scaling = (c, t) => {
@@ -7687,7 +8213,8 @@ function Effect315() {
                 effectProcGlow(sender);
             let card = new EquilibreNaturel();
             card.created = true;
-            await addToHand(drawCard(card, 176));
+            let c = drawCard(card, 176);
+            await addToHand(c);
         }
     };
     this.scaling = (c, t) => {
@@ -7743,7 +8270,8 @@ function Effect318() {
                 effectProcGlow(sender);
             let card = new Dephasage();
             card.created = true;
-            await addToHand(drawCard(card, 176));
+            let c = drawCard(card, 176);
+            await addToHand(c);
         }
     };
     this.scaling = (c, t) => {
@@ -7818,11 +8346,13 @@ function Effect322() {
                 effectProcGlow(sender);
             let card = new CatalyseurDePuissance();
             card.created = true;
-            await addToHand(drawCard(card, 176));
+            let c = drawCard(card, 176);
+            await addToHand(c);
             if (lastResult && lastResult == 2) {
                 let card = new CatalyseurDePuissance();
                 card.created = true;
-                await addToHand(drawCard(card, 176));
+                let c = drawCard(card, 176);
+                await addToHand(c);
             }
         }
     };
@@ -8241,7 +8771,8 @@ function Effect415() {
                 while (!card || names.findIndex(e => e == card.name) == -1)
                     card = getCard();
                 card.created = true;
-                addToHand(drawCard(card, 176));
+                let c = drawCard(card, 176);
+                await addToHand(c);
             }
         }
     };
@@ -8402,7 +8933,8 @@ function Effect503() {
                 await effectProcGlow(sender);
             let card = getCard(shopTier, "Sortilège");
             card.created = true;
-            addToHand(drawCard(card, 176));
+            let c = drawCard(card, 176);
+            await addToHand(c);
         }
     };
     this.scaling = (c, t) => {
@@ -8461,7 +8993,8 @@ function Effect506() {
                     let card = createCard(name);
                     card.species = "Bandit";
                     card.created = true;
-                    addToHand(drawCard(card, 176));
+                    let c = drawCard(card, 176);
+                    await addToHand(c);
                 }
             }
         }
@@ -8589,7 +9122,8 @@ function Effect512() {
                 let name = target.src.substring(target.src.indexOf("/") + 1, target.src.indexOf("."));
                 let card = createCard(name);
                 card.created = true;
-                await addToHand(drawCard(card, 176));
+                let c = drawCard(card, 176);
+                await addToHand(c);
             }
         }
     };
@@ -8730,7 +9264,8 @@ function Effect518() {
                     let name = target.src.substring(target.src.indexOf("/") + 1, target.src.indexOf("."));
                     let card = createCard(name);
                     card.created = true;
-                    addToHand(drawCard(card, 176));
+                    let c = drawCard(card, 176);
+                    await addToHand(c);
                 }
             }
         }
@@ -9085,7 +9620,7 @@ function Effect616() {
         }
     };
     this.scaling = (c, t) => {
-        return [2, 0, 0, 0];
+        return [1, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -9217,7 +9752,8 @@ function Effect701() {
                 await effectProcGlow(sender);
             let card = new ProieFacile();
             card.created = true;
-            await addToHand(drawCard(card, 176));
+            let c = drawCard(card, 176);
+            await addToHand(c);
         }
     };
     this.scaling = (c, t) => {
@@ -9391,7 +9927,8 @@ function Effect707() {
                 await effectProcGlow(sender);
             let card = new ProieFacile();
             card.created = true;
-            await addToHand(drawCard(card, 176));
+            let c = drawCard(card, 176);
+            await addToHand(c);
         }
     };
     this.scaling = (c, t) => {
@@ -9599,7 +10136,8 @@ function Effect716() {
         }
         let card = new ProieFacile();
         card.created = true;
-        await addToHand(drawCard(card, 176));
+        let c = drawCard(card, 176);
+        await addToHand(c);
     };
     this.scaling = (c, t) => {
         return [0, 0, 0, 0];
@@ -10398,36 +10936,206 @@ function Effect919() {
 }
 
 function Effect1001() {
-    this.run = async (sender, args, doAnimate) => { };
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0 && sender.reputation) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, sender.reputation, 0, doAnimate);
+        }
+    };
     this.scaling = (c, t) => {
         return [0, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
-        return 0;
+        return c.reputation ? c.reputation : 0;
     };
-    this.desc = "<em>Injouable</em>.";
+    this.desc = "<em>Frappe préventive :</em> Gagne +X/+0, où X est sa propre <em>Réputation</em>.";
 }
 
 function Effect1002() {
     this.run = async (sender, args, doAnimate) => {
-        await boostStats(args[0].card, 2, 1, doAnimate);
+        if (args[0] === sender && sender.hp <= 0) {
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            let target = choice(t.filter(e => e && e.species === "Horde"));
+            if (target) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                target.original.reputation++;
+                target.reputation++;
+                await boostStats(target, 0, 0, doAnimate);
+            }
+        }
     };
     this.scaling = (c, t) => {
         return [0, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
-        return 0;
+        return 2;
     };
-    this.desc = "Confère +2/+1 à la créature alliée ciblée.";
+    this.toFront = true;
+    this.desc = "<em>Dernière volonté :</em> Augmente de 1 la <em>Réputation</em> d'une créature de la Horde alliée.";
 }
 
 function Effect1003() {
     this.run = async (sender, args, doAnimate) => {
-        let f = [];
-        for (let c of troops[0])
-            if (c && !f.includes(c.species) && c.species != "Autre")
-                f.push(c.species);
-        await boostStats(args[0].card, f.length, f.length, doAnimate);
+        if (lastResult == 1 && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            sender.reputation++;
+            await boostStats(sender, 0, 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        c.reputation += (Math.random() < .1);
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 2;
+    };
+    this.desc = "Au début de chaque tour, gagne 1 point de <em>Réputation</em> si vous avez gagné le dernier combat.";
+}
+
+function Effect1004() {
+    this.run = async (sender, args, doAnimate) => {
+        if (isWarchief(sender, 0) && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let i = troops[0].indexOf(sender);
+            if (i % 4 > 0 && troops[0][i - 1]) {
+                troops[0][i - 1].reputation++;
+                await boostStats(troops[0][i - 1], 0, 0, doAnimate);
+            }
+            if (troops[0][(i + 4) % 8]) {
+                troops[0][(i + 4) % 8].reputation++;
+                await boostStats(troops[0][(i + 4) % 8], 0, 0, doAnimate);
+            }
+            if (i % 4 < 3 && troops[0][i + 1]) {
+                troops[0][i + 1].reputation++;
+                await boostStats(troops[0][i + 1], 0, 0, doAnimate);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, c.reputation >= 8 ? 6 : 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 1;
+    };
+    this.desc = "<em>Chef de guerre :</em> Confère 1 point de <em>Réputation</em> aux créatures voisines à la fin de chaque tour.";
+}
+
+function Effect1005() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                effectProcGlow(sender);
+            await chooseTarget((target) => {
+                target.reputation += 2;
+                boostStats(target, 0, 0, doAnimate);
+            }, {
+                area: "board",
+                species: "Horde",
+            }, sender);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 3 * (t.filter(e => e.species === "Horde") > 1)];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Confère 2 points de <em>Réputation</em> à la créature de la Horde alliée ciblée.";
+}
+
+function Effect1006() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            if (isWarchief(sender, 0))
+                await boostStats(sender, 3, 2, doAnimate);
+            else
+                await boostStats(sender, 0, 1, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [c.reputation >= 8 ? 5 : 1, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 1;
+    };
+    this.desc = "A la fin de chaque tour, gagne +0/+1.</br><em>Chef de guerre :</em> Gagne +3/+2 à la place.";
+}
+
+function Effect1007() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0 && sender.reputation) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, sender.reputation, sender.reputation, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return c.reputation ? 2 * c.reputation : 0;
+    };
+    this.desc = "<em>Frappe préventive :</em> Gagne +X/+X, où X est sa propre <em>Réputation</em>.";
+}
+
+function Effect1008() {
+    this.run = async (sender, args, doAnimate) => {
+        let side = args[0][0].concat(args[0][1]).includes(sender);
+        let t = (side ? args[1][0].concat(args[1][1]) : args[0][0].concat(args[0][1])).filter(e => e);
+        let target;
+        let min = 999999;
+        for (let c of t)
+            if (c.attack < min) {
+                min = c.attack;
+                target = c;
+            }           
+        if (target && sender.hp > 0 && sender.reputation && isWarchief(sender, side ? args[2] : args[3])) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await attack(args[0], args[1], args[2], args[3], args[4], doAnimate, sender, target);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return c.reputation >= 8 ? 8 : 0;
+    };
+    this.desc = "<em>Chef de guerre :</em> Puis, attaque la créature ennemie la plus faible.";
+}
+
+function Effect1009() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender && sender.reputation > 0) {
+            if (doAnimate)
+                effectProcGlow(sender);
+            await chooseTarget(async (target) => {
+                target.reputation += 2 * sender.reputation;
+                await boostStats(target, 0, 0, doAnimate);
+            }, {
+                area: "board",
+                species: "Horde"
+            }, sender);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 4];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous revendez cette carte, confère le double de sa <em>Réputation</em> à la créature de la Horde alliée ciblée.";
+}
+
+function Effect1010() {
+    this.run = async (sender, args, doAnimate) => {
+
     };
     this.scaling = (c, t) => {
         return [0, 0, 0, 0];
@@ -10435,7 +11143,244 @@ function Effect1003() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "Confère +X/+X à la créature alliée ciblée, où X est le nombre de familles alliées différentes.";
+    this.desc = "Possède naturellement 8 points de <em>Réputation</em>.";
+}
+
+function Effect1011() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                effectProcGlow(sender);
+            await chooseTarget(async (target) => {
+                sender.reputation = target.reputation;
+                target.reputation = 0;
+                boostStats(sender, sender.reputation, 0, doAnimate);
+                await boostStats(target, 0, 0, doAnimate);
+                if (isWarchief(sender, 0))
+                    await boostStats(sender, sender.reputation, sender.reputation, doAnimate);
+            }, {
+                area: "board",
+                species: "Horde",
+                notself: true
+            }, sender);
+        }
+    };
+    this.scaling = (c, t) => {
+        if (t.filter(e => e && e.species === "Horde") > 4) {
+            c.reputation = 8;
+            return [0, 0, 16, 0];
+        } else
+            return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Vole la <em>Réputation</em> de la créature de la Horde alliée ciblée, puis gagne +X/+0, où X est sa propre <em>Réputation</em>.</br><em>Chef de guerre :</em> Puis, gagne +X/+X.";
+}
+
+function Effect1012() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let chief = isWarchief(sender, 0);
+            for (let c of troops[0])
+                if (c && c.reputation != undefined && isWarchief(c, 0))
+                    await boostStats(c, chief ? 3 : 2, chief ? 3 : 2, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 5 * t.filter(e => e && e.reputation >= 8).length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "A la fin de chaque tour, confère +2/+2 aux <em>Chefs de guerre</em> alliés.</br><em>Chef de guerre :</em> Leur confère +3/+3 à la place.";
+}
+
+function Effect1013() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let shop = document.getElementById("shop");
+            let flag = true;
+            while (flag) {
+                let options = [];
+                for (let c of shop.children)
+                    if (c.card && c.card.species === "Horde")
+                        options.push(c);
+                let t = choice(options);
+                let target = choice(troops[0].filter(e => e && e.species === "Horde" && e !== sender));
+                if (t && target) {
+                    shop.removeChild(t);
+                    shop.style.setProperty("--shop-size", parseInt(shop.style.getPropertyValue("--shop-size")) - 1);
+                    target.reputation += 3;
+                    await boostStats(target, 0, 0, doAnimate);
+                } else {
+                    flag = false;
+                }
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 12];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Détruit toutes les créatures de la Horde disponibles à l'achat, puis confère 3 points de <em>Réputation</em> à une autre créature alliée pour chaque créature ainsi détruite.";
+}
+
+function Effect1014() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            sender.reputation++;
+            await boostStats(sender, 0, 0, doAnimate);
+            for (let c of troops[0])
+                if (c && c.reputation != undefined && c.reputation < sender.reputation) {
+                    c.reputation++;
+                    await boostStats(c, 0, 0, doAnimate);
+                }
+        }
+    };
+    this.scaling = (c, t) => {
+        for (let card of t)
+            if (card && card.reputation != undefined)
+                card.reputation += Math.random() < .1;
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 15;
+    };
+    this.desc = "A la fin de chaque tour, gagne 1 point de <em>Réputation</em>, puis confère 1 point de <em>Réputation</em> aux céatures alliées qui en possèdent moins que celle-ci.";
+}
+
+function Effect1015() {
+    this.run = async (sender, args, doAnimate) => {
+        let side = args[0][0].concat(args[0][1]).includes(sender);
+        let t1 = (side ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]));
+        let t2 = (side ? args[1][0].concat(args[1][1]) : args[0][0].concat(args[0][1]));
+        let n = t1.filter(e => e && e.reputation && isWarchief(e, side ? args[2] : args[3])).length;
+        for (let i = 0; i < n; i++) {
+            let target = choice(t2.filter(e => e && e.hp > 0));      
+            if (target && sender.hp > 0) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await attack(args[0], args[1], args[2], args[3], args[4], doAnimate, sender, target);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 5 * t.filter(e => e && e.reputation >= 8).length;
+    };
+    this.desc = "<em>Frappe préventive :</em> Pour chaque <em>Chef de guerre</em> allié, attaque une créature adverse aléatoire.";
+}
+
+function Effect1016() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+        let n = Math.ceil(t.reduce((acc, e) => acc + (e && e.reputation ? e.reputation : 0), 0) / 2);
+        if (sender.hp > 0 && n > 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, n, n, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 2 * t.reduce((acc, e) => acc + (e && e.reputation ? e.reputation : 0), 0);
+    };
+    this.desc = "<em>Frappe préventive :</em> Gagne +X/+X, où X est la moitié de la somme de la <em>Réputation</em> des créatures alliées.";
+}
+
+function Effect1017() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let c of t) {
+                if (c && c.reputation != undefined) {
+                    c.reputation++;
+                    c.original.reputation++;
+                    await boostStats(c, 0, 0, doAnimate);
+                }
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 50 * (t.filter(e => e && e.species === "Horde").length > 3);
+    };
+    this.toFront = true;
+    this.desc = "Lorsque cette créature attaque, elle augmente de 1 la <em>Réputation</em> de toutes les créatures alliées.";
+}
+
+function Effect1018() {
+    this.run = async (sender, args, doAnimate) => {
+        let player = args[2][0].concat(args[2][1]).includes(sender) ? args[4] : args[5];
+        if (args[0] === sender && isWarchief(sender, player)) {
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let c of t) {
+                if (c && c.reputation != undefined) {
+                    c.reputation++;
+                    c.original.reputation++;
+                    await boostStats(c, 0, 0, doAnimate);
+                }
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 50 * (t.filter(e => e && e.species === "Horde").length > 3 && c.reputation >= 8);
+    };
+    this.toFront = true;
+    this.desc = "<em>Chef de guerre :</em> Lorsque cette créature est attaquée, elle augmente de 1 la <em>Réputation</em> de toutes les créatures alliées.";
+}
+
+function Effect1019() {
+    this.run = async (sender, args, doAnimate) => {
+        await boostStats(args[0].card, Math.min(1 + args[0].card.reputation, 8), 0, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Confère +X/+0 à la créature alliée ciblée, où X est 1 plus sa <em>Réputation</em>, jusqu'à 8.";
+}
+
+function Effect1020() {
+    this.run = async (sender, args, doAnimate) => {
+        if (isWarchief(args[0].card, 0))
+            await boostStats(args[0].card, 3, 3, doAnimate);
+        else {
+            args[0].card.reputation = 8;
+            await boostStats(args[0].card, 0, 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Si la créature ciblée est un <em>Chef de guerre</em>, lui confère +3/+3. Sinon, fixe sa <em>Réputation</em> à 8.";
 }
 
 function Effect2001() {
@@ -10618,6 +11563,47 @@ function Effect2008() {
     this.desc = "Peut être joué comme un Sortilège sur une autre Proie facile pour lui conférer ses statistiques.";
 }
 
+function Effect10001() {
+    this.run = async (sender, args, doAnimate) => { };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Injouable</em>.";
+}
+
+function Effect10002() {
+    this.run = async (sender, args, doAnimate) => {
+        await boostStats(args[0].card, 2, 1, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Confère +2/+1 à la créature alliée ciblée.";
+}
+
+function Effect10003() {
+    this.run = async (sender, args, doAnimate) => {
+        let f = [];
+        for (let c of troops[0])
+            if (c && !f.includes(c.species) && c.species != "Autre")
+                f.push(c.species);
+        await boostStats(args[0].card, f.length, f.length, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Confère +X/+X à la créature alliée ciblée, où X est le nombre de familles alliées différentes.";
+}
+
 
 
 
@@ -10786,6 +11772,7 @@ async function chooseTarget(callback, param, sender) {
         casting.id = "casting";
         casting.className += " casting";
         document.body.appendChild(casting);
+        fitDescription(casting);
 
         let banner = document.createElement('div');
         banner.id = "target-banner";
@@ -10873,6 +11860,10 @@ async function battleSummon(name, t, p, doAnimate, args) {
 
         await broadcastEvent("battle-summon", args[5][0], args[5][1], args[5][2], args[5][3], args[5][4], doAnimate, [card, t].concat(args[5]));
     }
+}
+
+function isWarchief(card, player) {
+    return card.reputation && card.reputation + 2 * (players[player].effects.findIndex(e => e.id == 21) != -1) >= 8;
 }
 
 
