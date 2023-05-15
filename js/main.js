@@ -1362,7 +1362,7 @@ async function runBattle(p1, p2, doAnimate) {
 
     for (let c of t1[0].concat(t1[1]))
         if (c && c.reputation > 0) {
-            for (let i = 0; i < c.reputation; i++)
+            for (let i = 0; i < Math.min(c.reputation, 8); i++)
                 if (Math.random() < .5)
                     boostStats(c, 0, 1, false);
                 else
@@ -1371,7 +1371,7 @@ async function runBattle(p1, p2, doAnimate) {
         }
     for (let c of t2[0].concat(t2[1]))
         if (c && c.reputation > 0) {
-            for (let i = 0; i < c.reputation; i++)
+            for (let i = 0; i < Math.min(c.reputation, 8); i++)
                 if (Math.random() < .5)
                     boostStats(c, 0, 1, false);
                 else
@@ -5419,8 +5419,8 @@ function MasseDeLaBrutalite() {
 function MeneuseDuClanSylvegarde() {
     this.name = "Meneuse du clan Sylvegarde";
     this.species = "Horde";
-    this.attack = 5;
-    this.hp = 6;
+    this.attack = 2;
+    this.hp = 3;
     this.src = "horde/meneuse-du-clan-sylvegarde.jpg";
     this.tier = 4;
     this.reputation = 8;
@@ -5487,7 +5487,7 @@ function VeteranDeFracassecrane() {
     this.hp = 6;
     this.src = "horde/veteran-de-fracassecrane.jpg";
     this.tier = 5;
-    this.reputation = 2;
+    this.reputation = 3;
     this.effects = [
         {
             trigger: "turn-end",
@@ -6231,7 +6231,7 @@ function showCardTooltip(c) {
         shield.innerHTML = "<em>Réputation :</em> Augmente de 1 suite à une victoire ou une égalité (1/2).";
         tips.appendChild(shield);
         let shield2 = document.createElement('div');
-        shield2.innerHTML = "<em>Réputation :</em> En début de combat, gagne un point de statistique pour chaque point de <em>Réputation</em> (2/2).";
+        shield2.innerHTML = "<em>Réputation :</em> En début de combat, gagne des statistiques selon sa <em>Réputation</em> (2/2).";
         tips.appendChild(shield2);
     }
     if (containsKeyword(c, "Chef de guerre")) {
@@ -11196,7 +11196,7 @@ function Effect1012() {
             let chief = isWarchief(sender, 0);
             for (let c of troops[0])
                 if (c && c.reputation != undefined && isWarchief(c, 0))
-                    await boostStats(c, chief ? 3 : 2, chief ? 3 : 2, doAnimate);
+                    await boostStats(c, chief ? 2 : 1, chief ? 3 : 2, doAnimate);
         }
     };
     this.scaling = (c, t) => {
@@ -11205,7 +11205,7 @@ function Effect1012() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "A la fin de chaque tour, confère +2/+2 aux <em>Chefs de guerre</em> alliés.</br><em>Chef de guerre :</em> Leur confère +3/+3 à la place.";
+    this.desc = "A la fin de chaque tour, confère +1/+2 aux <em>Chefs de guerre</em> alliés.</br><em>Chef de guerre :</em> Leur confère +2/+3 à la place.";
 }
 
 function Effect1013() {
