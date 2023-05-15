@@ -832,6 +832,8 @@ function freezeShop() {
 }
 
 async function buyCard(c, free) {
+    if (!free && coins < 3)
+        return;
     if (!free) {
         playMusic("resources/audio/sfx/pieces.mp3", false);
         await spendCoins(3, false);

@@ -33,6 +33,7 @@ ul {
 }
 
 img {
+    pointer-events: none;
     -webkit-user-drag: none;
     user-select: none;
     -moz-user-select: none;
