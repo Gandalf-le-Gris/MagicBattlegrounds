@@ -10731,7 +10731,7 @@ function Effect909() {
         if (t.includes(args[0]) && t.indexOf(sender) == t.indexOf(args[0]) + 4) {
             if (doAnimate)
                 await effectProcGlow(sender);
-            await dealDamage(args[1], sender.attack / 2, doAnimate, [args[2], args[3], args[4], args[5], args[6]]);
+            await dealDamage(args[1], Math.floor(sender.attack / 2), doAnimate, [args[2], args[3], args[4], args[5], args[6]]);
         }
     };
     this.scaling = (c, t) => {
