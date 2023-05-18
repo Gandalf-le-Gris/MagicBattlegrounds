@@ -5041,7 +5041,7 @@ function GardienDeNoirepine() {
     this.name = "Gardien de Noirépine";
     this.species = "Sylvain";
     this.attack = 0;
-    this.hp = 6;
+    this.hp = 4;
     this.src = "sylvains/gardien-de-noirepine.jpg";
     this.tier = 2;
     this.effects = [
@@ -10711,7 +10711,7 @@ function Effect908() {
                     if (i < 4)
                         await boostStats(d.children[0].card, 0, 2, doAnimate);
                     else
-                        await boostStats(d.children[0].card, 2, 0, doAnimate);
+                        await boostStats(d.children[0].card, 1, 0, doAnimate);
                 }
             }
         }
@@ -10722,7 +10722,7 @@ function Effect908() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "A la fin de chaque tour, confère +0/+2 aux Sylvains alliés de la première ligne et +2/+0 aux Sylvains alliés de la seconde ligne.";
+    this.desc = "A la fin de chaque tour, confère +0/+2 aux Sylvains alliés de la première ligne et +1/+0 aux Sylvains alliés de la seconde ligne.";
 }
 
 function Effect909() {
@@ -10990,7 +10990,7 @@ function Effect1002() {
 
 function Effect1003() {
     this.run = async (sender, args, doAnimate) => {
-        if (lastResult == 1 && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+        if (lastResult == 2 && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             if (doAnimate)
                 await effectProcGlow(sender);
             sender.reputation++;
@@ -11004,7 +11004,7 @@ function Effect1003() {
     this.battleValue = (c, t) => {
         return 2;
     };
-    this.desc = "Au début de chaque tour, gagne 1 point de <em>Réputation</em> si vous avez gagné le dernier combat.";
+    this.desc = "Au début de chaque tour, gagne 1 point de <em>Réputation</em> si vous avez perdu le dernier combat.";
 }
 
 function Effect1004() {
