@@ -368,7 +368,7 @@ let battleCries = {
     "Mort-Vivant": ["resources/audio/sfx/mort-vivant1.mp3", "resources/audio/sfx/mort-vivant2.mp3", "resources/audio/sfx/mort-vivant3.mp3"],
     "Sylvain": ["resources/audio/sfx/sylvain1.mp3", "resources/audio/sfx/sylvain2.mp3", "resources/audio/sfx/sylvain3.mp3", "resources/audio/sfx/sylvain4.mp3"],
     "Horde": ["resources/audio/sfx/horde1.mp3", "resources/audio/sfx/horde2.mp3", "resources/audio/sfx/horde3.mp3", "resources/audio/sfx/horde4.mp3"],
-    "Démon": [],
+    "Démon": ["resources/audio/sfx/demon1.mp3", "resources/audio/sfx/demon2.mp3", "resources/audio/sfx/demon3.mp3"],
     "Autre": ["resources/audio/sfx/autre1.mp3"],
     "Sortilège": ["resources/audio/sfx/sortilege1.mp3"]
 }
@@ -2018,7 +2018,7 @@ async function drawShopScene() {
 /* ------------------ Card management ------------------ */
 /* ----------------------------------------------------- */
 
-const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant", "Sylvain", "Horde"];
+const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant", "Sylvain", "Horde", "Démon"];
 
 const cardList = {
     "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde", "contremaitre-de-l-abysse"],
@@ -2033,7 +2033,7 @@ const cardList = {
     "Mort-Vivant": ["serviteur-exhume", "squelette-reconstitue", "archer-squelette", "liche-profanatrice", "devoreur-pourrissant", "eveilleur-d-ames", "creation-abjecte", "necromancienne-corrompue", "raccommodeur-de-cadavres", "guerrier-maudit", "crane-possede", "dragon-decharne", "marcheur-eternel", "soldat-revenu-a-la-vie", "assistant-du-raccommodeur"],
     "Sylvain": ["invocation-sylvestre", "chamane-des-lignes-de-vie", "gardien-de-noirepine", "brisesort-elfique", "colosse-centenaire", "faconneur-de-forets", "combattant-embusque", "druidesse-des-lignes-de-vie", "archere-de-noirepine", "vengeur-des-sylves", "sage-fongimancien", "chevaucheur-sauvage", "cavalier-des-ronces", "incarnation-de-la-foret", "elue-des-sylves"],
     "Horde": ["minotaure-chargeur", "assiegeant-orc", "ravageur-des-falaises", "massacreur-de-fracassecrane", "brute-a-deux-tetes", "geant-ecrabouilleur", "pyromane-de-la-horde", "meneuse-du-clan-sylvegarde", "executeur-implacable", "exhorteur-de-la-horde", "batailleur-brisefer", "veteran-de-fracassecrane", "geant-destructeur", "obliterateur-goliath", "annihilateur-minotaure"],
-    "Démon": ["demon-inferieur", "guetteur-demoniaque", "pretre-corrompu", "ecumeur-des-terres-desolees", "diablomancien-de-l-abysse", "fleau-des-terres-desolees", "incarnation-du-chaos", "porteur-de-la-noire-parole"],
+    "Démon": ["demon-inferieur", "guetteur-demoniaque", "pretre-corrompu", "ecumeur-des-terres-desolees", "diablomancien-de-l-abysse", "fleau-des-terres-desolees", "incarnation-du-chaos", "porteur-de-la-noire-parole", "moissonneur-de-vitalite", "adepte-du-culte-du-sang", "poete-a-la-plume-sanglante", "divinite-dechue", "ange-transcende", "tortionnaire-d-ames"],
     "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"],
     "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble", "jeune-fongus", "coeur-de-l-abysse", "le-banni"]
 };
@@ -2513,6 +2513,18 @@ function createCard(card) {
             return new IncarnationDuChaos();
         case "porteur-de-la-noire-parole":
             return new PorteurDeLaNoireParole();
+        case "moissonneur-de-vitalite":
+            return new MoissonneurDeVitalite();
+        case "adepte-du-culte-du-sang":
+            return new AdepteDuCulteDuSang();
+        case "poete-a-la-plume-sanglante":
+            return new PoeteALaPlumeSanglante();
+        case "divinite-dechue":
+            return new DiviniteDechue();
+        case "ange-transcende":
+            return new AngeTranscende();
+        case "tortionnaire-d-ames":
+            return new TortionnaireDAmes();
 
         case "changeforme-masque":
             return new ChangeformeMasque();
@@ -5717,8 +5729,8 @@ function FleauDesTerresDesolees() {
 function IncarnationDuChaos() {
     this.name = "Incarnation du chaos";
     this.species = "Démon";
-    this.attack = 5;
-    this.hp = 2;
+    this.attack = 4;
+    this.hp = 3;
     this.src = "demons/incarnation-du-chaos.jpg";
     this.tier = 3;
     this.effects = [
@@ -5744,6 +5756,96 @@ function PorteurDeLaNoireParole() {
         {
             trigger: "turn-start",
             id: 1110
+        }
+    ];
+}
+
+function MoissonneurDeVitalite() {
+    this.name = "Moissonneur de vitalité";
+    this.species = "Démon";
+    this.attack = 4;
+    this.hp = 4;
+    this.src = "demons/moissonneur-de-vitalite.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 1112
+        }
+    ];
+}
+
+function AdepteDuCulteDuSang() {
+    this.name = "Adepte du culte du sang";
+    this.species = "Autre";
+    this.attack = 2;
+    this.hp = 5;
+    this.src = "demons/adepte-du-culte-du-sang.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 1113
+        }
+    ];
+}
+
+function PoeteALaPlumeSanglante() {
+    this.name = "Poète à la plume sanglante";
+    this.species = "Démon";
+    this.attack = 4;
+    this.hp = 5;
+    this.src = "demons/poete-a-la-plume-sanglante.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1114
+        }
+    ];
+}
+
+function DiviniteDechue() {
+    this.name = "Divinité déchue";
+    this.species = "Démon";
+    this.attack = 3;
+    this.hp = 8;
+    this.src = "demons/divinite-dechue.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 1115
+        }
+    ];
+}
+
+function AngeTranscende() {
+    this.name = "Ange transcendé";
+    this.species = "Démon";
+    this.attack = 1;
+    this.hp = 9;
+    this.src = "demons/ange-transcende.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 1116
+        }
+    ];
+}
+
+function TortionnaireDAmes() {
+    this.name = "Tortionnaire d'âmes";
+    this.species = "Démon";
+    this.attack = 7;
+    this.hp = 5;
+    this.src = "demons/tortionnaire-d-ames.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 1117
         }
     ];
 }
@@ -6991,6 +7093,18 @@ function createEffect(id) {
             return new Effect1110();
         case 1111:
             return new Effect1111();
+        case 1112:
+            return new Effect1112();
+        case 1113:
+            return new Effect1113();
+        case 1114:
+            return new Effect1114();
+        case 1115:
+            return new Effect1115();
+        case 1116:
+            return new Effect1116();
+        case 1117:
+            return new Effect1117();
         case 2001:
             return new Effect2001();
         case 2002:
@@ -11868,6 +11982,150 @@ function Effect1111() {
     this.desc = "Lorsqu'une autre créature survit à des dégâts, gagne +1/+0.";
 }
 
+function Effect1112() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+            let i = t.findIndex(e => e === sender);
+            if (i % 4 > 0 && t[i - 1] && t[i - 1].hp > 0) {
+                await dealDamage(t[i - 1], 2, doAnimate, args);
+                await boostStats(sender, 1, 1, doAnimate, true, true);
+            }
+            if (t[(i + 4) % 8] && t[(i + 4) % 8].hp > 0) {
+                await dealDamage(t[(i + 4) % 8], 2, doAnimate, args);
+                await boostStats(sender, 1, 1, doAnimate, true, true);
+            }
+            if (i % 4 < 3 && t[i + 1] && t[i + 1].hp > 0) {
+                await dealDamage(t[i + 1], 2, doAnimate, args);
+                await boostStats(sender, 1, 1, doAnimate, true, true);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 5 + 7 * (t.filter(e => e.species === "Démon").length > 3);
+    };
+    this.desc = "<em>Frappe préventive :</em> Inflige 2 dégâts à ses voisins, puis gagne définitivement +1/+1 pour chaque créature ainsi blessée.";
+}
+
+function Effect1113() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            let target = choice(t.filter(e => e && e.species === "Démon" && e.hp > 0));
+            if (target) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await boostStats(target, 3, 3, doAnimate, true, sender.hp <= 0);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 15 * (t.filter(e => e.species === "Démon").length > 3);
+    };
+    this.toFront = true;
+    this.desc = "<em>Souffrance :</em> Confère +3/+3 à un Démon allié aléatoire.</br><em>Dernière volonté :</em> Confère définitivement +3/+3 à un Démon allié aléatoire.";
+}
+
+function Effect1114() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                effectProcGlow(sender);
+            await chooseTarget((target) => {
+                let x = troops[0].filter(e => e && e.species === "Démon").length * 2;
+                let y = troops[0].filter(e => e && e.species !== "Démon").length;
+                boostStats(target, x, y, doAnimate);
+            }, {
+                area: "board",
+                species: "Démon",
+                notself: true
+            }, sender);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 7 + 7 * t.filter(e => e && e.species === "Démon").length];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Confère +X/+Y à un autre Démon allié ciblé, où X est 2 fois le nombre de Démons alliés et Y le nombre de créatures non Démon alliées.";
+}
+
+function Effect1115() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            if (sender.hp > 0)
+                await boostStats(sender, 2, 0, doAnimate, false, true);
+            else {
+                sender.hp -= 5;
+                await boostStats(sender, 0, 5, doAnimate, false, true);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 10 + 15 * (t.filter(e => e.species === "Démon").length > 3);
+    };
+    this.toFront = true;
+    this.desc = "<em>Souffrance :</em> Gagne définitivement +2/+0.</br><em>Dernière volonté :</em> Gagne définitivement +0/+5.";
+}
+
+function Effect1116() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.hp > 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            for (let c of t.filter(e => e && e.species === "Démon" && e.hp > 0))
+                await boostStats(c, 0, 2, doAnimate, false, true);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 50 * (t.filter(e => e.species === "Démon").length > 3);
+    };
+    this.toFront = true;
+    this.desc = "<em>Souffrance :</em> Confère définitivement +0/+2 à tous les Démons alliés.";
+}
+
+function Effect1117() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] !== sender && sender.hp > 0) {
+            let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            if (!t.includes(sender)) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                let t2 = (!args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]))
+                t2 = t2.filter(e => e && e.hp > 0 && e.species === "Démon");
+                shuffle(t2);
+                t2 = t2.slice(0, 3);
+                for (let c of t2)
+                    await boostStats(c, 1, 0, doAnimate, false, true);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 8 * t.filter(e => e && e.species === "Démon").length;
+    };
+    this.toBack = true;
+    this.desc = "Lorsqu'une créature ennemie meurt, confère définitivement +1/+0 à 3 Démons alliés.";
+}
+
 function Effect2001() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0] !== sender) {
@@ -12182,7 +12440,7 @@ function Effect10007() {
         }
     };
     this.scaling = (c, t) => {
-        return [0, 2 * t.filter(e => e.species === "Soldat").length, 0, 0];
+        return [0, 2 * t.filter(e => e.species === "Démon").length, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
