@@ -763,7 +763,7 @@ function drawPlayers() {
     }
 }
 
-async function refreshShop(auto) {
+async function refreshShop(auto, requiredSpecies) {
     let refresh = document.getElementById("refresh");
     if (coins >= 1 || auto || discountedRefreshes > 0) {
         if (!auto) {
@@ -794,7 +794,7 @@ async function refreshShop(auto) {
                 shop.children[i].style.animation = "none";
             }
             for (let i = 0; i < parseInt(shop.style.getPropertyValue("--shop-size")) - nChildren + 2; i++) {
-                let c = drawCard(getCard(shopTier), 176);
+                let c = drawCard(getCard(shopTier, requiredSpecies), 176);
                 if (getDemons && c.card.species !== "Démon" && Math.random() < .08)
                     c = drawCard(getCard(shopTier, "Démon"), 176);
                 c.style.animation = "flip2 .15s ease forwards";
@@ -2022,7 +2022,7 @@ const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machin
 
 const cardList = {
     "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde", "contremaitre-de-l-abysse"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces", "masse-de-la-brutalite", "summum-de-la-gloire"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces", "masse-de-la-brutalite", "summum-de-la-gloire", "pacte-demoniaque", "liberer-le-mal"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
@@ -2033,7 +2033,7 @@ const cardList = {
     "Mort-Vivant": ["serviteur-exhume", "squelette-reconstitue", "archer-squelette", "liche-profanatrice", "devoreur-pourrissant", "eveilleur-d-ames", "creation-abjecte", "necromancienne-corrompue", "raccommodeur-de-cadavres", "guerrier-maudit", "crane-possede", "dragon-decharne", "marcheur-eternel", "soldat-revenu-a-la-vie", "assistant-du-raccommodeur"],
     "Sylvain": ["invocation-sylvestre", "chamane-des-lignes-de-vie", "gardien-de-noirepine", "brisesort-elfique", "colosse-centenaire", "faconneur-de-forets", "combattant-embusque", "druidesse-des-lignes-de-vie", "archere-de-noirepine", "vengeur-des-sylves", "sage-fongimancien", "chevaucheur-sauvage", "cavalier-des-ronces", "incarnation-de-la-foret", "elue-des-sylves"],
     "Horde": ["minotaure-chargeur", "assiegeant-orc", "ravageur-des-falaises", "massacreur-de-fracassecrane", "brute-a-deux-tetes", "geant-ecrabouilleur", "pyromane-de-la-horde", "meneuse-du-clan-sylvegarde", "executeur-implacable", "exhorteur-de-la-horde", "batailleur-brisefer", "veteran-de-fracassecrane", "geant-destructeur", "obliterateur-goliath", "annihilateur-minotaure"],
-    "Démon": ["demon-inferieur", "guetteur-demoniaque", "pretre-corrompu", "ecumeur-des-terres-desolees", "diablomancien-de-l-abysse", "fleau-des-terres-desolees", "incarnation-du-chaos", "porteur-de-la-noire-parole", "moissonneur-de-vitalite", "adepte-du-culte-du-sang", "poete-a-la-plume-sanglante", "divinite-dechue", "ange-transcende", "tortionnaire-d-ames"],
+    "Démon": ["demon-inferieur", "guetteur-demoniaque", "pretre-corrompu", "ecumeur-des-terres-desolees", "diablomancien-de-l-abysse", "fleau-des-terres-desolees", "incarnation-du-chaos", "porteur-de-la-noire-parole", "moissonneur-de-vitalite", "adepte-du-culte-du-sang", "poete-a-la-plume-sanglante", "divinite-dechue", "ange-transcende", "tortionnaire-d-ames", "annonciatrice-funeste"],
     "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"],
     "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble", "jeune-fongus", "coeur-de-l-abysse", "le-banni"]
 };
@@ -2525,6 +2525,12 @@ function createCard(card) {
             return new AngeTranscende();
         case "tortionnaire-d-ames":
             return new TortionnaireDAmes();
+        case "annonciatrice-funeste":
+            return new AnnonciatriceFuneste();
+        case "pacte-demoniaque":
+            return new PacteDemoniaque();
+        case "liberer-le-mal":
+            return new LibererLeMal();
 
         case "changeforme-masque":
             return new ChangeformeMasque();
@@ -5790,6 +5796,44 @@ function AdepteDuCulteDuSang() {
     ];
 }
 
+function AnnonciatriceFuneste() {
+    this.name = "Annonciatrice funeste";
+    this.species = "Autre";
+    this.attack = 0;
+    this.hp = 7;
+    this.src = "demons/annonciatrice-funeste.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "",
+            id: 323
+        },
+        {
+            trigger: "ko",
+            id: 1118
+        }
+    ];
+}
+
+function PacteDemoniaque() {
+    this.name = "Pacte démoniaque";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "demons/pacte-demoniaque.jpg";
+    this.tier = 4;
+    this.requirement = "Démon";
+    this.effects = [
+        {
+            trigger: "",
+            id: 1119
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
 function PoeteALaPlumeSanglante() {
     this.name = "Poète à la plume sanglante";
     this.species = "Démon";
@@ -5848,6 +5892,26 @@ function TortionnaireDAmes() {
             id: 1117
         }
     ];
+}
+
+function LibererLeMal() {
+    this.name = "Libérer le Mal";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "demons/liberer-le-mal.jpg";
+    this.tier = 6;
+    this.requirement = "Démon";
+    this.effects = [
+        {
+            trigger: "",
+            id: 1120
+        }
+    ];
+    this.validTarget = {
+        area: "board",
+        species: "Démon"
+    };
 }
 
 
@@ -7105,6 +7169,12 @@ function createEffect(id) {
             return new Effect1116();
         case 1117:
             return new Effect1117();
+        case 1118:
+            return new Effect1118();
+        case 1119:
+            return new Effect1119();
+        case 1120:
+            return new Effect1120();
         case 2001:
             return new Effect2001();
         case 2002:
@@ -8766,7 +8836,7 @@ function Effect323() {
         return [0, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
-        return 0;
+        return -5;
     };
     this.desc = "Ne peut pas gagner d'attaque.";
 }
@@ -11747,7 +11817,7 @@ function Effect1018() {
 
 function Effect1019() {
     this.run = async (sender, args, doAnimate) => {
-        await boostStats(args[0].card, Math.min(1 + args[0].card.reputation, 8), 0, doAnimate);
+        await boostStats(args[0].card, Math.min(1 + (args[0].card.reputation ? args[0].card.reputation : 0), 8), 0, doAnimate);
     };
     this.scaling = (c, t) => {
         return [0, 0, 0, 0];
@@ -11793,7 +11863,7 @@ function Effect1101() {
 
 function Effect1102() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0] === sender && sender.hp > 0)
+        if (args[0] === sender && sender.hp > 0 && args[1] > 0)
             await boostStats(sender, 2, 0, doAnimate);
     };
     this.scaling = (c, t) => {
@@ -11808,7 +11878,7 @@ function Effect1102() {
 
 function Effect1103() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0] === sender && sender.hp > 0) {
+        if (args[0] === sender && sender.hp > 0 && args[1] > 0) {
             if (doAnimate)
                 await effectProcGlow(sender);
             let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
@@ -11891,7 +11961,7 @@ function Effect1106() {
 
 function Effect1107() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0] === sender && sender.hp > 0)
+        if (args[0] === sender && sender.hp > 0 && args[1] > 0)
             await boostStats(sender, args[1], 1, doAnimate);
     };
     this.scaling = (c, t) => {
@@ -11928,7 +11998,7 @@ function Effect1108() {
 
 function Effect1109() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0] === sender && sender.hp > 0) {
+        if (args[0] === sender && sender.hp > 0 && args[1] > 0) {
             if (!sender.original.effect1109)
                 sender.original.effect1109 = 0;
             sender.original.effect1109++;
@@ -12014,7 +12084,7 @@ function Effect1112() {
 
 function Effect1113() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0] === sender) {
+        if (args[0] === sender && args[1] > 0) {
             let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
             let target = choice(t.filter(e => e && e.species === "Démon" && e.hp > 0));
             if (target) {
@@ -12061,7 +12131,7 @@ function Effect1114() {
 
 function Effect1115() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0] === sender) {
+        if (args[0] === sender && args[1] > 0) {
             if (sender.hp > 0)
                 await boostStats(sender, 2, 0, doAnimate, false, true);
             else {
@@ -12082,7 +12152,7 @@ function Effect1115() {
 
 function Effect1116() {
     this.run = async (sender, args, doAnimate) => {
-        if (args[0] === sender && sender.hp > 0) {
+        if (args[0] === sender && sender.hp > 0 && args[1] > 0) {
             if (doAnimate)
                 await effectProcGlow(sender);
             let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
@@ -12124,6 +12194,53 @@ function Effect1117() {
     };
     this.toBack = true;
     this.desc = "Lorsqu'une créature ennemie meurt, confère définitivement +1/+0 à 3 Démons alliés.";
+}
+
+function Effect1118() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender)
+            await battleSummon("le-banni", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 30;
+    };
+    this.toFront = true;
+    this.desc = "<em>Dernière volonté :</em> Invoque Le Banni.";
+}
+
+function Effect1119() {
+    this.run = async (sender, args, doAnimate) => {
+        args[0].parentElement.innerHTML = "";
+        updateTroops();
+        await refreshShop(true, "Démon");
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Détruit la créature alliée ciblée pour actualiser les recrues disponibles avec uniquement des Démons.";
+}
+
+function Effect1120() {
+    this.run = async (sender, args, doAnimate) => {
+        args[0].card.effects.push({
+            trigger: "ko",
+            id: 1118
+        });
+        await boostStats(args[0].card, 0, 0, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Confère \"<em>Dernière volonté :</em>Invoque Le Banni.\" au Démon allié ciblé.";
 }
 
 function Effect2001() {
