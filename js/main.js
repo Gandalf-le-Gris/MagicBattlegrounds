@@ -485,9 +485,9 @@ let enemyFamilies = [];
 async function startGame() {
     await fadeTransition(() => {
         initCards();
-        shopTier = 6; //!!!
+        shopTier = 1; //!!!
         round = 1;
-        coins = 999; //!!!
+        coins = 3; //!!!
         players = [];
         for (let i = 0; i < 8; i++) {
             lastFights.push([]);
@@ -2051,7 +2051,7 @@ function initCards() {
             species.push(s);
     }
 
-    species = ["Démon"]; //!!!
+    //species = ["Démon"]; //!!!
 
     //for (let s of speciesList)
     //    cardList[s] = [cardList[s][0]]; //!!!
@@ -2069,14 +2069,14 @@ function initCards() {
     commanders = [];
     for (let c of cardList["Commandant"]) {
         let card = createCard(c);
-        //if (!card.requirement || species.includes(card.requirement)) //!!!
+        if (!card.requirement || species.includes(card.requirement)) //!!!
             commanders.push(card);
     }
 
     shuffle(cards);
     shuffle(commanders);
-    while (commanders.findIndex(e => e.name.startsWith("Contremaître")) > 2 && species.includes("Démon")) //!!!
-        shuffle(commanders);
+    /*while (commanders.findIndex(e => e.name.startsWith("Contremaître")) > 2 && species.includes("Démon")) //!!!
+        shuffle(commanders);*/
 }
 
 function getCard(tier, spec, name) {
