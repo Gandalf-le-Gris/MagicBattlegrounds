@@ -12517,16 +12517,16 @@ function Effect10005() {
         if (args[0].card.species === "Démon" && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             if (doAnimate)
                 await effectProcGlow(sender);
-            await boostStats(args[0].card, 2, 3, doAnimate);
+            await boostStats(args[0].card, 4, 3, doAnimate);
         }
     };
     this.scaling = (c, t) => {
-        return [0, 5 * (t.filter(e => e && e.species === "Démon").length > 2), 0, 0];
+        return [0, 7 * (t.filter(e => e && e.species === "Démon").length > 2), 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "Lorsque vous jouez un Démon, lui confère +2/+3.";
+    this.desc = "Lorsque vous jouez un Démon, lui confère +4/+3.";
 }
 
 function Effect10006() {
@@ -12584,7 +12584,7 @@ function Effect10008() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "<em>Frappe préventive :</em> Inflige 1 dégât au commandant ennemi et restore 1 PV à votre commandant.";
+    this.desc = "<em>Frappe préventive :</em> Inflige 1 dégât au commandant ennemi et restore 1 PV de votre commandant.";
 }
 
 function Effect10009() {
