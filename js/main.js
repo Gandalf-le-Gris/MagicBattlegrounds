@@ -486,9 +486,9 @@ let enemyFamilies = [];
 async function startGame() {
     await fadeTransition(() => {
         initCards();
-        shopTier = 6; //!!!
+        shopTier = 1; //!!!
         round = 1;
-        coins = 999; //!!!
+        coins = 3; //!!!
         players = [];
         for (let i = 0; i < 8; i++) {
             lastFights.push([]);
@@ -2023,7 +2023,7 @@ const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machin
 
 const cardList = {
     "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde", "contremaitre-de-l-abysse", "avatar-de-la-creation"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces", "masse-de-la-brutalite", "summum-de-la-gloire", "pacte-demoniaque", "liberer-le-mal"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces", "masse-de-la-brutalite", "summum-de-la-gloire", "pacte-demoniaque", "liberer-le-mal", "transcendance-elementaire", "confluence-elementaire"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
@@ -2035,7 +2035,7 @@ const cardList = {
     "Sylvain": ["invocation-sylvestre", "chamane-des-lignes-de-vie", "gardien-de-noirepine", "brisesort-elfique", "colosse-centenaire", "faconneur-de-forets", "combattant-embusque", "druidesse-des-lignes-de-vie", "archere-de-noirepine", "vengeur-des-sylves", "sage-fongimancien", "chevaucheur-sauvage", "cavalier-des-ronces", "incarnation-de-la-foret", "elue-des-sylves"],
     "Horde": ["minotaure-chargeur", "assiegeant-orc", "ravageur-des-falaises", "massacreur-de-fracassecrane", "brute-a-deux-tetes", "geant-ecrabouilleur", "pyromane-de-la-horde", "meneuse-du-clan-sylvegarde", "executeur-implacable", "exhorteur-de-la-horde", "batailleur-brisefer", "veteran-de-fracassecrane", "geant-destructeur", "obliterateur-goliath", "annihilateur-minotaure"],
     "Démon": ["demon-inferieur", "guetteur-demoniaque", "pretre-corrompu", "ecumeur-des-terres-desolees", "diablomancien-de-l-abysse", "fleau-des-terres-desolees", "incarnation-du-chaos", "porteur-de-la-noire-parole", "moissonneur-de-vitalite", "adepte-du-culte-du-sang", "poete-a-la-plume-sanglante", "divinite-dechue", "ange-transcende", "tortionnaire-d-ames", "annonciatrice-funeste"],
-    "Elémentaire": ["familier-chatfeu", "golem-demolisseur", "esprit-des-rivieres", "faconneuse-de-nuages", "sculpteur-elementaire", "colere-de-la-nature", "esprit-des-sources-chaudes", "goliath-volcanique", "chevaucheur-de-tempetes", "manifestation-boreale"],
+    "Elémentaire": ["familier-chatfeu", "golem-demolisseur", "esprit-des-rivieres", "faconneuse-de-nuages", "sculpteur-elementaire", "colere-de-la-nature", "esprit-des-sources-chaudes", "goliath-volcanique", "chevaucheur-de-tempetes", "manifestation-boreale", "chargeur-rocailleux", "djinn-sang-de-foudre", "phenix-flamboyant", "volonte-de-la-fournaise", "ame-de-l-orage"],
     "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"],
     "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble", "jeune-fongus", "coeur-de-l-abysse", "le-banni"]
 };
@@ -2055,7 +2055,7 @@ function initCards() {
             species.push(s);
     }
 
-    species = ["Elémentaire"]; //!!!
+    //species = ["Elémentaire"]; //!!!
 
     //for (let s of speciesList)
     //    cardList[s] = [cardList[s][0]]; //!!!
@@ -2073,14 +2073,14 @@ function initCards() {
     commanders = [];
     for (let c of cardList["Commandant"]) {
         let card = createCard(c);
-        //if (!card.requirement || species.includes(card.requirement)) //!!!
+        if (!card.requirement || species.includes(card.requirement)) //!!!
             commanders.push(card);
     }
 
     shuffle(cards);
     shuffle(commanders);
-    while (commanders.findIndex(e => e.name.startsWith("Avatar")) > 2 && species.includes("Elémentaire")) //!!!
-        shuffle(commanders);
+    /*while (commanders.findIndex(e => e.name.startsWith("Avatar")) > 2 && species.includes("Elémentaire")) //!!!
+        shuffle(commanders);*/
 }
 
 function getCard(tier, spec, name) {
@@ -2558,6 +2558,20 @@ function createCard(card) {
             return new ChevaucheurDeTempetes();
         case "manifestation-boreale":
             return new ManifestationBoreale();
+        case "chargeur-rocailleux":
+            return new ChargeurRocailleux();
+        case "djinn-sang-de-foudre":
+            return new DjinnSangDeFoudre();
+        case "phenix-flamboyant":
+            return new PhenixFlamboyant();
+        case "volonte-de-la-fournaise":
+            return new VolonteDeLaFournaise();
+        case "ame-de-l-orage":
+            return new AmeDeLOrage();
+        case "transcendance-elementaire":
+            return new TranscendanceElementaire();
+        case "confluence-elementaire":
+            return new ConfluenceElementaire();
 
         case "changeforme-masque":
             return new ChangeformeMasque();
@@ -6071,6 +6085,42 @@ function EspritDesSourcesChaudes() {
     ];
 }
 
+function TranscendanceElementaire() {
+    this.name = "Transcendance élémentaire";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "elementaires/transcendance-elementaire.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1218
+        }
+    ];
+    this.validTarget = {
+        area: "any"
+    };
+}
+
+function ConfluenceElementaire() {
+    this.name = "Confluence élémentaire";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "elementaires/confluence-elementaire.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1219
+        }
+    ];
+    this.validTarget = {
+        area: "any"
+    };
+}
+
 function GoliathVolcanique() {
     this.name = "Goliath volcanique";
     this.species = "Elémentaire";
@@ -6115,6 +6165,92 @@ function ManifestationBoreale() {
         {
             trigger: "card-place",
             id: 1210
+        }
+    ];
+}
+
+function ChargeurRocailleux() {
+    this.name = "Chargeur rocailleux";
+    this.species = "Elémentaire";
+    this.attack = 3;
+    this.hp = 6;
+    this.src = "elementaires/chargeur-rocailleux.jpg";
+    this.tier = 5;
+    this.elements = ["Terre"];
+    this.shield = true;
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 1212
+        }
+    ];
+}
+
+function DjinnSangDeFoudre() {
+    this.name = "Djinn Sang-de-foudre";
+    this.species = "Elémentaire";
+    this.attack = 6;
+    this.hp = 2;
+    this.src = "elementaires/djinn-sang-de-foudre.jpg";
+    this.tier = 5;
+    this.elements = ["Air"];
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1213
+        }
+    ];
+}
+
+function PhenixFlamboyant() {
+    this.name = "Phenix flamboyant";
+    this.species = "Elémentaire";
+    this.attack = 7;
+    this.hp = 4;
+    this.src = "elementaires/phenix-flamboyant.jpg";
+    this.tier = 5;
+    this.elements = ["Feu"];
+    this.revive = true;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 1214
+        },
+        {
+            trigger: "battle-start",
+            id: 1215
+        }
+    ];
+}
+
+function VolonteDeLaFournaise() {
+    this.name = "Volonté de la fournaise";
+    this.species = "Elémentaire";
+    this.attack = 9;
+    this.hp = 4;
+    this.src = "elementaires/volonte-de-la-fournaise.jpg";
+    this.tier = 6;
+    this.elements = ["Feu"];
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 1216
+        }
+    ];
+}
+
+function AmeDeLOrage() {
+    this.name = "Âme de l'orage";
+    this.species = "Elémentaire";
+    this.attack = 6;
+    this.hp = 6;
+    this.src = "elementaires/ame-de-l-orage.jpg";
+    this.tier = 6;
+    this.elements = ["Air"];
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 1217
         }
     ];
 }
@@ -7424,6 +7560,22 @@ function createEffect(id) {
             return new Effect1210();
         case 1211:
             return new Effect1211();
+        case 1212:
+            return new Effect1212();
+        case 1213:
+            return new Effect1213();
+        case 1214:
+            return new Effect1214();
+        case 1215:
+            return new Effect1215();
+        case 1216:
+            return new Effect1216();
+        case 1217:
+            return new Effect1217();
+        case 1218:
+            return new Effect1218();
+        case 1219:
+            return new Effect1219();
         case 2001:
             return new Effect2001();
         case 2002:
@@ -12726,6 +12878,190 @@ function Effect1211() {
         return 0;
     };
     this.desc = "";
+}
+
+function Effect1212() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let t = troops[0];
+            let i = t.findIndex(e => e === sender);
+            let elem = [];
+            if (i % 4 > 0 && t[i - 1] && t[i - 1].elements)
+                elem = elem.concat(t[i - 1].elements);
+            if (t[(i + 4) % 8] && t[(i + 4) % 8].elements)
+                elem = elem.concat(t[(i + 4) % 8].elements);
+            if (i % 4 < 3 && t[i + 1] && t[i + 1].elements)
+                elem = elem.concat(t[i + 1].elements);
+            console.log(elem)
+            await boostStats(sender, 2 * (new Set(elem).size), 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [t.filter(e => e.species === "Elémentaire").length, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "A la fin de chaque tour, gagne +2/+0 pour chaque élément différent parmi ses voisins.";
+}
+
+function Effect1213() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let c of troops[0].filter(e => e && e !== sender && e.elements))
+                await boostStats(c, c.elements.length, c.elements.length, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 2 * t.filter(e => e && e.species === "Elémentaire").length];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Les autres Elémentaires alliés gagnent +1/+1 pour chacun de leurs éléments.";
+}
+
+function Effect1214() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.effect1214 > 0) {
+            sender.revive = true;
+            sender.effect1214--;
+            await boostStats(sender, 0, 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return c.attack / 2 * (t.filter(e => e && e.elements && e.elements.includes("Feu")) >= 4);
+    };
+    this.desc = "S'il y a au moins 4 Elémentaires de <em>Feu</em> alliés au début du combat, cette créature ressucite deux fois.";
+}
+
+function Effect1215() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+        let side = args[0][0].concat(args[0][1]).includes(sender);
+        if (t.filter(e => e && e.elements && e.elements.includes("Feu")).length >= 4 - effect23active(side ? args[2] : args[3])) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            sender.effect1214 = 1;
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "";
+}
+
+function Effect1216() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.hp <= 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            let side = args[2][0].concat(args[3][1]).includes(sender);
+            for (let c of t.filter(e => e && e !== sender && e.elements)) {
+                let n = effect23active(side ? args[4] : args[5]) * c.elements.length;
+                for (let el of c.elements)
+                    for (let c2 of t.filter(e => e && e !== sender && e !== c && e.elements))
+                        if (c2.elements.includes(el))
+                            n++;
+                if (n > 0)
+                    await boostStats(c, n, n, doAnimate);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 6 * t.filter(e => e && e.elements).length;
+    };
+    this.desc = "<em>Dernière volonté :</em> Les Elémentaires alliés gagnent +1/+1 pour chaque autre Elémentaire qui partage un élément avec eux.";
+}
+
+function Effect1217() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let c of troops[0].filter(e => e && e.elements)) {
+                if (c.elements.length < 3)
+                    await boostStats(c, 1, 1, doAnimate);
+                else
+                    await boostStats(c, 3, 3, doAnimate);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 3 * t.filter(e => e.species === "Elémentaire").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "A la fin de chaque tour, les Elémentaire alliés gagnent +1/+1, ou +3/+3 s'ils possèdent au moins 3 éléments.";
+}
+
+function Effect1218() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = troops[0].filter(e => e && e.elements);
+        if (effect23active(0) || t.filter(e => e.elements.includes("Eau")).length > 0) {
+            let target = choice(t);
+            if (target)
+                await boostStats(target, 0, 2, doAnimate);
+        }
+        if (effect23active(0) || t.filter(e => e.elements.includes("Feu")).length > 0) {
+            let target = choice(t);
+            if (target)
+                await boostStats(target, 2, 0, doAnimate);
+        }
+        if (effect23active(0) || t.filter(e => e.elements.includes("Air")).length > 0) {
+            await refreshShop(true);
+        }
+        if (effect23active(0) || t.filter(e => e.elements.includes("Terre")).length > 0) {
+            await spendCoins(-1);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Déclenche des effets selon les éléments des Elémentaires alliés.</br>"
+                    + "<em>Eau :</em> Confère +0/+2 à un Elémentaire allié aléatoire.</br>"
+                    + "<em>Feu :</em> Confère +2/+0 à un Elémentaire allié aléatoire.</br>"
+                    + "<em>Air :</em> Actualise le recrutement.</br>"
+                    + "<em>Terre :</em> Gagnez une pièce d'or.";
+}
+
+function Effect1219() {
+    this.run = async (sender, args, doAnimate) => {
+        for (let i = 0; i < 3; i++) {
+            let options = troops[0].filter(e => e && e.elements && e.elements.length < 4);
+            if (options.length > 0) {
+                let target = choice(options);
+                let el = copy(elements).filter(e => !target.elements.includes(e));
+                target.elements.push(choice(el));
+                await boostStats(target, 0, 0, doAnimate);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Confère un élément supplémentaire à 3 Elémentaires alliés.";
 }
 
 function Effect2001() {
