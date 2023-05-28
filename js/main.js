@@ -1107,13 +1107,13 @@ let lastResult = 0;
 async function startBattle() {
     if (animating == 0) {
         playMusic("resources/audio/sfx/battle.mp3", false);
+        document.getElementById("fight").style.setProperty("pointer-events", "none");
 
         await sleep(800);
 
         await broadcastShopEvent("turn-end", []);
-
+        document.getElementById("fight").style.removeProperty("pointer-events");
         matchmaking();
-
         updateEnemyTroops();
 
         for (let m of nextFights)
@@ -2060,6 +2060,7 @@ function initCards() {
     //for (let s of speciesList)
     //    cardList[s] = [cardList[s][0]]; //!!!
 
+    cards = [];
     for (let s of species.concat(["Sortilège", "Autre"])) {
         for (let c of cardList[s])
             for (let i = 0; i < 15; i++) {
@@ -6797,6 +6798,19 @@ function drawSmallCard(c, size) {
         reputation.appendChild(reputationVal);
     }
 
+    if (c.elements != undefined) {
+        let elem = document.createElement('div');
+        elem.className = "elements";
+        card.appendChild(elem);
+        for (let e of elements) {
+            if (c.elements.includes(e)) {
+                let el = document.createElement('div');
+                el.className = e.toLowerCase();
+                elem.appendChild(el);
+            }
+        }
+    }
+
     card.addEventListener('mouseleave', () => {
         clearTimeout(menuLeaveTimer);
         menuEnterTimer = setTimeout(hideCardTooltip, hideDelay);
@@ -6873,6 +6887,19 @@ function updateCardStats(c) {
                     d.classList.add("star");
                 else
                     d.classList.remove("star");
+            }
+    }
+    if (c.card.elements != undefined) {
+        for (let d of c.children)
+            if (d.classList.contains("elements")) {
+                d.innerHTML = "";
+                for (let e of elements) {
+                    if (c.card.elements.includes(e)) {
+                        let el = document.createElement('div');
+                        el.className = e.toLowerCase();
+                        d.appendChild(el);
+                    }
+                }
             }
     }
 }
@@ -13141,14 +13168,14 @@ function Effect2004() {
             let sp = copy(species);
             shuffle(sp);
             for (let s of sp) {
-                let t = choice(troops[0].filter(x => x && x.species === s));
+                let t = choice(troops[0].filter(x => x && x.species == s));
                 if (t)
                     await boostStats(t, 2, 2, doAnimate);
             }
         }
     };
     this.scaling = (c, t) => {
-        return [0, 8, 0, 0];
+        return [0, 6, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
