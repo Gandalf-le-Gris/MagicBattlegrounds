@@ -324,31 +324,36 @@
         position: relative;
         display: grid;
         bottom: calc(var(--size) * .05);
-        left: calc(var(--size) * -.02);
+        left: calc(var(--size) * -.01);
         width: calc(var(--size) * .06);
-        grid-template-rows: repeat(4, calc(var(--size) * .06));
-        row-gap: calc(var(--size) * .02);
+        grid-auto-flow: row;
+        row-gap: calc(var(--size) * .01);
         transform: rotateZ(180deg);
+        border: calc(var(--size) * .01) solid #954B30;
+        background-color: #954B30;
+        border-top-left-radius: calc(var(--size) * .04);
+        border-bottom-left-radius: calc(var(--size) * .04);
     }
 
         .small-card > .elements > div {
             border-radius: 50%;
             width: 100%;
             height: 100%;
+            height: calc(var(--size) * .06);
         }
 
         .small-card > .elements > .eau {
-            background: linear-gradient(120deg, #1544d0, #4971ea);
+            background: radial-gradient(circle, #4971ea, #1544d0);
         }
 
         .small-card > .elements > .feu {
-            background: linear-gradient(120deg, #a60c0c, #e43d3d);
+            background: radial-gradient(circle, #e43d3d, #a60c0c);
         }
 
         .small-card > .elements > .air {
-            background: linear-gradient(120deg, #0ca659, #5dfaac);
+            background: radial-gradient(circle, #5dfaac, #0ca659);
         }
 
         .small-card > .elements > .terre {
-            background: linear-gradient(120deg, #baaf17, #dcd248);
+            background: radial-gradient(circle, #e2db75, #baaf17);
         }
