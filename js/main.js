@@ -382,7 +382,7 @@ let battleCries = {
     "Sylvain": ["resources/audio/sfx/sylvain1.mp3", "resources/audio/sfx/sylvain2.mp3", "resources/audio/sfx/sylvain3.mp3", "resources/audio/sfx/sylvain4.mp3"],
     "Horde": ["resources/audio/sfx/horde1.mp3", "resources/audio/sfx/horde2.mp3", "resources/audio/sfx/horde3.mp3", "resources/audio/sfx/horde4.mp3"],
     "Démon": ["resources/audio/sfx/demon1.mp3", "resources/audio/sfx/demon2.mp3", "resources/audio/sfx/demon3.mp3"],
-    "Elémentaire": [],
+    "Elémentaire": ["resources/audio/sfx/elementaire1.mp3", "resources/audio/sfx/elementaire2.mp3", "resources/audio/sfx/elementaire3.mp3"],
     "Autre": ["resources/audio/sfx/autre1.mp3"],
     "Sortilège": ["resources/audio/sfx/sortilege1.mp3"]
 }
@@ -12310,11 +12310,11 @@ function Effect1103() {
                 await effectProcGlow(sender);
             let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
             let i = t.findIndex(e => e === sender);
-            if (i % 4 > 0 && t[i - 1] && t[i - 1].species == "Démon")
+            if (i % 4 > 0 && t[i - 1] && t[i - 1].species == "Démon" && t[i - 1].hp > 0)
                 await boostStats(t[i - 1], 0, 1, doAnimate, true, true);
-            if (t[(i + 4) % 8] && t[(i + 4) % 8].species == "Démon")
+            if (t[(i + 4) % 8] && t[(i + 4) % 8].species == "Démon" && t[(i + 4) % 8].hp > 0)
                 await boostStats(t[(i + 4) % 8], 0, 1, doAnimate, true, true);
-            if (i % 4 < 3 && t[i + 1] && t[i + 1].species == "Démon")
+            if (i % 4 < 3 && t[i + 1] && t[i + 1].species == "Démon" && t[i + 1].hp > 0)
                 await boostStats(t[i + 1], 0, 1, doAnimate, true, true);
         }
     };
