@@ -131,6 +131,7 @@ function loadResources() {
     sounds.push("resources/audio/sfx/stat-boost.mp3");
     sounds.push("resources/audio/sfx/battle.mp3");
     sounds.push("resources/audio/sfx/explosion.mp3");
+    sounds.push("resources/audio/sfx/page-turn.mp3");
 
     for (let s of speciesList.concat(["Autre", "Sortilège"]))
         for (let c of battleCries[s])
@@ -200,11 +201,17 @@ function drawHomeScreen() {
     let play = document.createElement('li');
     play.innerHTML = "Jouer";
     homeMenu.appendChild(play);
-    play.onclick = startGame;
+    play.onclick = () => {
+        playMusic("resources/audio/sfx/page-turn.mp3", false);
+        startGame();
+    };
 
     let options = document.createElement('li');
     options.innerHTML = "Options";
-    options.onclick = toggleSettings;
+    options.onclick = () => {
+        playMusic("resources/audio/sfx/page-turn.mp3", false);
+        toggleSettings();
+    };
     homeMenu.appendChild(options);
 
     playMusic("resources/audio/music/home.mp3", true);
@@ -331,13 +338,19 @@ function toggleSettings() {
         let back = document.createElement('div');
         back.className = "button-option";
         back.innerHTML = "Retour";
-        back.onclick = toggleSettings;
+        back.onclick = () => {
+            playMusic("resources/audio/sfx/page-turn.mp3", false);
+            toggleSettings();
+        };
         buttons.appendChild(back);
 
         let home = document.createElement('div');
         home.className = "button-option";
         home.innerHTML = "Quitter";
-        home.onclick = () => fadeTransition(drawHomeScreen);
+        home.onclick = () => {
+            playMusic("resources/audio/sfx/page-turn.mp3", false);
+            fadeTransition(drawHomeScreen);
+        };
         buttons.appendChild(home);
     }
 }
