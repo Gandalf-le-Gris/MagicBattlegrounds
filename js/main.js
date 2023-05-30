@@ -102,7 +102,7 @@ function loadResources() {
     imgs.push("resources/ui/fight.png");
     imgs.push("resources/ui/freeze.png");
     imgs.push("resources/ui/home-screen-bg.jpg");
-    imgs.push("resources/ui/lock.png");
+    imgs.push("resources/ui/frozen.png");
     imgs.push("resources/ui/metal-texture.jpg");
     imgs.push("resources/ui/paper-scroll.png");
     imgs.push("resources/ui/parchment.png");

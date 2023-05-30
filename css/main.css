@@ -224,16 +224,16 @@ img {
     .frozen:after {
         content: '';
         position: absolute;
-        top: 15%;
-        left: 0;
-        height: 100%;
-        width: 100%;
-        background-image: url("../resources/ui/lock.png");
+        top: -1.28%;
+        left: -1.925%;
+        height: 102.57%;
+        width: 103.85%;
+        background-image: url("../resources/ui/frozen.png");
         background-repeat: no-repeat;
-        background-size: 100% 70%;
-        filter: brightness(0.9) invert(.7) sepia(.5) hue-rotate(100deg) saturate(200%);
-        opacity: .6;
+        background-size: 100% 100%;
         transition: .5s;
+        z-index: 2;
+        animation: fadeInFrozen .3s ease forwards;
     }
 
 .refresh {
@@ -714,6 +714,16 @@ img {
 
     100% {
         opacity: 1;
+    }
+}
+
+@keyframes fadeInFrozen {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: .6;
     }
 }
 
