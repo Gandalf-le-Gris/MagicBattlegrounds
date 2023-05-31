@@ -6798,7 +6798,7 @@ function drawSmallCard(c, size) {
         reputation.appendChild(reputationVal);
     }
 
-    if (c.elements != undefined) {
+    if (c.elements != undefined && c.species !== "Commandant") {
         let elem = document.createElement('div');
         elem.className = "elements";
         card.appendChild(elem);
