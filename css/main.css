@@ -492,13 +492,14 @@ img {
     z-index: 200;
 }
 
-    .tooltips > .tips {
-        padding-top: 20px;
-        padding-bottom: 20px;
+    .tooltip > .tips {
+        padding-top: 15px;
+        padding-bottom: 15px;
         display: grid;
         width: fit-content;
+        height: fit-content;
         grid-auto-flow: row;
-        grid-row-gap: 20px;
+        grid-row-gap: 15px;
     }
 
         .tooltip > .tips > div {
