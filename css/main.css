@@ -1,3 +1,8 @@
+@font-face {
+    font-family: Papyrus;
+    src: url('../resources/ui/papyrus.ttf');
+}
+
 body, html {
     overflow-y: hidden;
     overflow-x: hidden;
@@ -295,8 +300,7 @@ img {
         font-size: var(--font-very-large);
         font-weight: bold;
         color: goldenrod;
-        -webkit-text-stroke-width: 1px;
-        -webkit-text-stroke-color: black;
+        text-shadow: 1px 0 black, -1px 0 black, 0 1px black, 0 -1px black;
     }
 
 .shop-tier {
