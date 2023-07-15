@@ -114,8 +114,7 @@
                 text-align: center;
                 margin: auto;
                 color: white;
-                -webkit-text-stroke-width: 1px;
-                -webkit-text-stroke-color: black;
+                text-shadow: 1px 0 black, -1px 0 black, 0 1px black, 0 -1px black;
             }
 
         .card > .footer > .hp {
@@ -132,8 +131,7 @@
                 text-align: center;
                 margin: auto;
                 color: white;
-                -webkit-text-stroke-width: 1px;
-                -webkit-text-stroke-color: black;
+                text-shadow: 1px 0 black, -1px 0 black, 0 1px black, 0 -1px black;
             }
 
         .card > .footer > .species {
@@ -194,8 +192,7 @@
             text-align: center;
             margin: auto;
             color: #f7d47a;
-            -webkit-text-stroke-width: 1px;
-            -webkit-text-stroke-color: #954B30;
+            text-shadow: 1px 0 black, -1px 0 black, 0 1px black, 0 -1px black;
             padding-bottom: calc(var(--size) * .02);
         }
 
@@ -246,8 +243,7 @@
                 text-align: center;
                 margin: auto;
                 color: white;
-                -webkit-text-stroke-width: 1px;
-                -webkit-text-stroke-color: black;
+                text-shadow: 1px 0 black, -1px 0 black, 0 1px black, 0 -1px black;
             }
 
         .small-card > .footer > .hp {
@@ -264,8 +260,7 @@
                 text-align: center;
                 margin: auto;
                 color: white;
-                -webkit-text-stroke-width: 1px;
-                -webkit-text-stroke-color: black;
+                text-shadow: 1px 0 black, -1px 0 black, 0 1px black, 0 -1px black;
             }
 
         .small-card > .footer > .effects {
@@ -306,8 +301,7 @@
             text-align: center;
             margin: auto;
             color: #f7d47a;
-            -webkit-text-stroke-width: 1px;
-            -webkit-text-stroke-color: #954B30;
+            text-shadow: 1px 0 black, -1px 0 black, 0 1px black, 0 -1px black;
             padding-bottom: calc(var(--size) * .035);
         }
 
@@ -317,5 +311,43 @@
 
         .small-card > .reputation.star > div {
             color: white;
-            -webkit-text-stroke-color: black;
+            text-shadow: 1px 0 black, -1px 0 black, 0 1px black, 0 -1px black;
+        }
+
+    .small-card > .elements {
+        position: relative;
+        display: grid;
+        bottom: calc(var(--size) * .05);
+        left: calc(var(--size) * -.01);
+        width: calc(var(--size) * .06);
+        grid-auto-flow: row;
+        row-gap: calc(var(--size) * .01);
+        transform: rotateZ(180deg);
+        border: calc(var(--size) * .01) solid #954B30;
+        background-color: #954B30;
+        border-top-left-radius: calc(var(--size) * .04);
+        border-bottom-left-radius: calc(var(--size) * .04);
+    }
+
+        .small-card > .elements > div {
+            border-radius: 50%;
+            width: 100%;
+            height: 100%;
+            height: calc(var(--size) * .06);
+        }
+
+        .small-card > .elements > .eau {
+            background: radial-gradient(circle, #4971ea, #1544d0);
+        }
+
+        .small-card > .elements > .feu {
+            background: radial-gradient(circle, #e43d3d, #a60c0c);
+        }
+
+        .small-card > .elements > .air {
+            background: radial-gradient(circle, #5dfaac, #0ca659);
+        }
+
+        .small-card > .elements > .terre {
+            background: radial-gradient(circle, #e2db75, #baaf17);
         }

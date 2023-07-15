@@ -1,3 +1,8 @@
+@font-face {
+    font-family: Papyrus;
+    src: url('../resources/ui/papyrus.ttf');
+}
+
 body, html {
     overflow-y: hidden;
     overflow-x: hidden;
@@ -194,26 +199,26 @@ img {
     top: 10px;
     width: 100px;
     height: 100px;
-    border: solid 3px #2c3b4b;
     border-radius: 50%;
-    background-image: url("../resources/ui/metal-texture.jpg");
+    background-image: url("../resources/ui/wooden-disk.png");
     background-repeat: no-repeat;
     background-size: 100% 100%;
     animation: fadeIn 1s ease forwards;
     transition: .3s;
     cursor: pointer;
     display: flex;
-    filter: brightness(1.5);
+    filter: brightness(.85);
 }
 
     .freeze:hover {
         box-shadow: 0 0 10px white;
         transform: scale(1.1);
+        filter: brightness(.9);
     }
 
     .freeze > img {
-        width: 80%;
-        height: 80%;
+        width: 75%;
+        height: 75%;
         margin: auto;
     }
 
@@ -224,16 +229,16 @@ img {
     .frozen:after {
         content: '';
         position: absolute;
-        top: 15%;
-        left: 0;
-        height: 100%;
-        width: 100%;
-        background-image: url("../resources/ui/lock.png");
+        top: -1.28%;
+        left: -1.925%;
+        height: 102.57%;
+        width: 103.85%;
+        background-image: url("../resources/ui/frozen.png");
         background-repeat: no-repeat;
-        background-size: 100% 70%;
-        filter: brightness(0.9) invert(.7) sepia(.5) hue-rotate(100deg) saturate(200%);
-        opacity: .6;
+        background-size: 100% 100%;
         transition: .5s;
+        z-index: 2;
+        animation: fadeInFrozen .3s ease forwards;
     }
 
 .refresh {
@@ -242,24 +247,26 @@ img {
     top: 120px;
     width: 100px;
     height: 100px;
-    border: solid 3px #2c3b4b;
     border-radius: 50%;
-    background-image: url("../resources/ui/metal-texture.jpg");
+    background-image: url("../resources/ui/wooden-disk.png");
     background-repeat: no-repeat;
     background-size: 100% 100%;
     animation: fadeIn 1s ease forwards;
     transition: .3s;
     cursor: pointer;
     display: flex;
-    filter: brightness(1.5);
+    filter: brightness(.85);
 }
 
     .refresh:hover {
         box-shadow: 0 0 10px white;
         transform: scale(1.1);
+        filter: brightness(.9);
     }
 
     .refresh > img {
+        position: relative;
+        left: -5%;
         width: 70%;
         height: 70%;
         margin: auto;
@@ -293,8 +300,7 @@ img {
         font-size: var(--font-very-large);
         font-weight: bold;
         color: goldenrod;
-        -webkit-text-stroke-width: 1px;
-        -webkit-text-stroke-color: black;
+        text-shadow: 1px 0 black, -1px 0 black, 0 1px black, 0 -1px black;
     }
 
 .shop-tier {
@@ -447,29 +453,30 @@ img {
     position: absolute;
     right: 15px;
     bottom: 15px;
-    width: 100px;
-    height: 100px;
-    border: solid 3px #2c3b4b;
+    width: 110px;
+    height: 110px;
     border-radius: 50%;
-    background-image: url("../resources/ui/metal-texture.jpg");
+    background-image: url("../resources/ui/wooden-disk.png");
     background-repeat: no-repeat;
     background-size: 100% 100%;
     animation: fadeIn 1s ease forwards;
     transition: .3s;
     cursor: pointer;
     display: flex;
-    filter: brightness(1.5);
+    filter: brightness(.85);
 }
 
     .fight:hover {
         box-shadow: 0 0 10px white;
         transform: scale(1.1);
+        filter: brightness(.9);
     }
 
     .fight > img {
         width: 70%;
         height: 70%;
         margin: auto;
+        filter: brightness(0);
     }
 
 .tooltip {
@@ -485,13 +492,14 @@ img {
     z-index: 200;
 }
 
-    .tooltips > .tips {
-        padding-top: 20px;
-        padding-bottom: 20px;
+    .tooltip > .tips {
+        padding-top: 15px;
+        padding-bottom: 15px;
         display: grid;
         width: fit-content;
+        height: fit-content;
         grid-auto-flow: row;
-        grid-row-gap: 20px;
+        grid-row-gap: 15px;
     }
 
         .tooltip > .tips > div {
@@ -714,6 +722,16 @@ img {
 
     100% {
         opacity: 1;
+    }
+}
+
+@keyframes fadeInFrozen {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: .6;
     }
 }
 
