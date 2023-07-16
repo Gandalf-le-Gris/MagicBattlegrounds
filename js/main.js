@@ -2072,8 +2072,8 @@ function initCards() {
     }
 
     //species = ["Nain"]; //!!!
-    if (!species.includes("Nain")) //!!!
-        species[0] = "Nain";
+    /*if (!species.includes("Nain")) //!!!
+        species[0] = "Nain";*/
 
     //for (let s of speciesList)
     //    cardList[s] = [cardList[s][0]]; //!!!
@@ -2098,8 +2098,8 @@ function initCards() {
 
     shuffle(cards);
     shuffle(commanders);
-    while (commanders.findIndex(e => e.name.startsWith("Champion")) > 2 && species.includes("Nain")) //!!!
-        shuffle(commanders);
+    /*while (commanders.findIndex(e => e.name.startsWith("Champion")) > 2 && species.includes("Nain")) //!!!
+        shuffle(commanders);*/
 }
 
 function getCard(tier, spec, name) {
