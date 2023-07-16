@@ -1,5 +1,5 @@
 @font-face {
-    font-family: Papyrus;
+    font-family: PapyrusLoad;
     src: url('../resources/ui/papyrus.ttf');
 }
 
@@ -18,7 +18,7 @@ body, html {
     height: 864px;
     margin: 0;
 
-    --global-font: Papyrus;
+    --global-font: PapyrusLoad, Papyrus;
     --font-very-large: 40px;
     --font-large: 25px;
     --font-medium: 20x;
@@ -692,6 +692,26 @@ img {
     z-index: 50;
     pointer-events: none;
 }
+
+.equipment-grid {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: grid;
+    grid-auto-flow: column;
+    grid-column-gap: 50px;
+}
+
+    .equipment-grid > * {
+        transition: .3s;
+        cursor: pointer;
+    }
+
+    .equipment-grid > *:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 10px white;
+    }
 
 
 

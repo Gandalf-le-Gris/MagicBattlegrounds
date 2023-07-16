@@ -1,6 +1,6 @@
 .card {
     --size: 500px;
-    --global-font: Papyrus;
+    --global-font: PapyrusLoad, Papyrus;
     --font-very-large: calc(var(--size) * .08);
     --font-large: calc(var(--size) * .06);
     --font-medium: calc(var(--size) * .05);

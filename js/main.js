@@ -383,6 +383,7 @@ let battleCries = {
     "Horde": ["resources/audio/sfx/horde1.mp3", "resources/audio/sfx/horde2.mp3", "resources/audio/sfx/horde3.mp3", "resources/audio/sfx/horde4.mp3"],
     "Démon": ["resources/audio/sfx/demon1.mp3", "resources/audio/sfx/demon2.mp3", "resources/audio/sfx/demon3.mp3"],
     "Elémentaire": ["resources/audio/sfx/elementaire1.mp3", "resources/audio/sfx/elementaire2.mp3", "resources/audio/sfx/elementaire3.mp3"],
+    "Nain": ["resources/audio/sfx/nain1.mp3", "resources/audio/sfx/nain2.mp3", "resources/audio/sfx/nain3.mp3", "resources/audio/sfx/nain4.mp3", "resources/audio/sfx/nain5.mp3"],
     "Autre": ["resources/audio/sfx/autre1.mp3"],
     "Sortilège": ["resources/audio/sfx/sortilege1.mp3"]
 }
@@ -2032,11 +2033,11 @@ async function drawShopScene() {
 /* ------------------ Card management ------------------ */
 /* ----------------------------------------------------- */
 
-const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant", "Sylvain", "Horde", "Démon", "Elémentaire"];
+const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant", "Sylvain", "Horde", "Démon", "Elémentaire", "Nain"];
 
 const cardList = {
-    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde", "contremaitre-de-l-abysse", "avatar-de-la-creation"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces", "masse-de-la-brutalite", "summum-de-la-gloire", "pacte-demoniaque", "liberer-le-mal", "transcendance-elementaire", "confluence-elementaire"],
+    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde", "contremaitre-de-l-abysse", "avatar-de-la-creation", "champion-de-forgeterre"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces", "masse-de-la-brutalite", "summum-de-la-gloire", "pacte-demoniaque", "liberer-le-mal", "transcendance-elementaire", "confluence-elementaire", "benediction-de-la-forge", "splendeur-des-mines"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
@@ -2049,11 +2050,13 @@ const cardList = {
     "Horde": ["minotaure-chargeur", "assiegeant-orc", "ravageur-des-falaises", "massacreur-de-fracassecrane", "brute-a-deux-tetes", "geant-ecrabouilleur", "pyromane-de-la-horde", "meneuse-du-clan-sylvegarde", "executeur-implacable", "exhorteur-de-la-horde", "batailleur-brisefer", "veteran-de-fracassecrane", "geant-destructeur", "obliterateur-goliath", "annihilateur-minotaure"],
     "Démon": ["demon-inferieur", "guetteur-demoniaque", "pretre-corrompu", "ecumeur-des-terres-desolees", "diablomancien-de-l-abysse", "fleau-des-terres-desolees", "incarnation-du-chaos", "porteur-de-la-noire-parole", "moissonneur-de-vitalite", "adepte-du-culte-du-sang", "poete-a-la-plume-sanglante", "divinite-dechue", "ange-transcende", "tortionnaire-d-ames", "annonciatrice-funeste"],
     "Elémentaire": ["familier-chatfeu", "golem-demolisseur", "esprit-des-rivieres", "faconneuse-de-nuages", "sculpteur-elementaire", "colere-de-la-nature", "esprit-des-sources-chaudes", "goliath-volcanique", "chevaucheur-de-tempetes", "manifestation-boreale", "chargeur-rocailleux", "djinn-sang-de-foudre", "phenix-flamboyant", "volonte-de-la-fournaise", "ame-de-l-orage"],
+    "Nain": ["excavateur-amateur", "explorateur-de-ruines", "artisan-minutieux", "infuseur-de-lames", "maitre-forgeron", "pillard-nain", "defenseur-des-montagnes", "lanceur-de-haches", "marcheur-des-grottes", "roi-sous-la-montagne", "gardienne-des-mines", "fleau-des-orcs", "emissaire-de-forgeterre", "escouade-naine", "artisan-forgerune"],
     "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"],
-    "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble", "jeune-fongus", "coeur-de-l-abysse", "le-banni"]
+    "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble", "jeune-fongus", "coeur-de-l-abysse", "le-banni", "marteau-d-artisan", "marteau-demesure", "pioche-renforcee", "armure-de-plaques", "epee-du-roi-sous-la-montagne", "grappin-d-acier", "masse-arcanique", "bouclier-du-protecteur", "couronne-ornementale", "hache-a-deux-mains"]
 };
 
 const elements = ["Eau", "Feu", "Air", "Terre"];
+const equipments = ["marteau-d-artisan", "marteau-demesure", "pioche-renforcee", "armure-de-plaques", "epee-du-roi-sous-la-montagne", "grappin-d-acier", "masse-arcanique", "bouclier-du-protecteur", "couronne-ornementale", "hache-a-deux-mains"];
 
 let species = [];
 let cards = [];
@@ -2068,7 +2071,9 @@ function initCards() {
             species.push(s);
     }
 
-    //species = ["Elémentaire"]; //!!!
+    //species = ["Nain"]; //!!!
+    if (!species.includes("Nain")) //!!!
+        species[0] = "Nain";
 
     //for (let s of speciesList)
     //    cardList[s] = [cardList[s][0]]; //!!!
@@ -2093,8 +2098,8 @@ function initCards() {
 
     shuffle(cards);
     shuffle(commanders);
-    /*while (commanders.findIndex(e => e.name.startsWith("Avatar")) > 2 && species.includes("Elémentaire")) //!!!
-        shuffle(commanders);*/
+    while (commanders.findIndex(e => e.name.startsWith("Champion")) > 2 && species.includes("Nain")) //!!!
+        shuffle(commanders);
 }
 
 function getCard(tier, spec, name) {
@@ -2152,6 +2157,8 @@ function createCard(card) {
             return new ContremaitreDeLAbysse();
         case "avatar-de-la-creation":
             return new AvatarDeLaCreation();
+        case "champion-de-forgeterre":
+            return new ChampionDeForgeterre();
 
         case "dragonnet-ardent":
             return new DragonnetArdent();
@@ -2587,6 +2594,41 @@ function createCard(card) {
         case "confluence-elementaire":
             return new ConfluenceElementaire();
 
+        case "excavateur-amateur":
+            return new ExcavateurAmateur();
+        case "explorateur-de-ruines":
+            return new ExplorateurDeRuines();
+        case "artisan-minutieux":
+            return new ArtisanMinutieux();
+        case "infuseur-de-lames":
+            return new InfuseurDeLames();
+        case "maitre-forgeron":
+            return new MaitreForgeron();
+        case "pillard-nain":
+            return new PillardNain();
+        case "defenseur-des-montagnes":
+            return new DefenseurDesMontagnes();
+        case "lanceur-de-haches":
+            return new LanceurDeHaches();
+        case "marcheur-des-grottes":
+            return new MarcheurDesGrottes();
+        case "roi-sous-la-montagne":
+            return new RoiSousLaMontagne();
+        case "gardienne-des-mines":
+            return new GardienneDesMines();
+        case "fleau-des-orcs":
+            return new FleauDesOrcs();
+        case "emissaire-de-forgeterre":
+            return new EmissaireDeForgeterre();
+        case "escouade-naine":
+            return new EscouadeNaine();
+        case "artisan-forgerune":
+            return new ArtisanForgerune();
+        case "benediction-de-la-forge":
+            return new BenedictionDeLaForge();
+        case "splendeur-des-mines":
+            return new SplendeurDesMines();
+
         case "changeforme-masque":
             return new ChangeformeMasque();
         case "ange-guerrier":
@@ -2621,6 +2663,26 @@ function createCard(card) {
             return new CoeurDeLAbysse();
         case "le-banni":
             return new LeBanni();
+        case "marteau-d-artisan":
+            return new MarteauDArtisan();
+        case "marteau-demesure":
+            return new MarteauDemesure();
+        case "pioche-renforcee":
+            return new PiocheRenforcee();
+        case "armure-de-plaques":
+            return new ArmureDePlaques();
+        case "epee-du-roi-sous-la-montagne":
+            return new EpeeDuRoiSousLaMontagne();
+        case "grappin-d-acier":
+            return new GrappinDAcier();
+        case "masse-arcanique":
+            return new MasseArcanique();
+        case "bouclier-du-protecteur":
+            return new BouclierDuProtecteur();
+        case "couronne-ornementale":
+            return new CouronneOrnementale();
+        case "hache-a-deux-mains":
+            return new HacheADeuxMains();
 
         default:
             alert("Carte inconnue : " + card);
@@ -2922,6 +2984,21 @@ function AvatarDeLaCreation() {
         {
             trigger: "",
             id: 23
+        }
+    ];
+}
+
+function ChampionDeForgeterre() {
+    this.name = "Champion de Forgeterre";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 32;
+    this.src = "commandants/champion-de-forgeterre.jpg";
+    this.requirement = "Nain";
+    this.effects = [
+        {
+            trigger: "coin-change",
+            id: 24
         }
     ];
 }
@@ -6105,6 +6182,7 @@ function TranscendanceElementaire() {
     this.attack = -1;
     this.hp = -1;
     this.src = "elementaires/transcendance-elementaire.jpg";
+    this.requirement = "Elémentaire";
     this.tier = 3;
     this.effects = [
         {
@@ -6123,6 +6201,7 @@ function ConfluenceElementaire() {
     this.attack = -1;
     this.hp = -1;
     this.src = "elementaires/confluence-elementaire.jpg";
+    this.requirement = "Elémentaire";
     this.tier = 3;
     this.effects = [
         {
@@ -6267,6 +6346,280 @@ function AmeDeLOrage() {
             id: 1217
         }
     ];
+}
+
+
+// Nain
+
+function ExcavateurAmateur() {
+    this.name = "Excavateur amateur";
+    this.species = "Nain";
+    this.attack = 4;
+    this.hp = 2;
+    this.src = "nains/excavateur-amateur.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 1301
+        }
+    ];
+}
+
+function ExplorateurDeRuines() {
+    this.name = "Explorateur de ruines";
+    this.species = "Nain";
+    this.attack = 1;
+    this.hp = 1;
+    this.src = "nains/explorateur-de-ruines.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1302
+        }
+    ];
+}
+
+function ArtisanMinutieux() {
+    this.name = "Artisan minutieux";
+    this.species = "Nain";
+    this.attack = 2;
+    this.hp = 4;
+    this.src = "nains/artisan-minutieux.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1303
+        }
+    ];
+}
+
+function MarcheurDesGrottes() {
+    this.name = "Marcheur des grottes";
+    this.species = "Nain";
+    this.attack = 5;
+    this.hp = 3;
+    this.src = "nains/marcheur-des-grottes.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "spell-play",
+            id: 1311
+        },
+        {
+            trigger: "turn-start",
+            id: 1312
+        }
+    ];
+}
+
+function EscouadeNaine() {
+    this.name = "Escouade naine";
+    this.species = "Nain";
+    this.attack = 3;
+    this.hp = 3;
+    this.src = "nains/escouade-naine.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1317
+        }
+    ];
+}
+
+function InfuseurDeLames() {
+    this.name = "Infuseur de lames";
+    this.species = "Nain";
+    this.attack = 2;
+    this.hp = 5;
+    this.src = "nains/infuseur-de-lames.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1304
+        }
+    ];
+}
+
+function PillardNain() {
+    this.name = "Pillard nain";
+    this.species = "Nain";
+    this.attack = 4;
+    this.hp = 3;
+    this.src = "nains/pillard-nain.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "card-sell",
+            id: 1306
+        }
+    ];
+}
+
+function DefenseurDesMontagnes() {
+    this.name = "Défenseur des montagnes";
+    this.species = "Nain";
+    this.attack = 3;
+    this.hp = 4;
+    this.src = "nains/defenseur-des-montagnes.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "spell-play",
+            id: 1307
+        }
+    ];
+}
+
+function GardienneDesMines() {
+    this.name = "Gardienne des mines";
+    this.species = "Nain";
+    this.attack = 5;
+    this.hp = 5;
+    this.src = "nains/gardienne-des-mines.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "forge",
+            id: 1314
+        }
+    ];
+}
+
+function FleauDesOrcs() {
+    this.name = "Fléau des Orcs";
+    this.species = "Nain";
+    this.attack = 4;
+    this.hp = 6;
+    this.src = "nains/fleau-des-orcs.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "spell-play",
+            id: 1315
+        }
+    ];
+}
+
+function BenedictionDeLaForge() {
+    this.name = "Bénédiction de la forge";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "nains/benediction-de-la-forge.jpg";
+    this.requirement = "Nain";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1319
+        }
+    ];
+    this.validTarget = {
+        area: "any"
+    };
+}
+
+function LanceurDeHaches() {
+    this.name = "Lanceur de haches";
+    this.species = "Nain";
+    this.attack = 5;
+    this.hp = 1;
+    this.src = "nains/lanceur-de-haches.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "spell-play",
+            id: 1309
+        },
+        {
+            trigger: "battle-start",
+            id: 1310
+        }
+    ];
+}
+
+function MaitreForgeron() {
+    this.name = "Maître forgeron";
+    this.species = "Nain";
+    this.attack = 5;
+    this.hp = 2;
+    this.src = "nains/maitre-forgeron.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 1305
+        }
+    ];
+}
+
+function ArtisanForgerune() {
+    this.name = "Artisan forgerune";
+    this.species = "Nain";
+    this.attack = 2;
+    this.hp = 6;
+    this.src = "nains/artisan-forgerune.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1318
+        }
+    ];
+}
+
+function RoiSousLaMontagne() {
+    this.name = "Roi sous la montagne";
+    this.species = "Nain";
+    this.attack = 8;
+    this.hp = 8;
+    this.src = "nains/roi-sous-la-montagne.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "forge",
+            id: 1313
+        }
+    ];
+}
+
+function EmissaireDeForgeterre() {
+    this.name = "Emissaire de Forgeterre";
+    this.species = "Nain";
+    this.attack = 6;
+    this.hp = 6;
+    this.src = "nains/emissaire-de-forgeterre.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "card-sell",
+            id: 1316
+        }
+    ];
+}
+
+function SplendeurDesMines() {
+    this.name = "Splendeur des mines";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "nains/splendeur-des-mines.jpg";
+    this.requirement = "Nain";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1320
+        }
+    ];
+    this.validTarget = {
+        area: "any"
+    };
 }
 
 
@@ -6635,6 +6988,196 @@ function LeBanni() {
             id: 1111
         }
     ];
+}
+
+function MarteauDArtisan() {
+    this.name = "Marteau d'artisan";
+    this.species = "Sortilège";
+    this.equipment = true;
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "nains/marteau-d-artisan.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1351
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function MarteauDemesure() {
+    this.name = "Marteau démesuré";
+    this.species = "Sortilège";
+    this.equipment = true;
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "nains/marteau-demesure.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1353
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function PiocheRenforcee() {
+    this.name = "Pioche renforcée";
+    this.species = "Sortilège";
+    this.equipment = true;
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "nains/pioche-renforcee.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1354
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function ArmureDePlaques() {
+    this.name = "Armure de plaques";
+    this.species = "Sortilège";
+    this.equipment = true;
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "nains/armure-de-plaques.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1356
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function EpeeDuRoiSousLaMontagne() {
+    this.name = "Epée du roi sous la montagne";
+    this.species = "Sortilège";
+    this.equipment = true;
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "nains/epee-du-roi-sous-la-montagne.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1357
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function GrappinDAcier() {
+    this.name = "Grappin d'acier";
+    this.species = "Sortilège";
+    this.equipment = true;
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "nains/grappin-d-acier.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1358
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function MasseArcanique() {
+    this.name = "Masse arcanique";
+    this.species = "Sortilège";
+    this.equipment = true;
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "nains/masse-arcanique.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1360
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function BouclierDuProtecteur() {
+    this.name = "Bouclier du protecteur";
+    this.species = "Sortilège";
+    this.equipment = true;
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "nains/bouclier-du-protecteur.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1361
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function CouronneOrnementale() {
+    this.name = "Couronne ornementale";
+    this.species = "Sortilège";
+    this.equipment = true;
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "nains/couronne-ornementale.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1362
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function HacheADeuxMains() {
+    this.name = "Hache à deux mains";
+    this.species = "Sortilège";
+    this.equipment = true;
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "nains/hache-a-deux-mains.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1363
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
 }
 
 
@@ -7006,6 +7549,16 @@ function showCardTooltip(c) {
         shield.innerHTML = "<em>Chef de guerre :</em> Devient actif lorsque la créature atteint une <em>Réputation</em> de 8.";
         tips.appendChild(shield);
     }
+    if (containsKeyword(c, "Forgez")) {
+        let shield = document.createElement('div');
+        shield.innerHTML = "<em>Forgez :</em> Choisissez un équipement nain parmi 3 et ajoutez-le à votre main.";
+        tips.appendChild(shield);
+    }
+    if (getDescription(c).includes("Equipement")) {
+        let shield = document.createElement('div');
+        shield.innerHTML = "<em>Equipement :</em> Type de Sortilège maîtrisé par les Nains.";
+        tips.appendChild(shield);
+    }
     if (containsKeyword(c, "Injouable")) {
         let shield = document.createElement('div');
         shield.innerHTML = "<em>Injouable :</em> Ne peut qu'être revendu.";
@@ -7041,6 +7594,8 @@ function getDescription(c, cancelTooltip) {
         }
         res += ".</br>";
     }
+    if (c.equipment && species.includes("Nain"))
+        res += "<em>Equipement</em>.</br>";
     if (c.shield)
         res += "<em>Bouclier</em>.</br>";
     if (c.revive)
@@ -7142,6 +7697,8 @@ function createEffect(id) {
             return new Effect22();
         case 23:
             return new Effect23();
+        case 24:
+            return new Effect24();
         case 101:
             return new Effect101();
         case 102:
@@ -7616,6 +8173,72 @@ function createEffect(id) {
             return new Effect1218();
         case 1219:
             return new Effect1219();
+        case 1301:
+            return new Effect1301();
+        case 1302:
+            return new Effect1302();
+        case 1303:
+            return new Effect1303();
+        case 1304:
+            return new Effect1304();
+        case 1305:
+            return new Effect1305();
+        case 1306:
+            return new Effect1306();
+        case 1307:
+            return new Effect1307();
+        case 1308:
+            return new Effect1308();
+        case 1309:
+            return new Effect1309();
+        case 1310:
+            return new Effect1310();
+        case 1311:
+            return new Effect1311();
+        case 1312:
+            return new Effect1312();
+        case 1313:
+            return new Effect1313();
+        case 1314:
+            return new Effect1314();
+        case 1315:
+            return new Effect1315();
+        case 1316:
+            return new Effect1316();
+        case 1317:
+            return new Effect1317();
+        case 1318:
+            return new Effect1318();
+        case 1319:
+            return new Effect1319();
+        case 1320:
+            return new Effect1320();
+        case 1351:
+            return new Effect1351();
+        case 1352:
+            return new Effect1352();
+        case 1353:
+            return new Effect1353();
+        case 1354:
+            return new Effect1354();
+        case 1355:
+            return new Effect1355();
+        case 1356:
+            return new Effect1356();
+        case 1357:
+            return new Effect1357();
+        case 1358:
+            return new Effect1358();
+        case 1359:
+            return new Effect1359();
+        case 1360:
+            return new Effect1360();
+        case 1361:
+            return new Effect1361();
+        case 1362:
+            return new Effect1362();
+        case 1363:
+            return new Effect1363();
         case 2001:
             return new Effect2001();
         case 2002:
@@ -8111,6 +8734,30 @@ function Effect23() {
         return 0;
     };
     this.desc = "";
+}
+
+function Effect24() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] > 0) {
+            if (!sender.effect24)
+                sender.effect24 = 0;
+            sender.effect24 += args[0];
+            while (sender.effect24 >= 12) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await forgeEquipment();
+                sender.effect24 -= 12;
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(2, 0, round), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Après avoir dépensé 12 pièces d'or, <em>Forgez</em>.";
+    this.dynamicDesc = (c) => "<em>(Encore " + (12 - (c.effect24 ? c.effect24 : 0)) + ")</em>";
 }
 
 function Effect101() {
@@ -12934,7 +13581,6 @@ function Effect1212() {
                 elem = elem.concat(t[(i + 4) % 8].elements);
             if (i % 4 < 3 && t[i + 1] && t[i + 1].elements)
                 elem = elem.concat(t[i + 1].elements);
-            console.log(elem)
             await boostStats(sender, 2 * (new Set(elem).size), 0, doAnimate);
         }
     };
@@ -13102,6 +13748,586 @@ function Effect1219() {
         return 0;
     };
     this.desc = "Confère un élément supplémentaire à 3 Elémentaires alliés.";
+}
+
+function Effect1301() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let side = args[0][0].concat(args[0][1]).includes(sender);
+            let t = (side ? args[1][0].concat(args[1][1]) : args[0][0].concat(args[0][1]));
+            if (t.filter(e => e).length > 0)
+                await attack(args[0], args[1], args[2], args[3], args[4], doAnimate, sender, choice(t.filter(e => e)));
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 1;
+    };
+    this.desc = "<em>Frappe préventive :</em> Attaque une créature adverse aléatoire.";
+}
+
+function Effect1302() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let card = createCard(choice(equipments));
+            card.created = true;
+            let c = drawCard(card, 176);
+            await addToHand(c);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 4];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Ajoute un <em>Equipement</em> nain aléatoire à votre main.";
+}
+
+function Effect1303() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await forgeEquipment();
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 5];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> <em>Forgez</em>.";
+}
+
+function Effect1304() {
+    this.run = async (sender, args, doAnimate) => {
+
+    };
+    this.scaling = (c, t) => {
+        return [0, .75 * t.filter(e => e && e.species === "Nain").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous <em>Forgez</em>, obtenez une option supplémentaire (jusqu'à 2).";
+}
+
+function Effect1305() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await forgeEquipment();
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, t.filter(e => e && e.species === "Nain").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Au début de chaque tour, <em>Forgez</em>.";
+}
+
+function Effect1306() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            for (let i = 0; i < 2; i++) {
+                let card = createCard(choice(equipments));
+                card.created = true;
+                let c = drawCard(card, 176);
+                await addToHand(c);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 4];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous revendez cette créature, gagnez deux <em>Equipements</em> nains aléatoires.";
+}
+
+function Effect1307() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[1] === sender && args[0].equipment && sender.effects.findIndex(e => e.id === 1308) == -1) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            sender.effects.push({
+                trigger: "battle-start",
+                id: 1308
+            });
+        }
+    };
+    this.scaling = (c, t) => {
+        c.shield = true;
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous jouez un <em>Equipement</em> sur cette créature, elle gagne le <em>Bouclier</em> pour la durée du combat suivant.";
+}
+
+function Effect1308() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            sender.shield = true;
+            await boostStats(sender, 0, 0, doAnimate);
+            sender.original.effects.splice(sender.effects.findIndex(e => e.id === 1308), 1);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Frappe préventive :</em> Gagne <em>Bouclier</em>, puis cet effet disparaît.";
+}
+
+function Effect1309() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].equipment && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            await boostStats(sender, 1, 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [.75 * t.filter(e => e && e.species === "Nain").length, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous jouez un <em>Equipement</em>, gagne +1/+0.";
+}
+
+function Effect1310() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0 && sender.attack > 0) {
+            let t = args[0][0].concat(args[0][1]).includes(sender) ? args[1][0].concat(args[1][1]) : args[0][0].concat(args[0][1]);
+            let target = pickRandomTarget(t);
+            if (target) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await dealDamage(target, sender.attack, doAnimate, args);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return c.attack;
+    };
+    this.desc = "<em>Frappe préventive :</em> Inflige des dégâts égaux à son attaque à une créature adverse aléatoire.";
+}
+
+function Effect1311() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].equipment && !sender.effect1311 && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            sender.effect1311 = true;
+            await boostStats(sender, 0, 2, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [2 * (t.filter(e => e && e.species === "Nain").length > 2), 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "La première fois chaque tour que vous jouez un <em>Equipement</em>, gagne +0/+2.";
+}
+
+function Effect1312() {
+    this.run = async (sender, args, doAnimate) => {
+        sender.effect1311 = false;
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "";
+}
+
+function Effect1313() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let card = createCard(choice(equipments));
+            card.created = true;
+            let c = drawCard(card, 176);
+            await addToHand(c);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 5 * t.filter(e => e && e.species === "Nain").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous <em>Forgez</em>, gagnez un <em>Equipement</em> nain supplémentaire.";
+}
+
+function Effect1314() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let t = troops[0].filter(e => e && e !== sender && e.species === "Nain").slice(0, 3);
+            shuffle(t);
+            for (c of t)
+                await boostStats(c, 1, 2, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 3 * t.filter(e => e && e.species === "Nain").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous <em>Forgez</em>, confère +1/+2 à 3 autres Nains alliés.";
+}
+
+function Effect1315() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].equipment && args[1] !== sender && args[1].species === "Nain" && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            await boostStats(sender, 2, 1, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [1.5 * t.filter(e => e && e.species === "Nain").length, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous jouez un <em>Equipement</em> sur un autre Nain, gagne +2/+1.";
+}
+
+function Effect1316() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card.species === "Nain" && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let card = createCard(choice(equipments));
+            card.created = true;
+            let c = drawCard(card, 176);
+            await addToHand(c);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 5 * t.filter(e => e && e.species === "Nain").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous revendez un autre Nain, gagnez un <em>Equipement</em> nain aléatoire.";
+}
+
+function Effect1317() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let n = 0;
+            for (let c of document.getElementById("shop").children) {
+                if (c.card && c.card.species === "Nain")
+                    n++;
+            }
+            if (n == 0) {
+                document.getElementById("refresh").style.boxShadow = "0 0 15px green";
+                discountedRefreshes++;
+            } else {
+                await boostStats(sender, 2 * n, 2 * n, doAnimate);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 4 * (t.filter(e => e && e.species === "Nain").length > 2), 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> S'il n'y a aucun Nain disponible au recrutement, la prochaine recherche de recrues est gratuite. Sinon, cette créature gagne +2/+2 pour chaque Nain disponible.";
+}
+
+function Effect1318() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let n = troops[0].filter(e => e && e.species === "Nain" && e !== sender && troops[0].findIndex(x => x && x.name === e.name) == troops[0].indexOf(e)).length;
+            for (let i = 0; i < n; i++) {
+                let card = createCard(choice(equipments));
+                card.created = true;
+                let c = drawCard(card, 176);
+                await addToHand(c);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 4 * t.filter(e => e && e.species === "Nain").length];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Obtenez un <em>Equipement</em> nain aléatoire pour chaque autre Nain allié différent.";
+}
+
+function Effect1319() {
+    this.run = async (sender, args, doAnimate) => {
+        await forgeEquipment();
+        for (let c of troops[0].filter(e => e && e.species === "Nain"))
+            await boostStats(c, 1, 0, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Forgez</em>, puis confère +1/+0 aux Nains alliés.";
+}
+
+function Effect1320() {
+    this.run = async (sender, args, doAnimate) => {
+        let options = troops[0].filter(e => e && e.species === "Nain");
+        while (document.getElementById("hand").children.length < 6) {
+            let card = createCard(choice(equipments));
+            card.created = true;
+            let c = drawCard(card, 176);
+            await addToHand(c);
+            if (options.length > 0)
+                await boostStats(choice(options), 0, 2, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Remplissez votre main d'<em>Equipements</em> nains. Confère +0/+2 à un Nain allié aléatoire pour chaque <em>Equipement</em> ainsi obtenu.";
+}
+
+function Effect1351() {
+    this.run = async (sender, args, doAnimate) => {
+        args[0].card.effects.push({
+            trigger: "forge",
+            id: 1352
+        })
+        await boostStats(args[0].card, 0, 0, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Confère \"Lorsque vous <em>Forgez</em>, gagne +0/+1.\" à une créature alliée.";
+}
+
+function Effect1352() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            await boostStats(sender, 0, 1, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [fluctuate(1, 0, 2), 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous <em>Forgez</em>, gagne +0/+1.";
+}
+
+function Effect1353() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card.hp >= 12)
+            await boostStats(args[0].card, 7, 0, doAnimate);
+        else
+            await boostStats(args[0].card, 0, -5, doAnimate, true);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "La créature ciblée gagne +7/+0 si elle a au moins 12PV, ou -0/-5 sinon.";
+}
+
+function Effect1354() {
+    this.run = async (sender, args, doAnimate) => {
+        args[0].card.effects.push({
+            trigger: "card-sell",
+            id: 1355
+        })
+        await boostStats(args[0].card, 0, 0, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "La créature ciblée se revendra pour 2 pièces d'or supplémentaires, ou 3 si c'est un Nain.";
+}
+
+function Effect1355() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender && args[1] == "board") {
+            await spendCoins(-2 - (sender.species === "Nain"));
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous revendez cette créature, gagnez ";
+    this.dynamicDesc = (c) => (c.species === "Nain" ? 3 : 2) + " pièces d'or supplémentaires.";
+}
+
+function Effect1356() {
+    this.run = async (sender, args, doAnimate) => {
+        await boostStats(args[0].card, 0, 4 + 2 * (args[0].card.species === "Nain"), doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "La créature ciblée gagne +0/+4, et +0/+2 supplémentaires si c'est un Nain.";
+}
+
+function Effect1357() {
+    this.run = async (sender, args, doAnimate) => {
+        await boostStats(args[0].card, shopTier, shopTier, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "La créature ciblée gagne +X/+X, où X est votre niveau de recrutement.";
+}
+
+function Effect1358() {
+    this.run = async (sender, args, doAnimate) => {
+        args[0].card.effects.push({
+            trigger: "battle-start",
+            id: 1359
+        })
+        await boostStats(args[0].card, 0, 0, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Confère \"<em>Frappe préventive :</em>Attire une créature adverse aléatoire vers la première ligne puis l'attaque.\" à une créature alliée.";
+}
+
+function Effect1359() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let side = args[0][0].concat(args[0][1]).includes(sender);
+            let t = (side ? args[1] : args[0]);
+            if (t[1].findIndex(e => e) != -1) {
+                let options = [];
+                for (let i = 0; i < 4; i++)
+                    if (t[0][i] && t[1][i])
+                        options.push(i);
+                let i = choice(options);
+                await swapPositions(i, t, doAnimate, args);
+                await attack(args[0], args[1], args[2], args[3], args[4], doAnimate, sender, t[0][i]);
+            } else if (t[0].filter(e => e).length > 0) {
+                await attack(args[0], args[1], args[2], args[3], args[4], doAnimate, sender, choice(t[0].filter(e => e)));
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Frappe préventive :</em>Attire une créature adverse aléatoire vers la première ligne puis l'attaque.";
+}
+
+function Effect1360() {
+    this.run = async (sender, args, doAnimate) => {
+        await boostStats(args[0].card, args[0].card.attack >= args[0].card.hp ? 5 : 3, 0, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "La créature ciblée gagne +5/+0 si son attaque est supérieure à ses PV, ou +3/+0 sinon.";
+}
+
+function Effect1361() {
+    this.run = async (sender, args, doAnimate) => {
+        args[0].card.shield = true;
+        await boostStats(args[0].card, -8, args[0].card.species === "Nain" ? 3 : 0, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "La créature ciblée gagne <em>Bouclier</em> et -8/-0. Si c'est un Nain, elle gagne aussi +0/+3.";
+}
+
+function Effect1362() {
+    this.run = async (sender, args, doAnimate) => {
+        let n = Math.ceil(troops[0].filter(e => e && e.species === "Nain").length / 2);
+        await boostStats(args[0].card, n, n, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "La créature ciblée gagne +X/+X, où X est la moitié du nombre de Nains alliés.";
+}
+
+function Effect1363() {
+    this.run = async (sender, args, doAnimate) => {
+        await boostStats(args[0].card, Math.ceil(round / 2), 0, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "La créature ciblée gagne +X/+0, où X est la moitié du tour actuel.";
 }
 
 function Effect2001() {
@@ -13779,6 +15005,41 @@ async function battleSummon(name, t, p, doAnimate, args) {
 
 function isWarchief(card, player) {
     return card.reputation && card.reputation + 2 * (players[player].effects.findIndex(e => e.id == 21) != -1) >= 8;
+}
+
+async function forgeEquipment() {
+    shuffle(equipments);
+
+    let filter = document.createElement('div');
+    filter.className = "filter";
+    filter.id = "filter";
+    document.body.appendChild(filter);
+    
+    let banner = document.createElement('div');
+    banner.id = "target-banner";
+    banner.className = "target-banner";
+    banner.innerHTML = "Choisissez un équipement";
+    filter.appendChild(banner);
+
+    let grid = document.createElement('div');
+    grid.id = "equipment-grid";
+    grid.className = "equipment-grid";
+    filter.appendChild(grid);
+
+    let n = 3 + Math.min(2, troops[0].filter(e => e && e.effects.findIndex(e => e.id === 1304) != -1).length);
+    for (let i = 0; i < n; i++) {
+        let c = drawCard(createCard(equipments[i]), 250);
+        grid.appendChild(c);
+        fitDescription(c);
+        c.onclick = async () => {
+            nextTargetSelection = true;
+            await addToHand(drawCard(c.card, 176));
+        }
+    }
+
+    await waitForTargetSelection();
+    document.body.removeChild(filter);
+    await broadcastShopEvent("forge");
 }
 
 
