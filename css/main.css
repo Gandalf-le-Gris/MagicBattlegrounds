@@ -335,6 +335,9 @@ img {
     transform: translateX(-50%);
     display: flex;
     transition: .5s;
+    border-top-left-radius: 30px;
+    border-top-right-radius: 30px;
+    padding: 10px 10px 0 10px;
 }
 
     .hand > div {
@@ -356,6 +359,11 @@ img {
                 transform: translateY(-60%) scale(1.2);
                 box-shadow: 0 0 10px white;
             }
+
+    .hand.hint {
+        outline: 3px dashed #aaaa;
+        background-color: #aaa5;
+    }
 
 .board {
     position: absolute;

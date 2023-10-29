@@ -73,6 +73,7 @@ function loadResources() {
                                         toggleSettings();
                                     }
                                 });
+                                openFullscreen();
                                 fadeTransition(drawHomeScreen);
                             }
                         }
@@ -176,6 +177,17 @@ function loadResources() {
     loadAssets(imgs, true);
     loadAssets(sounds, false);
 }
+
+function openFullscreen() {
+    let elem = document.documentElement;
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    }
+  }
 
 
 
@@ -1039,6 +1051,8 @@ function dragStart() {
 
     if (this.card && this.card.species == "Sortilège" && this.card.validTarget.area == "any")
         document.getElementById("spell-area").style.pointerEvents = "all";
+    if (this.parentElement.classList.contains('shop'))
+        document.getElementById("hand-area").classList.add("hint");
 }
 
 function dragEnd() {
@@ -1055,6 +1069,7 @@ function dragEnd() {
 async function dragDrop() {
     let card = dragItem;
     dragItem = undefined;
+    document.getElementById("hand-area").classList.remove("hint");
     if (document.getElementById("hand").contains(card) && this.className === "spell-area" && card.card.species == "Sortilège" && card.card.validTarget.area === "any")
         playSpell(card, undefined);
     else if (document.getElementById("shop").contains(card) && this.className === "hand" && this.children[0].children.length < 6)
