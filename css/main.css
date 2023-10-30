@@ -108,6 +108,7 @@ img {
     background-repeat: no-repeat;
     background-size: 100% 100%;
     transition: transform .3s;
+    z-index: 299;
 }
 
     .settings-button:hover {
@@ -720,6 +721,40 @@ img {
         transform: scale(1.05);
         box-shadow: 0 0 10px white;
     }
+
+.tutoriel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px white;
+    transition: all .5s ease;
+    z-index: 50;
+    pointer-events: none;
+}
+
+    .tutoriel.dock-left {
+        left: 10%;
+    }
+
+    .tutoriel.dock-right {
+        left: 90%;
+    }
+
+.filter.tuto {
+    z-index: 50;
+    background-color: #000a;
+}
+
+#click-to-continue {
+    position: absolute;
+    top: 83%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-family: var(--global-font);
+    font-size: var(--font-large);
+}
 
 
 

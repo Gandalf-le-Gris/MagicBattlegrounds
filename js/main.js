@@ -114,6 +114,7 @@ function loadResources() {
     imgs.push("resources/ui/shield.png");
     imgs.push("resources/ui/team-builder-bg.jpg");
     imgs.push("resources/ui/wood-texture.jpg");
+    imgs.push("resources/cards/autres/tutoriel.jpg");
 
     for (let s of speciesList.concat(["Commandant", "Autre", "Token"]))
         for (let c of cardList[s])
@@ -508,6 +509,7 @@ let round = 0;
 let discountedRefreshes = 0;
 let currentScene;
 let enemyFamilies = [];
+let isTuto = false;
 
 async function startGame() {
     await fadeTransition(() => {
@@ -577,6 +579,32 @@ async function startGame() {
 
         shuffleMusics();
         playMusic(getNextMusic("shop"), true);
+
+        isTuto = window.localStorage.getItem("tutorielMagicBattlegrounds") === null;
+        if (isTuto) {
+            let tutoFilter = document.createElement('div');
+            tutoFilter.className = "filter tuto";
+            document.body.appendChild(tutoFilter);
+
+            let tutoCard = drawCard(new Tutoriel(), 320, true);
+            tutoCard.classList.add("tutoriel");
+            tutoFilter.appendChild(tutoCard);
+
+            let click = document.createElement('div');
+            click.innerHTML = "Cliquer pour continuer";
+            click.id = "click-to-continue";
+            tutoFilter.appendChild(click);
+
+            tutoFilter.onclick = () => {
+                tutoCard.card.effects = [{
+                    id: -2
+                }];
+                updateCardStats(tutoCard);
+                tutoFilter.onclick = () => {
+                    document.body.removeChild(tutoFilter);
+                }
+            }
+        }
     });
 }
 
@@ -585,7 +613,7 @@ async function selectHero(n) {
 
     for (let i = 1; i <= 3; i++) {
         selected = document.getElementById("heroSelector" + i);
-        selected.onclick = () => { };
+        selected.style.pointerEvents = "none";
         if (i != n) {
             selected.style.animation = "fadeIn .6s ease reverse";
             setTimeout(() => {
@@ -595,6 +623,7 @@ async function selectHero(n) {
             setTimeout(() => {
                 selected = document.getElementById("heroSelector" + i);
                 selected.className += " selected-commander";
+                selected.style.removeProperty("pointer-events");
                 players[0] = selected.card;
                 for (let i = 3; i < 10; i++)
                     players[i - 2] = commanders[i];
@@ -648,6 +677,8 @@ async function selectHero(n) {
         shop.appendChild(document.createElement('div'));
         for (let i = 0; i < shopSize[shopTier]; i++) {
             let c = drawCard(getCard(shopTier), 176);
+            while (c.card.species === "Sortilège")
+                c = drawCard(getCard(shopTier), 176);
             if (coins >= 3) {
                 c.draggable = true;
                 c.addEventListener('dragstart', dragStart);
@@ -767,6 +798,30 @@ async function selectHero(n) {
 
         await broadcastShopEvent("game-start", []);
         await broadcastShopEvent("turn-start", []);
+
+        if (isTuto) {
+            let tutoFilter = document.createElement('div');
+            tutoFilter.className = "filter tuto";
+            tutoFilter.style.backgroundColor = "#0000";
+            document.body.appendChild(tutoFilter);
+
+            let tutoCard = drawCard(new Tutoriel(-3), 280, true);
+            tutoCard.classList.add("tutoriel");
+            tutoCard.style.animation = "fadeIn .6s ease";
+            document.body.appendChild(tutoCard);
+
+            tutoFilter.onclick = () => {
+                tutoCard.card.effects = [{
+                    id: -4
+                }];
+                tutoCard.classList.add("dock-right");
+                updateCardStats(tutoCard);
+                refresh.style.pointerEvents = "none";
+                freeze.style.pointerEvents = "none";
+                fight.style.pointerEvents = "none";
+                document.body.removeChild(tutoFilter);
+            }
+        }
     }, 4000);
 }
 
@@ -841,6 +896,15 @@ async function refreshShop(auto, requiredSpecies) {
             setTimeout(async () => {
                 await broadcastShopEvent("shop-refresh", []);
             }, 300);
+
+        let tutoCard = document.getElementsByClassName("tutoriel")[0];
+        if (isTuto && isTuto && tutoCard && tutoCard.card.effects.findIndex(e => e.id == -12) != -1) {
+            tutoCard.card.effects = [{
+                id: -13
+            }];
+            updateCardStats(tutoCard);
+            document.getElementById("fight").style.removeProperty("pointer-events");
+        }
     } else {
         refresh.style.boxShadow = "0 0 10px red";
         refresh.style.animation = "flicker .3s linear forwards";
@@ -852,7 +916,7 @@ async function refreshShop(auto, requiredSpecies) {
     }
 }
 
-function freezeShop() {
+async function freezeShop() {
     let freeze = false;
     for (let c of shop.children)
         freeze = freeze || (c.classList.contains("card") && !c.classList.contains("frozen"));
@@ -862,36 +926,103 @@ function freezeShop() {
         else
             c.classList.remove("frozen");
     }
+
+    if (isTuto) {
+        let tutoCard = document.getElementsByClassName("tutoriel")[0];
+        if (tutoCard && tutoCard.card.effects.findIndex(e => e.id == -16) != -1) {
+            tutoCard.card.effects = [{
+                id: -17
+            }];
+            updateCardStats(tutoCard);
+        } else if (tutoCard && tutoCard.card.effects.findIndex(e => e.id == -17) != -1) {
+            tutoCard.card.effects = [{
+                id: -18
+            }];
+            updateCardStats(tutoCard);
+
+            let filter = document.createElement('div');
+            filter.classList.add("filter");
+            document.body.appendChild(filter);
+            filter.onclick = () => {
+                nextTargetSelection = true;
+            }
+            await waitForTargetSelection();
+
+            tutoCard.card.effects = [{
+                id: -19
+            }];
+            updateCardStats(tutoCard);
+            await waitForTargetSelection();
+
+            tutoCard.card.effects = [{
+                id: -20
+            }];
+            updateCardStats(tutoCard);
+            await waitForTargetSelection();
+
+            tutoCard.card.effects = [{
+                id: -21
+            }];
+            updateCardStats(tutoCard);
+            document.getElementById("fight").style.removeProperty("pointer-events");
+            document.getElementById("freeze").style.removeProperty("pointer-events");
+            document.getElementById("refresh").style.removeProperty("pointer-events");
+            document.body.removeChild(filter);
+        }
+    }
 }
 
 async function buyCard(c, free) {
-    if (!free && coins < 3)
-        return;
-    if (!free) {
-        playMusic("resources/audio/sfx/pieces.mp3", false);
-        await spendCoins(3, false);
+    let tutoCard = document.getElementsByClassName("tutoriel")[0];
+    if (!isTuto || tutoCard && tutoCard.card.effects.findIndex(e => [-4, -13, -21].includes(e.id)) != -1) {
+        if (!free && coins < 3)
+            return;
+        if (!free) {
+            playMusic("resources/audio/sfx/pieces.mp3", false);
+            await spendCoins(3, false);
+        }
+        let shop = document.getElementById("shop");
+        shop.removeChild(c);
+        shop.style.setProperty("--shop-size", parseInt(shop.style.getPropertyValue("--shop-size")) - 1);
+        addToHand(c);
+        if (!free)
+            await broadcastShopEvent("card-buy", [c]);
+
+        if (isTuto && tutoCard && tutoCard.card.effects.findIndex(e => e.id == -4) != -1) {
+            tutoCard.card.effects = [{
+                id: -5
+            }];
+            updateCardStats(tutoCard);
+        }
     }
-    let shop = document.getElementById("shop");
-    shop.removeChild(c);
-    shop.style.setProperty("--shop-size", parseInt(shop.style.getPropertyValue("--shop-size")) - 1);
-    addToHand(c);
-    if (!free)
-        await broadcastShopEvent("card-buy", [c]);
 }
 
 let cardSold;
 
 async function sellCard(c) {
-    let area = c.parentNode.parentNode.classList.contains("board") ? "board" : "hand";
-    cardSold = c;
+    if (!isTuto || document.getElementsByClassName("tutoriel")[0].card.effects.findIndex(e => e.id <= -15) != -1) {
+        let area = c.parentNode.parentNode.classList.contains("board") ? "board" : "hand";
+        cardSold = c;
 
-    c.parentNode.removeChild(c);
-    playMusic("resources/audio/sfx/pieces.mp3", false);
-    await spendCoins(-1, false);
+        c.parentNode.removeChild(c);
+        playMusic("resources/audio/sfx/pieces.mp3", false);
+        await spendCoins(-1, false);
 
-    updateTroops();
+        updateTroops();
 
-    await broadcastShopEvent("card-sell", [c, area]);
+        await broadcastShopEvent("card-sell", [c, area]);
+
+        if (isTuto) {
+            let tutoCard = document.getElementsByClassName("tutoriel")[0];
+            if (tutoCard && tutoCard.card.effects.findIndex(e => e.id == -15) != -1) {
+                tutoCard.card.effects = [{
+                    id: -16
+                }];
+                updateCardStats(tutoCard);
+                document.getElementById("freeze").style.removeProperty("pointer-events");
+            }
+        }
+    }
 }
 
 async function addToHand(c) {
@@ -919,6 +1050,17 @@ async function placeCard(spot, c) {
     updateTroops();
 
     await broadcastShopEvent("card-place", [c]);
+
+    if (isTuto) {
+        let tutoCard = document.getElementsByClassName("tutoriel")[0];
+        if (tutoCard && tutoCard.card.effects.findIndex(e => e.id == -5) != -1) {
+            tutoCard.card.effects = [{
+                id: -6
+            }];
+            updateCardStats(tutoCard);
+            document.getElementById("fight").style.removeProperty("pointer-events");
+        }
+    }
 }
 
 async function summonCard(c) {
@@ -1877,6 +2019,18 @@ async function drawBattleScene(t1, t2, p) {
     document.getElementById("fight").style.transform = "translateX(130px)";
     document.getElementById("hand-area").style.transform = "translate(-50%, 60%)";
 
+    let tutoCard = document.getElementsByClassName("tutoriel")[0];
+    if (isTuto && tutoCard && tutoCard.card.effects.findIndex(e => e.id == -13) != -1) {
+        tutoCard.style.left = "110%";
+        document.getElementById("refresh").style.pointerEvents = "none";
+    } else if (isTuto && tutoCard && tutoCard.card.effects.findIndex(e => e.id == -21) != -1) {
+        tutoCard.style.left = "110%";
+        window.localStorage.setItem("tutorielMagicBattlegrounds", true);
+        setTimeout(() => {
+            document.body.removeChild(tutoCard);
+        }, 500);
+    }
+
     fadeOutMusic();
 
     await sleep(750);
@@ -1893,7 +2047,44 @@ async function drawBattleScene(t1, t2, p) {
 
     playMusic(getNextMusic("battle"), true);
 
-    await sleep(1500);
+    if (isTuto && tutoCard && tutoCard.card.effects.findIndex(e => e.id == -6) != -1) {
+        tutoCard.card.effects = [{
+            id: -7
+        }];
+        updateCardStats(tutoCard);
+
+        let filter = document.createElement('div');
+        filter.classList.add("filter");
+        document.body.appendChild(filter);
+        filter.onclick = () => {
+            nextTargetSelection = true;
+        }
+        await waitForTargetSelection();
+
+        tutoCard.card.effects = [{
+            id: -8
+        }];
+        updateCardStats(tutoCard);
+        await waitForTargetSelection();
+
+        tutoCard.card.effects = [{
+            id: -9
+        }];
+        updateCardStats(tutoCard);
+        await waitForTargetSelection();
+
+        tutoCard.card.effects = [{
+            id: -10
+        }];
+        updateCardStats(tutoCard);
+        await waitForTargetSelection();
+
+        tutoCard.style.left = "110%";
+        document.body.removeChild(filter);
+        await sleep(1000);
+    } else {
+        await sleep(1500);
+    }
 
     currentScene = "battle";
 }
@@ -2014,7 +2205,54 @@ async function drawShopScene() {
 
         playMusic(getNextMusic("shop"), true);
 
-        await sleep(750);
+        let tutoCard = document.getElementsByClassName("tutoriel")[0];
+        if (isTuto && tutoCard && tutoCard.card.effects.findIndex(e => e.id == -10) != -1) {
+            document.getElementById("fight").style.pointerEvents = "none";
+            tutoCard.card.effects = [{
+                id: -11
+            }];
+            updateCardStats(tutoCard);
+            tutoCard.style.removeProperty("left");
+
+            let filter = document.createElement('div');
+            filter.classList.add("filter");
+            document.body.appendChild(filter);
+            filter.onclick = () => {
+                nextTargetSelection = true;
+            }
+            await waitForTargetSelection();
+
+            document.body.removeChild(filter);
+            tutoCard.card.effects = [{
+                id: -12
+            }];
+            updateCardStats(tutoCard);
+            document.getElementById("refresh").style.removeProperty("pointer-events");
+        } else if (isTuto && tutoCard && tutoCard.card.effects.findIndex(e => e.id == -13) != -1) {
+            document.getElementById("fight").style.pointerEvents = "none";
+            document.getElementById("refresh").style.pointerEvents = "none";
+            tutoCard.card.effects = [{
+                id: -14
+            }];
+            updateCardStats(tutoCard);
+            tutoCard.style.removeProperty("left");
+
+            let filter = document.createElement('div');
+            filter.classList.add("filter");
+            document.body.appendChild(filter);
+            filter.onclick = () => {
+                nextTargetSelection = true;
+            }
+            await waitForTargetSelection();
+
+            document.body.removeChild(filter);
+            tutoCard.card.effects = [{
+                id: -15
+            }];
+            updateCardStats(tutoCard);
+        } else {
+            await sleep(750);
+        }
 
         currentScene = "shop";
 
@@ -7195,6 +7433,19 @@ function HacheADeuxMains() {
     };
 }
 
+function Tutoriel(n) {
+    this.name = "Officier de la Légion";
+    this.species = "Tutoriel";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "autres/tutoriel.jpg";
+    this.effects = [
+        {
+            id: n != undefined ? n : -1
+        }
+    ];
+}
+
 
 
 
@@ -7305,16 +7556,6 @@ function drawCard(c, size, cancelTooltip) {
     card.card = c;
 
     return card;
-}
-
-function fitDescription(c) {
-    let desc = c.children[2];
-    let maxY = desc.clientHeight;
-    let text = desc.children[0];
-    while (text.clientHeight > maxY) {
-        let size = parseInt(window.getComputedStyle(text).fontSize);
-        text.style.fontSize = (size - 1).toString() + "px";
-    }
 }
 
 function drawSmallCard(c, size) {
@@ -7472,6 +7713,9 @@ function updateCardStats(c) {
                     }
                 }
             }
+    }
+    if (!c.classList.contains("small-card")) {
+        fitDescription(c);
     }
 }
 
@@ -7643,6 +7887,7 @@ function fitDescription(card) {
     let desc = card.children[2];
     let maxY = desc.clientHeight - 2 * parseInt(window.getComputedStyle(desc).padding);
     let text = desc.children[0];
+    text.style.removeProperty("font-size");
     while (text.clientHeight > maxY) {
         let size = parseInt(window.getComputedStyle(text).fontSize);
         text.style.fontSize = (size - .5).toString() + "px";
@@ -7666,6 +7911,48 @@ async function resolveEvent(id, sender, args, doAnimate) {
 
 function createEffect(id) {
     switch (id) {
+        case -1:
+            return new EffectM1();
+        case -2:
+            return new EffectM2();
+        case -3:
+            return new EffectM3();
+        case -4:
+            return new EffectM4();
+        case -5:
+            return new EffectM5();
+        case -6:
+            return new EffectM6();
+        case -7:
+            return new EffectM7();
+        case -8:
+            return new EffectM8();
+        case -9:
+            return new EffectM9();
+        case -10:
+            return new EffectM10();
+        case -11:
+            return new EffectM11();
+        case -12:
+            return new EffectM12();
+        case -13:
+            return new EffectM13();
+        case -14:
+            return new EffectM14();
+        case -15:
+            return new EffectM15();
+        case -16:
+            return new EffectM16();
+        case -17:
+            return new EffectM17();
+        case -18:
+            return new EffectM18();
+        case -19:
+            return new EffectM19();
+        case -20:
+            return new EffectM20();
+        case -21:
+            return new EffectM21();
         case 1:
             return new Effect1();
         case 2:
@@ -14703,6 +14990,91 @@ function Effect10009() {
     this.desc = "<em>Dernière volonté :</em> Invoque une Incarnation du chaos.";
 }
 
+function EffectM1() {
+    this.desc = "Bienvenue recrue ! C'est moi qui suis chargé de t'apprendre les bases du combat.";
+}
+
+function EffectM2() {
+    this.desc = "Commence par choisir un commandant. Il te confèrera un bonus exclusif puissant pour toute la partie. Bien l'utiliser sera crucial pour dominer tes adversaires.";
+}
+
+function EffectM3() {
+    this.desc = "Tes adversaires sont visibles à droite. Ton objectif est de tous les vaincre en gagnant des combats contre eux pour faire chuter leurs points de vie à 0.<br/><sup><em>(Cliquer pour continuer)</em></sup>";
+}
+
+function EffectM4() {
+    this.desc = "Tu as 3 pièces d'or, visibles en haut à gauche. Dépense-les pour acheter une créature en la faisant glisser depuis la zone de recrutement vers le bas de l'écran.";
+}
+
+function EffectM5() {
+    this.desc = "A présent, déploie ta créature en la faisant glisser vers l'un des 8 emplacements libres au centre.";
+}
+
+function EffectM6() {
+    this.desc = "Tu n'as plus d'or, il est temps de te battre. Clique sur le bouton en bas à droite pour lancer un combat.";
+}
+
+function EffectM7() {
+    this.desc = "Les combats se déroulent automatiquement, selon des règles précises. Les créatures de chaque commandant attaquent tour à tour.<br/><sup><em>(Cliquer pour continuer)</em></sup>";
+}
+
+function EffectM8() {
+    this.desc = "Les créatures de la première ligne de chaque commandant attaquent de gauche à droite des créatures aléatoires de la première ligne adverse.<br/><sup><em>(Cliquer pour continuer)</em></sup>";
+}
+
+function EffectM9() {
+    this.desc = "Lorsqu'une créature meurt, elle est remplacée par la créature derrière elle, jusqu'à ce qu'un commandant n'ait plus de créature en vie capable de se battre.<br/><sup><em>(Cliquer pour continuer)</em></sup>";
+}
+
+function EffectM10() {
+    this.desc = "A la fin du combat, le commandant victorieux inflige des dégâts au commandant adverse. Ces dégâts dépendent du nombre de créatures encore en vie.<br/><sup><em>(Cliquer pour continuer)</em></sup>";
+}
+
+function EffectM11() {
+    this.desc = "Après chaque combat, tu récupères un peu d'or pour renforcer ton armée. Tu as à présent 4 pièces d'or au lieu de 3.<br/><sup><em>(Cliquer pour continuer)</em></sup>";
+}
+
+function EffectM12() {
+    this.desc = "Clique sur la loupe pour dépenser 1 pièce d'or et rechercher de nouvelles recrues.";
+}
+
+function EffectM13() {
+    this.desc = "A présent, utilise l'or qu'il te reste pour acheter une nouvelle créature, la déployer, et passer au combat suivant.";
+}
+
+function EffectM14() {
+    this.desc = "Après certains combat, ton niveau de recrutement augmente. Tu as désormais accès à de meilleures recrues.<br/><sup><em>(Cliquer pour continuer)</em></sup>";
+}
+
+function EffectM15() {
+    this.desc = "Revends une de tes créatures. Pour cela, fais-la glisser vers la zone de recrutement. Tu auras alors de quoi acheter 2 nouvelles recrues.";
+}
+
+function EffectM16() {
+    this.desc = "Quand tu auras fini ton recrutement, il arrivera qu'il reste des recrues intéressantes. Tu peux les mettre de côté pour le prochain tour en cliquant sur le bouton de gel. Essaye.";
+}
+
+function EffectM17() {
+    this.desc = "Ces recrues resteront disponibles après le prochain combat. Tu peux de nouveau cliquer sur le bouton pour les dégeler.";
+}
+
+function EffectM18() {
+    this.desc = "Si le positionnement de tes créatures ne te plaît pas, tu peux à tout moment les déplacer, voire les échanger, en les faisant glisser.<br/><sup><em>(Cliquer pour continuer)</em></sup>";
+}
+
+function EffectM19() {
+    this.desc = "Une dernière chose avant de conclure cet entraînenement. Tu auras peut-être remarqué que certaines cartes ne sont pas des créatures mais des Sortilèges.<br/><sup><em>(Cliquer pour continuer)</em></sup>";
+}
+
+function EffectM20() {
+    this.desc = "Les Sortilèges possèdent de puissants effets à usage unique. Fais-les glisser sur ton armée pour les utiliser.<br/><sup><em>(Cliquer pour continuer)</em></sup>";
+}
+
+function EffectM21() {
+    this.desc = "C'est tout ce dont tu as besoin pour vaincre tes ennemis. Bon courage recrue !";
+}
+
+
 
 
 
@@ -14936,8 +15308,11 @@ async function chooseTarget(callback, param, sender) {
         }
     }
 
+    filter.onclick = () => {
+        closeEffectSelector();
+        nextTargetSelection = true;
+    };
     await waitForTargetSelection();
-    filter.onclick = closeEffectSelector;
 }
 
 async function closeEffectSelector() {
