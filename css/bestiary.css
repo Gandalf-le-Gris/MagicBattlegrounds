@@ -1,0 +1,59 @@
+#bestiaryLayout {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: calc(100% - 200px);
+    overflow-y: auto;
+    display: grid;
+    grid-auto-flow: row;
+    row-gap: 120px;
+    padding: 100px 150px;
+}
+
+    #bestiaryLayout > #title {
+        display: flex;
+        transform: scale(1.2);
+    }
+
+        #bestiaryLayout > #title > * {
+            font-size: var(--font-very-large);
+            font-family: var(--global-font);
+            font-weight: bold;
+            padding: 10px 60px 30px 60px;
+            background-image: url("../resources/ui/parchment.png");
+            background-size: 100% 100%;
+            margin: auto;
+        }
+
+    #bestiaryLayout > .section {
+        display: grid;
+        grid-auto-flow: row;
+        row-gap: 40px;
+    }
+
+        #bestiaryLayout > .section > *:first-child {
+            display: flex;
+        }
+
+            #bestiaryLayout > .section > *:first-child > * {
+                font-size: var(--font-very-large);
+                font-family: var(--global-font);
+                font-weight: bold;
+                padding: 10px 60px 30px 60px;
+                background-image: url("../resources/ui/parchment.png");
+                background-size: 100% 100%;
+                margin: auto;
+            }
+
+        #bestiaryLayout > .section > *:last-child {
+            display: flex;
+        }
+
+            #bestiaryLayout > .section > *:last-child > * {
+                display: grid;
+                grid-template-columns: repeat(4, 260px);
+                grid-gap: 50px;
+                margin: auto;
+            }

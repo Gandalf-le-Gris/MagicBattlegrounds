@@ -65,7 +65,7 @@ img {
     font-weight: bold;
     text-align: center;
     position: absolute;
-    top: 480px;
+    top: 430px;
     left: 50%;
     transform: translateX(-50%);
     display: grid;
@@ -755,6 +755,36 @@ img {
     font-family: var(--global-font);
     font-size: var(--font-large);
 }
+
+.back-button {
+    position: absolute;
+    top: 10px;
+    left: 80px;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    border-radius: 50%;
+    background-image: url("../resources/ui/wooden-disk.png");
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    transition: transform .3s;
+    z-index: 299;
+    display: flex;
+    filter: brightness(.85);
+}
+
+    .back-button:hover {
+        box-shadow: 0 0 5px white;
+        transform: scale(1.1);
+        filter: brightness(.9);
+    }
+
+    .back-button > img {
+        width: 75%;
+        height: 75%;
+        margin: auto;
+    }
+
 
 
 

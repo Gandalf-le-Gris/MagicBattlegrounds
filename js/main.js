@@ -219,6 +219,14 @@ function drawHomeScreen() {
         startGame();
     };
 
+    let bestiary = document.createElement('li');
+    bestiary.innerHTML = "Bestiaire";
+    bestiary.onclick = () => {
+        playMusic("resources/audio/sfx/page-turn.mp3", false);
+        openBestiary();
+    };
+    homeMenu.appendChild(bestiary);
+
     let options = document.createElement('li');
     options.innerHTML = "Options";
     options.onclick = () => {
@@ -7453,7 +7461,7 @@ function Tutoriel(n) {
 let showDelay = 800, hideDelay = 0;
 let menuEnterTimer, menuLeaveTimer;
 
-function drawCard(c, size, cancelTooltip) {
+function drawCard(c, size, cancelTooltip, isShowcase) {
     let card = document.createElement('div');
     card.className = "card";
     card.style.setProperty("--size", size + "px");
@@ -7527,17 +7535,23 @@ function drawCard(c, size, cancelTooltip) {
         reputation.className = "reputation";
         card.appendChild(reputation);
         let reputationVal = document.createElement('div');
-        let player = 0;
-        for (let i = 1; i < 8; i++) {
-            let t = troops[i];
-            if (t.includes(c) || c.original && t.includes(c.original)) {
-                player = i;
-                break;
+        if (!isShowcase) {
+            let player = 0;
+            for (let i = 1; i < 8; i++) {
+                let t = troops[i];
+                if (t.includes(c) || c.original && t.includes(c.original)) {
+                    player = i;
+                    break;
+                }
             }
+            reputationVal.innerHTML = c.reputation;
+            if (isWarchief(c, player))
+                reputation.classList.add("star");
+        } else {
+            reputationVal.innerHTML = c.reputation;
+            if (c.reputation >= 8)
+                reputation.classList.add("star");
         }
-        reputationVal.innerHTML = c.reputation;
-        if (isWarchief(c, player))
-            reputation.classList.add("star");
         reputation.appendChild(reputationVal);
     }
 
@@ -15430,6 +15444,70 @@ async function forgeEquipment() {
     await waitForTargetSelection();
     document.body.removeChild(filter);
     await broadcastShopEvent("forge");
+}
+
+
+
+/* ----------------------------------------------------- */
+/* --------------------- Bestiary ---------------------- */
+/* ----------------------------------------------------- */
+
+async function openBestiary() {
+    await fadeTransition(() => {
+        clearBody();
+        document.body.style.backgroundImage = 'url("resources/ui/bestiary-bg.jpg")';
+
+        let settings = document.createElement('div');
+        settings.className ="settings-button";
+        settings.onclick = toggleSettings;
+        document.body.appendChild(settings);
+
+        let back = document.createElement('div');
+        back.className = "back-button";
+        back.onclick = () => fadeTransition(drawHomeScreen);
+        document.body.appendChild(back);
+        let backImage = document.createElement('img');
+        backImage.src = "resources/ui/back.png";
+        back.appendChild(backImage);
+
+        let layout = document.createElement('div');
+        layout.id = "bestiaryLayout";
+        document.body.appendChild(layout);
+
+        let title = document.createElement('div');
+        title.id = "title";
+        layout.appendChild(title);
+        let titleText = document.createElement('div');
+        titleText.innerHTML = "Bestiaire";
+        title.appendChild(titleText);
+
+        for (let key of ["Commandant", "Autre"].concat(speciesList).concat(["Sortilège", "Token"])) {
+            let section = document.createElement('div');
+            section.classList.add("section");
+            layout.appendChild(section);
+
+            let name = document.createElement('div');
+            section.appendChild(name);
+            let nameText = document.createElement('div');
+            nameText.innerHTML = key;
+            name.appendChild(nameText);
+
+            let cardGridWrapper = document.createElement('div');
+            section.appendChild(cardGridWrapper);
+            let cardGrid = document.createElement('div');
+            cardGridWrapper.appendChild(cardGrid);
+            let cards = cardList[key].map(e => createCard(e)).sort((a, b) => {
+                if (a.tier && b.tier && a.tier !== b.tier)
+                    return a.tier - b.tier;
+                return a.name.localeCompare(b.name);
+            });
+            for (let c of cards) {
+                let card = drawCard(c, 260, false, true);
+                cardGrid.appendChild(card);
+                fitDescription(card);
+            }
+        }
+    });
 }
 
 
