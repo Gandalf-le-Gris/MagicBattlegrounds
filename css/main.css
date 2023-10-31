@@ -3,6 +3,11 @@
     src: url('../resources/ui/papyrus.ttf');
 }
 
+@font-face {
+    font-family: Augusta;
+    src: url('../resources/ui/Augusta.ttf');
+}
+
 body, html {
     overflow-y: hidden;
     overflow-x: hidden;
@@ -49,15 +54,25 @@ img {
 
 
 .home-screen-title {
-    font-family: var(--global-font);
+    font-family: Augusta, var(--global-font);
     font-size: calc(var(--font-very-large) * 2);
-    font-weight: bold;
+    line-height: calc(var(--font-very-large) * 1.5);
+    text-align: center;
     position: absolute;
-    top: 200px;
+    top: 110px;
     left: 50%;
     transform: translateX(-50%);
-    text-shadow: 0 0 calc(var(--font-very-large) * 1.5) white;
+    display: flex;
+    background-image: url("../resources/ui/signboard.png");
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    padding: 60px;
 }
+
+    .home-screen-title > * {
+        margin: auto;
+        text-shadow: 0 0 calc(var(--font-very-large) * 1.5) white;
+    }
 
 .home-screen-menu {
     font-family: var(--global-font);

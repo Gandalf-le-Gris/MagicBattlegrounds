@@ -207,8 +207,10 @@ function drawHomeScreen() {
 
     let title = document.createElement('div');
     title.className = "home-screen-title";
-    title.innerHTML = "Magic Battlegrounds";
     document.body.appendChild(title);
+    let titleText = document.createElement('div');
+    titleText.innerHTML = "Magic<br/>Battlegrounds";
+    title.appendChild(titleText);
 
     let homeMenu = document.createElement('ul');
     homeMenu.className = "home-screen-menu";
