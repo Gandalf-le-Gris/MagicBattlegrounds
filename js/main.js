@@ -114,6 +114,8 @@ function loadResources() {
     imgs.push("resources/ui/shield.png");
     imgs.push("resources/ui/team-builder-bg.jpg");
     imgs.push("resources/ui/wood-texture.jpg");
+    imgs.push("resources/ui/bestiary-bg.jpg");
+    imgs.push("resources/ui/back.png");
     imgs.push("resources/cards/autres/tutoriel.jpg");
 
     for (let s of speciesList.concat(["Commandant", "Autre", "Token"]))
@@ -127,6 +129,7 @@ function loadResources() {
     sounds.push("resources/audio/music/tavern1.mp3");
     sounds.push("resources/audio/music/tavern2.mp3");
     sounds.push("resources/audio/music/tavern3.mp3");
+    sounds.push("resources/audio/music/bestiary.mp3");
     sounds.push("resources/audio/sfx/pieces.mp3");
     sounds.push("resources/audio/sfx/impact.mp3");
     sounds.push("resources/audio/sfx/effect-proc.mp3");
@@ -15481,7 +15484,8 @@ async function openBestiary() {
         titleText.innerHTML = "Bestiaire";
         title.appendChild(titleText);
 
-        for (let key of ["Commandant", "Autre"].concat(speciesList).concat(["Sortilège", "Token"])) {
+        const categories = ["Commandant", "Autre"].concat(speciesList.sort((a, b) => a.localeCompare(b))).concat(["Sortilège", "Token"]);
+        for (let key of categories) {
             let section = document.createElement('div');
             section.classList.add("section");
             layout.appendChild(section);
@@ -15507,6 +15511,8 @@ async function openBestiary() {
                 fitDescription(card);
             }
         }
+
+        playMusic("resources/audio/music/bestiary.mp3", true);
     });
 }
 

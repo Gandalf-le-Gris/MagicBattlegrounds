@@ -57,3 +57,22 @@
                 grid-gap: 50px;
                 margin: auto;
             }
+
+
+::-webkit-scrollbar {
+    width: 16px;
+}
+  
+::-webkit-scrollbar-track {
+    background: #0008;
+}
+  
+::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    transition: .2s;
+    border-radius: 8px;
+}
+  
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #aaa;
+    }
