@@ -526,7 +526,7 @@ img {
         grid-row-gap: 15px;
     }
 
-        .tooltip > .tips > div {
+        .tooltip > .tips > div:not(.card-refs) {
             width: 200px;
             padding: 10px 40px 10px 40px;
             font-family: var(--global-font);
@@ -536,6 +536,18 @@ img {
             background-image: url("../resources/ui/paper-scroll.png");
             background-size: 100% 100%;
         }
+
+        .tooltip > .tips > .card-refs {
+            display: flex;
+        }
+
+            .tooltip > .tips > .card-refs > * {
+                width: auto;
+                display: grid;
+                grid-auto-flow: column;
+                column-gap: 10px;
+                margin: auto;
+            }
 
 .shop-banner {
     position: absolute;

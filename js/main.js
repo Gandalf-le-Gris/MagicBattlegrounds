@@ -7572,6 +7572,8 @@ function drawCard(c, size, cancelTooltip, isShowcase) {
         });
     }
 
+    if (isShowcase)
+        c.isShowcase = true;
     card.card = c;
 
     return card;
@@ -7744,7 +7746,7 @@ function showCardTooltip(c) {
     tooltip.id = "tooltip";
     document.body.appendChild(tooltip);
 
-    let card = drawCard(c, 300, true);
+    let card = drawCard(c, 300, true, c.isShowcase);
     tooltip.appendChild(card);
 
     let desc = card.children[2];
@@ -7841,6 +7843,21 @@ function showCardTooltip(c) {
         let shield = document.createElement('div');
         shield.innerHTML = "<em>Injouable :</em> Ne peut qu'être revendu.";
         tips.appendChild(shield);
+    }
+    if (c.effects.findIndex(e => createEffect(e.id).refs) > -1) {
+        let refsWrapper = document.createElement('div');
+        refsWrapper.classList.add("card-refs");
+        tips.appendChild(refsWrapper);
+        let refs = document.createElement('div');
+        refsWrapper.appendChild(refs);
+
+        for (let effect of c.effects.filter(e => createEffect(e.id).refs)) {
+            for (let ref of createEffect(effect.id).refs) {
+                let refCard = drawCard(createCard(ref), 150, true, true);
+                refs.appendChild(refCard);
+                fitDescription(refCard);
+            }
+        }
     }
 
     if (tips.children.length == 0)
@@ -8760,6 +8777,7 @@ function Effect8() {
     };
     this.desc = "Tous les 2 tours, ajoute une Proie facile dans votre main.";
     this.dynamicDesc = (c) => round % 2 == 0 ? "<em>(Ce tour-ci)</em>" : "<em>(Au prochain tour)</em>";
+    this.refs = ["proie-facile"];
 }
 
 function Effect9() {
@@ -8832,6 +8850,7 @@ function Effect12() {
         return 0;
     };
     this.desc = "Commencez la partie avec un Scion aspirâme en main.";
+    this.refs = ["scion-aspirame"];
 }
 
 function Effect13() {
@@ -9042,6 +9061,7 @@ function Effect22() {
         return 0;
     };
     this.desc = "Commence la partie avec un Coeur de l'Abysse.";
+    this.refs = ["coeur-de-l-abysse"];
 }
 
 function Effect23() {
@@ -9099,6 +9119,7 @@ function Effect101() {
         return 0;
     };
     this.desc = "<em>Recrue :</em> Ajoute 1 Pièce d'or à votre main.";
+    this.refs = ["piece-d-or"];
 }
 
 function Effect102() {
@@ -9144,6 +9165,7 @@ function Effect103() {
     };
     this.desc = "Après avoir joué 4 autres Dragons, se transforme en Dragon d'or.";
     this.dynamicDesc = (c) => "<em>(Encore " + (4 - (c.effect103 ? c.effect103 : 0)) + ")</em>";
+    this.refs = ["dragon-d-or"];
 }
 
 function Effect104() {
@@ -9221,6 +9243,7 @@ function Effect107() {
         return 0;
     };
     this.desc = "<em>Dernière volonté :</em> Ajoute 1 Pièce d'or à votre main.";
+    this.refs = ["piece-d-or"];
 }
 
 function Effect108() {
@@ -9487,6 +9510,7 @@ function Effect202() {
             t[t.indexOf(undefined)] = new GuerrierGobelin();
     };
     this.desc = "<em>Recrue :</em> Invoque un Guerrier gobelin.";
+    this.refs = ["guerrier-gobelin"];
 }
 
 function Effect203() {
@@ -9501,6 +9525,7 @@ function Effect203() {
         return 5;
     };
     this.desc = "<em>Dernière volonté :</em> Invoque un Artificier gobelin.";
+    this.refs = ["artificier-gobelin"];
 }
 
 function Effect204() {
@@ -9734,6 +9759,7 @@ function Effect214() {
         return 12;
     };
     this.desc = "<em>Dernière volonté :</em> Invoque trois Artificiers gobelins.";
+    this.refs = ["artificier-gobelin"];
 }
 
 function Effect215() {
@@ -9742,11 +9768,11 @@ function Effect215() {
             let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
             let i = t.findIndex(e => e === sender);
             let vals = [];
-            if (i % 4 > 0 && t[i - 1] && t[i - 1].species == "Gobelin")
+            if (i % 4 > 0 && t[i - 1] && t[i - 1].species == "Gobelin" && t[i - 1].effects.findIndex(e => e.id === 215) == -1)
                 vals.push(t[i - 1].attack);
-            if (i % 4 < 3 && t[i + 1] && t[i + 1].species == "Gobelin")
+            if (i % 4 < 3 && t[i + 1] && t[i + 1].species == "Gobelin" && t[i + 1].effects.findIndex(e => e.id === 215) == -1)
                 vals.push(t[i + 1].attack);
-            if (t[(i + 4) % 8] && t[(i + 4) % 8].species == "Gobelin")
+            if (t[(i + 4) % 8] && t[(i + 4) % 8].species == "Gobelin" && t[(i + 4) % 8].effects.findIndex(e => e.id === 215) == -1)
                 vals.push(t[(i + 4) % 8].attack);
             if (vals.length > 0) {
                 if (doAnimate)
@@ -9761,7 +9787,7 @@ function Effect215() {
     this.battleValue = (c, t) => {
         return 4 * t.filter(e => e.species === "Gobelin").length;
     };
-    this.desc = "<em>Frappe préventive :</em> Gagne de l'attaque équivalente à l'attaque du Gobelin voisin le plus fort.";
+    this.desc = "<em>Frappe préventive :</em> Gagne de l'attaque équivalente à l'attaque du Gobelin voisin différent le plus fort.";
 }
 
 function Effect216() {
@@ -9810,6 +9836,7 @@ function Effect217() {
             });
     }
     this.desc = "Confère \"<em>Dernière volonté :</em> Invoque un Artificier gobelin.\" au Gobelin allié ciblé.";
+    this.refs = ["artificier-gobelin"];
 }
 
 function Effect218() {
@@ -9848,6 +9875,7 @@ function Effect301() {
         return 0;
     };
     this.desc = "<em>Recrue :</em> Ajoute une Connaissances arcaniques à votre main.";
+    this.refs = ["connaissances-arcaniques"];
 }
 
 function Effect302() {
@@ -9978,6 +10006,7 @@ function Effect308() {
     };
     this.toFront = true;
     this.desc = "<em>Dernière volonté :</em> Ajoute un Catalyseur de puissance à votre main.";
+    this.refs = ["catalyseur-de-puissance"];
 }
 
 function Effect309() {
@@ -10109,14 +10138,15 @@ function Effect315() {
         return 0;
     };
     this.desc = "<em>Recrue :</em> Ajoute un Équilibre naturel à votre main.";
+    this.refs = ["equilibre-naturel"];
 }
 
 function Effect316() {
     this.run = async (sender, args, doAnimate) => {
         let atk = args[0].card.attack;
         let hp = args[0].card.hp;
-        let datk = Math.floor((hp - atk) / 2);
-        let dhp = Math.floor((atk - hp) / 2);
+        let datk = Math.ceil((hp - atk) / 2);
+        let dhp = Math.ceil((atk - hp) / 2);
         await boostStats(args[0].card, datk + 1, dhp + 1, doAnimate);
     };
     this.scaling = (c, t) => {
@@ -10146,6 +10176,7 @@ function Effect317() {
         return 0;
     };
     this.desc = "Joue 5 Connaissances arcaniques sur des cibles aléatoires.";
+    this.refs = ["connaissances-arcaniques"];
 }
 
 function Effect318() {
@@ -10166,6 +10197,7 @@ function Effect318() {
         return 0;
     };
     this.desc = "<em>Recrue :</em> Ajoute un Déphasage à votre main.";
+    this.refs = ["dephasage"];
 }
 
 function Effect319() {
@@ -10248,6 +10280,7 @@ function Effect322() {
         return 0;
     };
     this.desc = "Au début de votre tour, ajoute un Catalyseur de puissance à votre main, ou deux si vous avez perdu le dernier combat.";
+    this.refs = ["catalyseur-de-puissance"];
 }
 
 function Effect323() {
@@ -11338,6 +11371,7 @@ function Effect608() {
         return 9 * t.filter(e => e.species === "Machine").length;
     };
     this.desc = "<em>Dernière volonté :</em> Confère +2/+2 à toutes les autres Machines alliées, puis invoque deux copies de base de cette créature sans réinvocation.";
+    this.refs = ["automate-replicateur-mod"];
 }
 
 function Effect609() {
@@ -11458,6 +11492,7 @@ function Effect613() {
         return 4;
     };
     this.desc = "<em>Dernière volonté :</em> Invoque une copie de base de cette créature sans réinvocation.";
+    this.refs = ["auto-duplicateur-mod"];
 }
 
 function Effect614() {
@@ -11494,6 +11529,7 @@ function Effect615() {
         return 12;
     };
     this.desc = "<em>Dernière volonté :</em> Invoque trois Ouvriers assemblés.";
+    this.refs = ["ouvrier-assemble"];
 }
 
 function Effect616() {
@@ -11564,6 +11600,7 @@ function Effect619() {
         return 4;
     };
     this.desc = "<em>Dernière volonté :</em> Invoque un Ouvrier assemblé.";
+    this.refs = ["ouvrier-assemble"];
 }
 
 function Effect620() {
@@ -11589,6 +11626,7 @@ function Effect620() {
             });
     }
     this.desc = "Confère \"<em>Dernière volonté :</em> Invoque un Ouvrier assemblé.\" à la Machine alliée ciblée.";
+    this.refs = ["ouvrier-assemble"];
 }
 
 function Effect621() {
@@ -11652,6 +11690,7 @@ function Effect701() {
             t[t.indexOf(undefined)] = new ProieFacile();
     }
     this.desc = "<em>Recrue :</em> Ajoute 1 Proie facile à votre main.";
+    this.refs = ["proie-facile"];
 }
 
 function Effect702() {
@@ -11824,6 +11863,7 @@ function Effect707() {
     };
     this.toFront = true;
     this.desc = "<em>Dernière volonté :</em> Ajoute une Proie facile à votre main.";
+    this.refs = ["proie-facile"];
 }
 
 function Effect708() {
@@ -11865,6 +11905,7 @@ function Effect708() {
         return 0;
     };
     this.desc = "<em>Recrue :</em> <em>Dévore</em> toutes les Proies faciles en jeu et dans votre main, et gagne +2/+1 à chaque fois.";
+    this.refs = ["proie-facile"];
 }
 
 function Effect709() {
@@ -12031,6 +12072,7 @@ function Effect716() {
         return 0;
     };
     this.desc = "Confère +1/+0 aux créatures de la première ligne, puis ajoute une Proie facile à votre main.";
+    this.refs = ["proie-facile"];
 }
 
 function Effect717() {
@@ -12287,6 +12329,7 @@ function Effect810() {
         return 4;
     };
     this.desc = "<em>Dernière volonté :</em> Invoque un Squelette reconstitué.";
+    this.refs = ["squelette-reconstitue"];
 }
 
 function Effect811() {
@@ -12342,6 +12385,7 @@ function Effect813() {
         return 20;
     };
     this.desc = "<em>Dernière volonté :</em> Invoque un Serviteur exhumé.";
+    this.refs = ["serviteur-exhume"];
 }
 
 function Effect814() {
@@ -12657,6 +12701,7 @@ function Effect911() {
     };
     this.toFront = true;
     this.desc = "<em>Dernière volonté :</em> Remplit la première ligne de Jeunes fongus, et repousse les créatures alliées au besoin.";
+    this.refs = ["jeune-fongus"];
 }
 
 function Effect912() {
@@ -13458,6 +13503,7 @@ function Effect1110() {
     };
     this.desc = "Après avoir survécu à des dégâts 5 fois, est remplacé par Le Banni au début de votre prochain tour.";
     this.dynamicDesc = (c) => "<em>(Encore " + (5 - (c.effect1109 ? c.effect1109 : 0)) + ")</em>";
+    this.refs = ["le-banni"];
 }
 
 function Effect1111() {
@@ -13631,6 +13677,7 @@ function Effect1118() {
     };
     this.toFront = true;
     this.desc = "<em>Dernière volonté :</em> Invoque Le Banni.";
+    this.refs = ["le-banni"];
 }
 
 function Effect1119() {
@@ -13663,6 +13710,7 @@ function Effect1120() {
         return 0;
     };
     this.desc = "Confère \"<em>Dernière volonté :</em>Invoque Le Banni.\" au Démon allié ciblé.";
+    this.refs = ["le-banni"];
 }
 
 function Effect1201() {
@@ -15007,6 +15055,7 @@ function Effect10009() {
         return 5;
     };
     this.desc = "<em>Dernière volonté :</em> Invoque une Incarnation du chaos.";
+    this.refs = ["incarnation-du-chaos"];
 }
 
 function EffectM1() {
