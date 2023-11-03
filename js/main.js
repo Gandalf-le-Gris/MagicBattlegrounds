@@ -2138,7 +2138,7 @@ async function drawShopScene() {
         filter.onclick = () => {
             fadeTransition(drawHomeScreen);
         };
-    } else if (nAlive == 1 || true) {
+    } else if (nAlive == 1) {
         fadeOutMusic();
         await sleep(500);
 
