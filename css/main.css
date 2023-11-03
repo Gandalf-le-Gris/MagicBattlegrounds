@@ -684,7 +684,7 @@ img {
 
 .end-banner {
     position: absolute;
-    top: 35%;
+    top: 30%;
     left: 50%;
     font-size: var(--font-very-large);
     font-family: var(--global-font);
@@ -692,7 +692,7 @@ img {
     padding: 10px 70px 30px 60px;
     background-image: url("../resources/ui/parchment.png");
     background-size: 100% 100%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) scale(1.5);
 }
 
 .end-position {

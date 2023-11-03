@@ -130,6 +130,7 @@ function loadResources() {
     sounds.push("resources/audio/music/tavern2.mp3");
     sounds.push("resources/audio/music/tavern3.mp3");
     sounds.push("resources/audio/music/bestiary.mp3");
+    sounds.push("resources/audio/music/victory.mp3");
     sounds.push("resources/audio/sfx/pieces.mp3");
     sounds.push("resources/audio/sfx/impact.mp3");
     sounds.push("resources/audio/sfx/effect-proc.mp3");
@@ -2137,7 +2138,10 @@ async function drawShopScene() {
         filter.onclick = () => {
             fadeTransition(drawHomeScreen);
         };
-    } else if (nAlive == 1) {
+    } else if (nAlive == 1 || true) {
+        fadeOutMusic();
+        await sleep(500);
+
         let filter = document.createElement('div');
         filter.className = "semi-black-filter";
         document.body.appendChild(filter);
@@ -2160,6 +2164,8 @@ async function drawShopScene() {
         filter.onclick = () => {
             fadeTransition(drawHomeScreen);
         };
+
+        playMusic("resources/audio/music/victory.mp3", true);
     } else {
         let board = document.getElementById("board");
 
