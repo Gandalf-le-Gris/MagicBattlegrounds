@@ -516,6 +516,14 @@ img {
     z-index: 200;
 }
 
+    .tooltip > *:first-child {
+        display: flex;
+    }
+
+        .tooltip > *:first-child > * {
+            margin: auto;
+        }
+
     .tooltip > .tips {
         padding-top: 15px;
         padding-bottom: 15px;
@@ -544,8 +552,8 @@ img {
             .tooltip > .tips > .card-refs > * {
                 width: auto;
                 display: grid;
-                grid-auto-flow: column;
-                column-gap: 10px;
+                grid-template-columns: repeat(2, auto);
+                grid-gap: 10px;
                 margin: auto;
             }
 
@@ -812,6 +820,15 @@ img {
         margin: auto;
     }
 
+.spell-preview {
+    position: absolute;
+    top: 400px;
+    right: 50px;
+    box-shadow: 0 0 20px white;
+    z-index: 100;
+    opacity: 0;
+    animation: previewShort 2s ease;
+}
 
 
 
@@ -930,5 +947,23 @@ img {
 
     100% {
         box-shadow: 0 0 30px #ff7777;
+    }
+}
+
+@keyframes previewShort {
+    0% {
+        opacity: 0;
+    }
+
+    15% {
+        opacity: 1;
+    }
+
+    55% {
+        opacity: 1;
+    }
+
+    85% {
+        opacity: 0;
     }
 }

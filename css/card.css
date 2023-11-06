@@ -267,8 +267,6 @@
             height: 100%;
             width: fit-content;
             justify-self: center;
-            grid-auto-columns: calc(var(--size) * .16);
-            grid-gap: calc(var(--size) * .04);
         }
 
             .small-card > .footer > .effects > img {
@@ -280,6 +278,8 @@
                 border-radius: 50%;
                 padding: calc(var(--size) * .01);
                 margin-top: calc(var(--size) * .04);
+                margin-left: calc(var(--size) * .01);
+                margin-right: calc(var(--size) * .01);
             }
 
     .small-card > .reputation {
