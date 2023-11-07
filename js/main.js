@@ -2041,6 +2041,7 @@ async function drawBattleScene(t1, t2, p) {
     } else if (isTuto && tutoCard && tutoCard.card.effects.findIndex(e => e.id == -21) != -1) {
         tutoCard.style.left = "110%";
         window.localStorage.setItem("tutorielMagicBattlegrounds", true);
+        isTuto = false;
         setTimeout(() => {
             document.body.removeChild(tutoCard);
         }, 500);
