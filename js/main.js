@@ -10015,7 +10015,11 @@ function Effect42() {
             sender.effect42.push(args[0].card.species);
     };
     this.scaling = (c, t) => {
-        return [0, fluctuate(t.reduce((acc, e) => e && !acc.includes(e.species) && species.includes(e.species) ? acc.push(e.species) : acc, []).length, 0, round / 2), 0, 0];
+        return [0, fluctuate(t.reduce((acc, e) => {
+            if (e && !acc.includes(e.species) && species.includes(e.species))
+                acc.push(e.species);
+            return acc;
+        }, []).length, 0, round / 2), 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
