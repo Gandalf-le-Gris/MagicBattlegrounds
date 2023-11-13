@@ -418,7 +418,7 @@ img {
 
         .board > div > div {
             position: relative;
-            transition: .5s;
+            transition: all .5s, background 0s;
             animation: fadeIn .5s ease;
             cursor: pointer;
         }
@@ -467,6 +467,10 @@ img {
     padding: 15px;
     animation: fadeIn 1s ease;
 }
+
+    .players > .small-card {
+        transition: .5s;
+    }
 
     .players > .small-card:hover {
         transform: scale(1.06);
@@ -625,6 +629,18 @@ img {
     z-index: -998;
     transition: .5s;
     background-image: url("../resources/ui/battle-bg.jpg");
+    background-size: 100% 100%;
+}
+
+.night-background {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: -999;
+    transition: .5s;
+    background-image: url("../resources/ui/team-builder-night-bg.jpg");
     background-size: 100% 100%;
 }
 
@@ -907,6 +923,26 @@ img {
 
     100% {
         transform: rotateY(0deg);
+    }
+}
+
+@keyframes flip1commander {
+    0% {
+        transform: rotateY(0deg) translateY(-50%) scale(.7);
+    }
+
+    100% {
+        transform: rotateY(90deg) translateY(-50%) scale(.7);
+    }
+}
+
+@keyframes flip2commander {
+    0% {
+        transform: rotateY(-90deg) translateY(-50%) scale(.7);
+    }
+
+    100% {
+        transform: rotateY(0deg) translateY(-50%) scale(.7);
     }
 }
 

@@ -113,14 +113,22 @@ function loadResources() {
     imgs.push("resources/ui/search.png");
     imgs.push("resources/ui/shield.png");
     imgs.push("resources/ui/team-builder-bg.jpg");
+    imgs.push("resources/ui/team-builder-night-bg.jpg");
     imgs.push("resources/ui/wood-texture.jpg");
     imgs.push("resources/ui/bestiary-bg.jpg");
     imgs.push("resources/ui/back.png");
+    imgs.push("resources/ui/skull.png");
+    imgs.push("resources/ui/dots.png");
     imgs.push("resources/cards/autres/tutoriel.jpg");
 
-    for (let s of speciesList.concat(["Commandant", "Autre", "Token"]))
-        for (let c of cardList[s])
-            imgs.push("resources/cards/" + createCard(c).src);
+    for (let s of speciesList.concat(["Commandant", "Autre", "Token"])) {
+        for (let c of cardList[s]) {
+            let card = createCard(c);
+            imgs.push("resources/cards/" + card.src);
+            if (card.werewolf)
+                imgs.push("resources/cards/" + createCard(card.werewolf).src);
+        }
+    }
 
     sounds.push("resources/audio/music/battle1.mp3");
     sounds.push("resources/audio/music/battle2.mp3");
@@ -139,6 +147,7 @@ function loadResources() {
     sounds.push("resources/audio/sfx/battle.mp3");
     sounds.push("resources/audio/sfx/explosion.mp3");
     sounds.push("resources/audio/sfx/page-turn.mp3");
+    sounds.push("resources/audio/sfx/cocorico.mp3");
 
     for (let s of speciesList.concat(["Autre", "Sortilège"]))
         for (let c of battleCries[s])
@@ -412,6 +421,7 @@ let battleCries = {
     "Démon": ["resources/audio/sfx/demon1.mp3", "resources/audio/sfx/demon2.mp3", "resources/audio/sfx/demon3.mp3"],
     "Elémentaire": ["resources/audio/sfx/elementaire1.mp3", "resources/audio/sfx/elementaire2.mp3", "resources/audio/sfx/elementaire3.mp3"],
     "Nain": ["resources/audio/sfx/nain1.mp3", "resources/audio/sfx/nain2.mp3", "resources/audio/sfx/nain3.mp3", "resources/audio/sfx/nain4.mp3", "resources/audio/sfx/nain5.mp3"],
+    "Loup-Garou": ["resources/audio/sfx/loup-garou1.mp3", "resources/audio/sfx/loup-garou2.mp3", "resources/audio/sfx/loup-garou3.mp3", "resources/audio/sfx/loup-garou4.mp3"],
     "Autre": ["resources/audio/sfx/autre1.mp3"],
     "Sortilège": ["resources/audio/sfx/sortilege1.mp3"]
 }
@@ -640,6 +650,8 @@ async function selectHero(n) {
                 selected.className += " selected-commander";
                 selected.style.removeProperty("pointer-events");
                 players[0] = selected.card;
+                if (species.includes("Loup-Garou"))
+                    players[0].day = true
                 for (let i = 3; i < 10; i++)
                     players[i - 2] = commanders[i];
                 for (let i = 1; i < 8; i++) {
@@ -647,6 +659,8 @@ async function selectHero(n) {
                         enemyFamilies[i] = players[i].requirement;
                     else
                         enemyFamilies[i] = choice(species);
+                    if (species.includes("Loup-Garou"))
+                        players[i].day = true
 
                     if (players[i].effects.findIndex(e => e.id == 12) != -1)
                         troops[i][0] = new ScionAspirame();
@@ -793,6 +807,14 @@ async function selectHero(n) {
         battleBG.style.opacity = "0";
         document.body.appendChild(battleBG);
 
+        if (species.includes("Loup-Garou")) {
+            let nightBG = document.createElement('div');
+            nightBG.className = "night-background";
+            nightBG.id = "night-bg";
+            nightBG.style.opacity = "0";
+            document.body.appendChild(nightBG);
+        }
+
         let enemyBoard = document.createElement('div');
         enemyBoard.className = "board";
         enemyBoard.id = "enemy-board";
@@ -891,7 +913,10 @@ async function refreshShop(auto, requiredSpecies) {
                 shop.children[i].style.animation = "none";
             }
             for (let i = 0; i < parseInt(shop.style.getPropertyValue("--shop-size")) - nChildren + 2; i++) {
-                let c = drawCard(getCard(shopTier, requiredSpecies), 176);
+                let card = getCard(shopTier, requiredSpecies);
+                if (species.includes("Loup-Garou") && !players[0].day && card.werewolf)
+                    card = createCard(card.werewolf);
+                let c = drawCard(card, 176);
                 if (getDemons && c.card.species !== "Démon" && Math.random() < .08)
                     c = drawCard(getCard(shopTier, "Démon"), 176);
                 c.style.animation = "flip2 .15s ease forwards";
@@ -1042,6 +1067,8 @@ async function sellCard(c) {
 
 async function addToHand(c) {
     if (document.getElementById("hand").children.length < 6) {
+        if (c.card.werewolf && (!players[0].day ^ c.card.src.endsWith("-t.jpg")))
+            c = drawCard(createCard(c.card.werewolf), 176);
         document.getElementById("hand").appendChild(c);
         c.draggable = true;
         c.addEventListener('dragstart', dragStart);
@@ -1102,6 +1129,7 @@ async function summonCard(c) {
 }
 
 async function moveCard(spot, c) {
+    c.style.removeProperty("animation");
     let source = c.parentNode;
     source.removeChild(c);
     if (spot.children.length > 0) {
@@ -1170,6 +1198,8 @@ async function broadcastShopEvent(name, args) {
 
     if (name == "card-sell")
         await consumeEvent(cardSold.card, name, args, true);
+    if (name == "day-night-cycle")
+        await transformWerewolves(args[0]);
     for (let d of document.getElementById("board").children)
         if (d.children[0])
             await consumeEvent(d.children[0].card, name, args, true);
@@ -1268,6 +1298,65 @@ async function playSpell(c, t) {
         await createEffect(e.id).run(c.card, [t], true);
 
     await broadcastShopEvent("spell-play", [c.card, t ? t.card : undefined]);
+}
+
+async function transformWerewolves(isDay) {
+    if (isDay) {
+        document.getElementById("night-bg").style.opacity = "0";
+        playMusic("resources/audio/sfx/cocorico.mp3", false);
+    } else {
+        document.getElementById("night-bg").style.opacity = "1";
+        playMusic("resources/audio/sfx/loup-garou4.mp3", false);
+    }
+
+    let cards = [players[0]]
+                .concat(troops[0])
+                .concat(Array.from(document.getElementById("hand").children).map(e => e.card))
+                .concat(Array.from(document.getElementById("shop").children).filter(e => e.classList.contains("card")).map(e => e.card))
+                .filter(e => e && e.werewolf);
+    if (cards.findIndex(e => e.src.endsWith("-t.jpg") ^ !isDay) === -1)
+        return;
+
+    for (let card of cards) {
+        if (card.src.endsWith("-t.jpg") ^ !isDay) {
+            let c = findDOMCard(card);
+            if (c.id === "commander")
+                c.style.animation = "flip1commander .15s ease forwards";
+            else
+                c.style.animation = "flip1 .15s ease forwards";
+        }
+    }
+    await sleep(150);
+    for (let card of cards) {
+        if (card.src.endsWith("-t.jpg") ^ !isDay) {
+            let c = findDOMCard(card);
+            let newCard = createCard(card.werewolf);
+            let baseCard = createCard(newCard.werewolf);
+            card.werewolf = newCard.werewolf;
+            card.src = newCard.src;
+            card.effects = newCard.effects.concat(card.effects);
+            if (card.species !== "Commandant")
+                card.attack = Math.max(0, card.attack + newCard.attack - baseCard.attack);
+            card.hp = Math.max(0, card.hp + newCard.hp - baseCard.hp);
+            for (let eff of baseCard.effects) {
+                let i = card.effects.findIndex(e => e.id === eff.id);
+                if (i !== -1)
+                    card.effects.splice(i, 1);
+            }
+            updateCardStats(c);
+
+            if (c.id === "commander")
+                c.style.animation = "flip2commander .15s ease forwards";
+            else
+                c.style.animation = "flip2 .15s ease forwards";
+        }
+    } 
+    drawPlayers();
+    await sleep(150);
+    for (let card of cards) {
+        let c = findDOMCard(card);
+        c.style.animation = "none";
+    }
 }
 
 
@@ -1423,6 +1512,24 @@ function updateEnemyTroops() {
                     }
             }
             budget -= 3;
+        }
+        if (species.includes("Loup-Garou")) {
+            for (let card of t.filter(e => e && e.werewolf)) {
+                if (card.src.endsWith("-t.jpg") ^ !players[i].day) {
+                    let newCard = createCard(card.werewolf);
+                    let baseCard = createCard(newCard.werewolf);
+                    card.werewolf = newCard.werewolf;
+                    card.src = newCard.src;
+                    card.effects = newCard.effects.concat(card.effects);
+                    card.attack = Math.max(0, card.attack + newCard.attack - baseCard.attack);
+                    card.hp = Math.max(0, card.hp + newCard.hp - baseCard.hp);
+                    for (let eff of baseCard.effects) {
+                        let i = card.effects.findIndex(e => e.id === eff.id);
+                        if (i !== -1)
+                            card.effects.splice(i, 1);
+                    }
+                }
+            }
         }
 
         arrangeEnemyTroops(t);
@@ -2201,6 +2308,26 @@ async function drawShopScene() {
                 increaseShopTier();
         }
         spendCoins(-Math.min(10, round + 2), true);
+        if (species.includes("Loup-Garou")) {
+            players[0].day = !players[0].day;
+            for (let i = 1; i < 8; i++) {
+                let card = players[i];
+                card.day = !card.day;
+                if (card.werewolf && (card.src.endsWith("-t.jpg") ^ !card.day)) {
+                    let newCard = createCard(card.werewolf);
+                    let baseCard = createCard(newCard.werewolf);
+                    card.werewolf = newCard.werewolf;
+                    card.src = newCard.src;
+                    card.effects = newCard.effects.concat(card.effects);
+                    card.hp = Math.max(0, card.hp + newCard.hp - baseCard.hp);
+                    for (let eff of baseCard.effects) {
+                        let i = card.effects.findIndex(e => e.id === eff.id);
+                        if (i !== -1)
+                            card.effects.splice(i, 1);
+                    }
+                }
+            }
+        }
         refreshShop(true);
         drawPlayers();
 
@@ -2282,6 +2409,9 @@ async function drawShopScene() {
 
         currentScene = "shop";
 
+        if (species.includes("Loup-Garou"))
+            await broadcastShopEvent("day-night-cycle", [players[0].day]);
+
         await broadcastShopEvent("turn-start", []);
     }
 }
@@ -2312,11 +2442,11 @@ async function drawShopScene() {
 /* ------------------ Card management ------------------ */
 /* ----------------------------------------------------- */
 
-const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant", "Sylvain", "Horde", "Démon", "Elémentaire", "Nain"];
+const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant", "Sylvain", "Horde", "Démon", "Elémentaire", "Nain", "Loup-Garou"];
 
 const cardList = {
-    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde", "contremaitre-de-l-abysse", "avatar-de-la-creation", "champion-de-forgeterre", "ancetre-des-dragons", "roi-mercenaire", "concepteur-du-planetarium", "bretteuse-temeraire", "contrebandier-prospere", "androide-surcharge", "ravageur-de-villes", "pretre-de-la-crypte-noire", "forgeron-arcaniste", "druide-ne-des-arbres", "berserker-braisehache", "juggernaut-infernal", "devoreur-d-elements", "apparition-angelique"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces", "masse-de-la-brutalite", "summum-de-la-gloire", "pacte-demoniaque", "liberer-le-mal", "transcendance-elementaire", "confluence-elementaire", "benediction-de-la-forge", "splendeur-des-mines"],
+    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde", "contremaitre-de-l-abysse", "avatar-de-la-creation", "champion-de-forgeterre", "ancetre-des-dragons", "roi-mercenaire", "concepteur-du-planetarium", "bretteuse-temeraire", "contrebandier-prospere", "androide-surcharge", "ravageur-de-villes", "pretre-de-la-crypte-noire", "forgeron-arcaniste", "druide-ne-des-arbres", "berserker-braisehache", "juggernaut-infernal", "devoreur-d-elements", "apparition-angelique", "chef-des-traqueurs", "naturaliste-de-wulfwald"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces", "masse-de-la-brutalite", "summum-de-la-gloire", "pacte-demoniaque", "liberer-le-mal", "transcendance-elementaire", "confluence-elementaire", "benediction-de-la-forge", "splendeur-des-mines", "assaut-sauvage", "transformation-lupine"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
@@ -2330,6 +2460,7 @@ const cardList = {
     "Démon": ["demon-inferieur", "guetteur-demoniaque", "pretre-corrompu", "ecumeur-des-terres-desolees", "diablomancien-de-l-abysse", "fleau-des-terres-desolees", "incarnation-du-chaos", "porteur-de-la-noire-parole", "moissonneur-de-vitalite", "adepte-du-culte-du-sang", "poete-a-la-plume-sanglante", "divinite-dechue", "ange-transcende", "tortionnaire-d-ames", "annonciatrice-funeste"],
     "Elémentaire": ["familier-chatfeu", "golem-demolisseur", "esprit-des-rivieres", "faconneuse-de-nuages", "sculpteur-elementaire", "colere-de-la-nature", "esprit-des-sources-chaudes", "goliath-volcanique", "chevaucheur-de-tempetes", "manifestation-boreale", "chargeur-rocailleux", "djinn-sang-de-foudre", "phenix-flamboyant", "volonte-de-la-fournaise", "ame-de-l-orage"],
     "Nain": ["excavateur-amateur", "explorateur-de-ruines", "artisan-minutieux", "infuseur-de-lames", "maitre-forgeron", "pillard-nain", "defenseur-des-montagnes", "lanceur-de-haches", "marcheur-des-grottes", "roi-sous-la-montagne", "gardienne-des-mines", "fleau-des-orcs", "emissaire-de-forgeterre", "escouade-naine", "artisan-forgerune"],
+    "Loup-Garou": ["ouvrier-du-champ-de-ruines", "fermier-paisible", "astronome-acharne", "peintre-runique", "ermite-autarcique", "purificatrice-ardente", "protectrice-des-loups", "eclaireur-nocturne", "charmeuse-de-meute", "assassin-de-wulfwald", "naturaliste-courroucee", "patrouille-de-wulfwald", "traqueur-solitaire", "ange-du-crepuscule", "surineuse-de-wulfwald"],
     "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"],
     "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble", "jeune-fongus", "coeur-de-l-abysse", "le-banni", "marteau-d-artisan", "marteau-demesure", "pioche-renforcee", "armure-de-plaques", "epee-du-roi-sous-la-montagne", "grappin-d-acier", "masse-arcanique", "bouclier-du-protecteur", "couronne-ornementale", "hache-a-deux-mains", "rituel-de-sang", "rituel-de-divination", "rituel-de-puissance", "rituel-de-vie-eternelle", "pulverisateur-arcanique", "gants-de-passe-partout", "lunettes-d-artificier", "epee-energisee"]
 };
@@ -2352,9 +2483,9 @@ function initCards() {
             species.push(s);
     }
 
-    //species = ["Dragon"]; //!!!
-    /*if (!species.includes("Elémentaire")) //!!!
-        species[0] = "Elémentaire";*/
+    //species = ["Loup-Garou"]; //!!!
+    /*if (!species.includes("Loup-Garou")) //!!!
+        species[0] = "Loup-Garou";*/
 
     //for (let s of speciesList)
     //    cardList[s] = [cardList[s][0]]; //!!!
@@ -2379,7 +2510,7 @@ function initCards() {
 
     shuffle(cards);
     shuffle(commanders);
-    /*while (commanders.findIndex(e => e.name.startsWith("Apparition")) > 2 && species.includes("Elémentaire")) //!!!
+    /*while (commanders.findIndex(e => e.name.startsWith("Naturaliste ")) > 2 && species.includes("Loup-Garou")) //!!!
         shuffle(commanders);*/
 }
 
@@ -2468,6 +2599,14 @@ function createCard(card) {
             return new DevoreurDElements();
         case "apparition-angelique":
             return new ApparitionAngelique();
+        case "chef-des-traqueurs":
+            return new ChefDesTraqueurs();
+        case "chef-des-traqueurs-t":
+            return new ChefDesTraqueursT();
+        case "naturaliste-de-wulfwald":
+            return new NaturalisteDeWulfwald();
+        case "naturaliste-de-wulfwald-t":
+            return new NaturalisteDeWulfwaldT();
 
         case "dragonnet-ardent":
             return new DragonnetArdent();
@@ -2937,6 +3076,67 @@ function createCard(card) {
             return new BenedictionDeLaForge();
         case "splendeur-des-mines":
             return new SplendeurDesMines();
+
+        case "ouvrier-du-champ-de-ruines":
+            return new OuvrierDuChampDeRuines();
+        case "ouvrier-du-champ-de-ruines-t":
+            return new OuvrierDuChampDeRuinesT();
+        case "fermier-paisible":
+            return new FermierPaisible();
+        case "fermier-paisible-t":
+            return new FermierPaisibleT();
+        case "astronome-acharne":
+            return new AstronomeAcharne();
+        case "peintre-runique":
+            return new PeintreRunique();
+        case "peintre-runique-t":
+            return new PeintreRuniqueT();
+        case "ermite-autarcique":
+            return new ErmiteAutarcique();
+        case "ermite-autarcique-t":
+            return new ErmiteAutarciqueT();
+        case "purificatrice-ardente":
+            return new PurificatriceArdente();
+        case "purificatrice-ardente-t":
+            return new PurificatriceArdenteT();
+        case "protectrice-des-loups":
+            return new ProtectriceDesLoups();
+        case "protectrice-des-loups-t":
+            return new ProtectriceDesLoupsT();
+        case "eclaireur-nocturne":
+            return new EclaireurNocturne();
+        case "eclaireur-nocturne-t":
+            return new EclaireurNocturneT();
+        case "assaut-sauvage":
+            return new AssautSauvage();
+        case "charmeuse-de-meute":
+            return new CharmeuseDeMeute();
+        case "charmeuse-de-meute-t":
+            return new CharmeuseDeMeuteT();
+        case "assassin-de-wulfwald":
+            return new AssassinDeWulfwald();
+        case "assassin-de-wulfwald-t":
+            return new AssassinDeWulfwaldT();
+        case "transformation-lupine":
+            return new TransformationLupine();
+        case "naturaliste-courroucee":
+            return new NaturalisteCourroucee();
+        case "naturaliste-courroucee-t":
+            return new NaturalisteCourrouceeT();
+        case "patrouille-de-wulfwald":
+            return new PatrouilleDeWulfwald();
+        case "patrouille-de-wulfwald-t":
+            return new PatrouilleDeWulfwaldT();
+        case "traqueur-solitaire":
+            return new TraqueurSolitaire();
+        case "traqueur-solitaire-t":
+            return new TraqueurSolitaireT();
+        case "ange-du-crepuscule":
+            return new AngeDuCrepuscule();
+        case "surineuse-de-wulfwald":
+            return new SurineuseDeWulfWald();
+        case "surineuse-de-wulfwald-t":
+            return new SurineuseDeWulfWaldT();
 
         case "changeforme-masque":
             return new ChangeformeMasque();
@@ -3557,6 +3757,70 @@ function ApparitionAngelique() {
         {
             trigger: "card-sell",
             id: 43
+        }
+    ];
+}
+
+function ChefDesTraqueurs() {
+    this.name = "Chef des traqueurs";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 28;
+    this.src = "commandants/chef-des-traqueurs.jpg";
+    this.requirement = "Loup-Garou";
+    this.werewolf = "chef-des-traqueurs-t";
+    this.effects = [
+        {
+            trigger: "day-night-cycle",
+            id: 44
+        }
+    ];
+}
+
+function ChefDesTraqueursT() {
+    this.name = "Chef des traqueurs";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 28;
+    this.src = "commandants/chef-des-traqueurs-t.jpg";
+    this.requirement = "Loup-Garou";
+    this.werewolf = "chef-des-traqueurs";
+    this.effects = [
+        {
+            trigger: "day-night-cycle",
+            id: 45
+        }
+    ];
+}
+
+function NaturalisteDeWulfwald() {
+    this.name = "Naturaliste de Wulfwald";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 31;
+    this.src = "commandants/naturaliste-de-wulfwald.jpg";
+    this.requirement = "Loup-Garou";
+    this.werewolf = "naturaliste-de-wulfwald-t";
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 46
+        }
+    ];
+}
+
+function NaturalisteDeWulfwaldT() {
+    this.name = "Naturaliste de Wulfwald";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 31;
+    this.src = "commandants/naturaliste-de-wulfwald-t.jpg";
+    this.requirement = "Loup-Garou";
+    this.werewolf = "naturaliste-de-wulfwald";
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 47
         }
     ];
 }
@@ -7182,6 +7446,496 @@ function SplendeurDesMines() {
 }
 
 
+// Loup-garou
+
+function OuvrierDuChampDeRuines() {
+    this.name = "Ouvrier du champ de ruines";
+    this.species = "Loup-Garou";
+    this.attack = 2;
+    this.hp = 2;
+    this.werewolf = "ouvrier-du-champ-de-ruines-t";
+    this.src = "loups-garous/ouvrier-du-champ-de-ruines.jpg";
+    this.tier = 1;
+    this.effects = [
+
+    ];
+}
+
+function OuvrierDuChampDeRuinesT() {
+    this.name = "Ouvrier du champ de ruines";
+    this.species = "Loup-Garou";
+    this.attack = 3;
+    this.hp = 3;
+    this.werewolf = "ouvrier-du-champ-de-ruines";
+    this.src = "loups-garous/ouvrier-du-champ-de-ruines-t.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "day-night-cycle",
+            id: 1401
+        }
+    ];
+}
+
+function FermierPaisible() {
+    this.name = "Fermier paisible";
+    this.species = "Loup-Garou";
+    this.attack = 1;
+    this.hp = 3;
+    this.werewolf = "fermier-paisible-t";
+    this.src = "loups-garous/fermier-paisible.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "card-sell",
+            id: 1402
+        }
+    ];
+}
+
+function FermierPaisibleT() {
+    this.name = "Fermier paisible";
+    this.species = "Loup-Garou";
+    this.attack = 3;
+    this.hp = 3;
+    this.werewolf = "fermier-paisible";
+    this.src = "loups-garous/fermier-paisible-t.jpg";
+    this.tier = 1;
+    this.effects = [
+
+    ];
+}
+
+function AstronomeAcharne() {
+    this.name = "Astronome acharné";
+    this.species = "Autre";
+    this.attack = 2;
+    this.hp = 4;
+    this.src = "loups-garous/astronome-acharne.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1403
+        }
+    ];
+}
+
+function PeintreRunique() {
+    this.name = "Peintre runique";
+    this.species = "Loup-Garou";
+    this.attack = 2;
+    this.hp = 3;
+    this.werewolf = "peintre-runique-t";
+    this.src = "loups-garous/peintre-runique.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 1405
+        }
+    ];
+}
+
+function PeintreRuniqueT() {
+    this.name = "Peintre runique";
+    this.species = "Loup-Garou";
+    this.attack = 4;
+    this.hp = 3;
+    this.werewolf = "peintre-runique";
+    this.src = "loups-garous/peintre-runique-t.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 1406
+        }
+    ];
+}
+
+function ErmiteAutarcique() {
+    this.name = "Ermite autarcique";
+    this.species = "Loup-Garou";
+    this.attack = 1;
+    this.hp = 4;
+    this.werewolf = "ermite-autarcique-t";
+    this.src = "loups-garous/ermite-autarcique.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "day-night-cycle",
+            id: 1407
+        }
+    ];
+}
+
+function ErmiteAutarciqueT() {
+    this.name = "Ermite autarcique";
+    this.species = "Loup-Garou";
+    this.attack = 3;
+    this.hp = 3;
+    this.werewolf = "ermite-autarcique";
+    this.src = "loups-garous/ermite-autarcique-t.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "day-night-cycle",
+            id: 1408
+        }
+    ];
+}
+
+function PurificatriceArdente() {
+    this.name = "Purificatrice ardente";
+    this.species = "Loup-Garou";
+    this.attack = 3;
+    this.hp = 4;
+    this.werewolf = "purificatrice-ardente-t";
+    this.src = "loups-garous/purificatrice-ardente.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "day-night-cycle",
+            id: 1409
+        },
+        {
+            trigger: "battle-start",
+            id: 1410
+        }
+    ];
+}
+
+function PurificatriceArdenteT() {
+    this.name = "Purificatrice ardente";
+    this.species = "Loup-Garou";
+    this.attack = 6;
+    this.hp = 3;
+    this.werewolf = "purificatrice-ardente";
+    this.src = "loups-garous/purificatrice-ardente-t.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "day-night-cycle",
+            id: 1409
+        },
+        {
+            trigger: "battle-start",
+            id: 1411
+        }
+    ];
+}
+
+function ProtectriceDesLoups() {
+    this.name = "Protectrice des loups";
+    this.species = "Loup-Garou";
+    this.attack = 2;
+    this.hp = 5;
+    this.werewolf = "protectrice-des-loups-t";
+    this.src = "loups-garous/protectrice-des-loups.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "attacked",
+            id: 1412
+        }
+    ];
+}
+
+function ProtectriceDesLoupsT() {
+    this.name = "Protectrice des loups";
+    this.species = "Loup-Garou";
+    this.attack = 4;
+    this.hp = 5;
+    this.werewolf = "protectrice-des-loups";
+    this.src = "loups-garous/protectrice-des-loups-t.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "attacked",
+            id: 1413
+        }
+    ];
+}
+
+function EclaireurNocturne() {
+    this.name = "Eclaireur nocturne";
+    this.species = "Loup-Garou";
+    this.attack = 3;
+    this.hp = 3;
+    this.werewolf = "eclaireur-nocturne-t";
+    this.src = "loups-garous/eclaireur-nocturne.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1416
+        }
+    ];
+}
+
+function EclaireurNocturneT() {
+    this.name = "Eclaireur nocturne";
+    this.species = "Loup-Garou";
+    this.attack = 5;
+    this.hp = 5;
+    this.werewolf = "eclaireur-nocturne";
+    this.src = "loups-garous/eclaireur-nocturne-t.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1417
+        }
+    ];
+}
+
+function AssautSauvage() {
+    this.name = "Assaut sauvage";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "loups-garous/assaut-sauvage.jpg";
+    this.requirement = "Loup-Garou";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1428
+        }
+    ];
+    this.validTarget = {
+        area: "any"
+    };
+}
+
+function CharmeuseDeMeute() {
+    this.name = "Charmeuse de meute";
+    this.species = "Loup-Garou";
+    this.attack = 3;
+    this.hp = 4;
+    this.werewolf = "charmeuse-de-meute-t";
+    this.src = "loups-garous/charmeuse-de-meute.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "day-night-cycle",
+            id: 1414
+        }
+    ];
+}
+
+function CharmeuseDeMeuteT() {
+    this.name = "Charmeuse de meute";
+    this.species = "Loup-Garou";
+    this.attack = 6;
+    this.hp = 4;
+    this.werewolf = "charmeuse-de-meute";
+    this.src = "loups-garous/charmeuse-de-meute-t.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "day-night-cycle",
+            id: 1415
+        }
+    ];
+}
+
+function AssassinDeWulfwald() {
+    this.name = "Assassin de Wulfwald";
+    this.species = "Loup-Garou";
+    this.attack = 5;
+    this.hp = 3;
+    this.werewolf = "assassin-de-wulfwald-t";
+    this.src = "loups-garous/assassin-de-wulfwald.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "day-night-cycle",
+            id: 1418
+        }
+    ];
+}
+
+function AssassinDeWulfwaldT() {
+    this.name = "Assassin de Wulfwald";
+    this.species = "Loup-Garou";
+    this.attack = 8;
+    this.hp = 3;
+    this.werewolf = "assassin-de-wulfwald";
+    this.src = "loups-garous/assassin-de-wulfwald-t.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "day-night-cycle",
+            id: 1419
+        }
+    ];
+}
+
+function TransformationLupine() {
+    this.name = "Transformation lupine";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "loups-garous/transformation-lupine.jpg";
+    this.requirement = "Loup-Garou";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1429
+        }
+    ];
+    this.validTarget = {
+        area: "board",
+        species: "Loup-Garou"
+    };
+}
+
+function NaturalisteCourroucee() {
+    this.name = "Naturaliste courroucée";
+    this.species = "Loup-Garou";
+    this.attack = 5;
+    this.hp = 4;
+    this.werewolf = "naturaliste-courroucee-t";
+    this.src = "loups-garous/naturaliste-courroucee.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "attack",
+            id: 1420
+        }
+    ];
+}
+
+function NaturalisteCourrouceeT() {
+    this.name = "Naturaliste courroucée";
+    this.species = "Loup-Garou";
+    this.attack = 7;
+    this.hp = 5;
+    this.werewolf = "naturaliste-courroucee";
+    this.src = "loups-garous/naturaliste-courroucee-t.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "attack",
+            id: 1421
+        }
+    ];
+}
+
+function PatrouilleDeWulfwald() {
+    this.name = "Patrouille de Wulfwald";
+    this.species = "Loup-Garou";
+    this.attack = 5;
+    this.hp = 5;
+    this.werewolf = "patrouille-de-wulfwald-t";
+    this.src = "loups-garous/patrouille-de-wulfwald.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 1423
+        }
+    ];
+}
+
+function PatrouilleDeWulfwaldT() {
+    this.name = "Patrouille de Wulfwald";
+    this.species = "Loup-Garou";
+    this.attack = 6;
+    this.hp = 6;
+    this.werewolf = "patrouille-de-wulfwald";
+    this.src = "loups-garous/patrouille-de-wulfwald-t.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 1422
+        }
+    ];
+}
+
+function TraqueurSolitaire() {
+    this.name = "Traqueur solitaire";
+    this.species = "Loup-Garou";
+    this.attack = 4;
+    this.hp = 7;
+    this.werewolf = "traqueur-solitaire-t";
+    this.src = "loups-garous/traqueur-solitaire.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1424
+        }
+    ];
+}
+
+function TraqueurSolitaireT() {
+    this.name = "Traqueur solitaire";
+    this.species = "Loup-Garou";
+    this.attack = 7;
+    this.hp = 7;
+    this.werewolf = "traqueur-solitaire";
+    this.src = "loups-garous/traqueur-solitaire-t.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1425
+        }
+    ];
+}
+
+function AngeDuCrepuscule() {
+    this.name = "Ange du crépuscule";
+    this.species = "Autre";
+    this.attack = 6;
+    this.hp = 6;
+    this.src = "loups-garous/ange-du-crepuscule.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 1404
+        }
+    ];
+}
+
+function SurineuseDeWulfWald() {
+    this.name = "Surineuse de Wulfwald";
+    this.species = "Loup-Garou";
+    this.attack = 7;
+    this.hp = 5;
+    this.werewolf = "surineuse-de-wulfwald-t";
+    this.src = "loups-garous/surineuse-de-wulfwald.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "attack",
+            id: 1426
+        }
+    ];
+}
+
+function SurineuseDeWulfWaldT() {
+    this.name = "Surineuse de Wulfwald";
+    this.species = "Loup-Garou";
+    this.attack = 9;
+    this.hp = 7;
+    this.werewolf = "surineuse-de-wulfwald";
+    this.src = "loups-garous/surineuse-de-wulfwald-t.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "attack",
+            id: 1427
+        }
+    ];
+}
+
+
 // Autre
 
 function AngeDeLUnite() {
@@ -8146,6 +8900,7 @@ function fillSmallCardEffects(c, effects) {
 
 function updateCardStats(c) {
     if (c.classList.contains("small-card")) {
+        c.style.backgroundImage = 'url("./resources/cards/' + c.card.src + '")';
         let footer = c.children[0];
         if (footer.children[0].classList.contains("attack"))
             footer.children[0].children[0].innerHTML = c.card.attack;
@@ -8153,6 +8908,7 @@ function updateCardStats(c) {
         if (footer.children[2].classList.contains("hp"))
             footer.children[2].children[0].innerHTML = c.card.hp;
     } else {
+        c.children[1].children[0].src = './resources/cards/' + c.card.src;
         c.children[2].children[0].innerHTML = getDescription(c.card, false);
         let footer = c.children[3];
         if (footer.children[0].classList.contains("attack"))
@@ -8298,17 +9054,33 @@ function showCardTooltip(c) {
         shield.innerHTML = "<em>Equipement :</em> Type de Sortilège maîtrisé par les Nains.";
         tips.appendChild(shield);
     }
+    if (getDescription(c).includes("Forme humaine") || getDescription(c).includes("Forme bestiale")) {
+        let shield = document.createElement('div');
+        shield.innerHTML = "<em>Jour et nuit :</em> Change de forme au début de chaque tour.";
+        tips.appendChild(shield);
+    }
+    if (getDescription(c).includes("Lycanthropie")) {
+        let shield = document.createElement('div');
+        shield.innerHTML = "<em>Lycanthropie :</em> Se produit lorsque la créature se transforme dans cette forme.";
+        tips.appendChild(shield);
+    }
     if (containsKeyword(c, "Injouable")) {
         let shield = document.createElement('div');
         shield.innerHTML = "<em>Injouable :</em> Ne peut qu'être revendu.";
         tips.appendChild(shield);
     }
-    if (c.effects.findIndex(e => createEffect(e.id).refs) > -1) {
+    if (c.effects.findIndex(e => createEffect(e.id).refs) > -1 || c.werewolf) {
         let refsWrapper = document.createElement('div');
         refsWrapper.classList.add("card-refs");
         tips.appendChild(refsWrapper);
         let refs = document.createElement('div');
         refsWrapper.appendChild(refs);
+
+        if (c.werewolf) {
+            let refCard = drawCard(createCard(c.werewolf), 150, true, true);
+            refs.appendChild(refCard);
+            fitDescription(refCard);
+        }
 
         for (let effect of c.effects.filter(e => createEffect(e.id).refs)) {
             for (let ref of createEffect(effect.id).refs) {
@@ -8348,6 +9120,8 @@ function getDescription(c, cancelTooltip) {
         }
         res += ".</br>";
     }
+    if (c.werewolf)
+        res += c.src.endsWith("-t.jpg") ? "<em>Forme bestiale.</em></br>" : "<em>Forme humaine.</em></br>";
     if (c.equipment)
         res += "<em>Equipement</em>.</br>";
     if (c.shield)
@@ -8534,6 +9308,14 @@ function createEffect(id) {
             return new Effect42();
         case 43:
             return new Effect43();
+        case 44:
+            return new Effect44();
+        case 45:
+            return new Effect45();
+        case 46:
+            return new Effect46();
+        case 47:
+            return new Effect47();
         case 101:
             return new Effect101();
         case 102:
@@ -9074,6 +9856,64 @@ function createEffect(id) {
             return new Effect1362();
         case 1363:
             return new Effect1363();
+        case 1401:
+            return new Effect1401();
+        case 1402:
+            return new Effect1402();
+        case 1403:
+            return new Effect1403();
+        case 1404:
+            return new Effect1404();
+        case 1405:
+            return new Effect1405();
+        case 1406:
+            return new Effect1406();
+        case 1407:
+            return new Effect1407();
+        case 1408:
+            return new Effect1408();
+        case 1409:
+            return new Effect1409();
+        case 1410:
+            return new Effect1410();
+        case 1411:
+            return new Effect1411();
+        case 1412:
+            return new Effect1412();
+        case 1413:
+            return new Effect1413();
+        case 1414:
+            return new Effect1414();
+        case 1415:
+            return new Effect1415();
+        case 1416:
+            return new Effect1416();
+        case 1417:
+            return new Effect1417();
+        case 1418:
+            return new Effect1418();
+        case 1419:
+            return new Effect1419();
+        case 1420:
+            return new Effect1420();
+        case 1421:
+            return new Effect1421();
+        case 1422:
+            return new Effect1422();
+        case 1423:
+            return new Effect1423();
+        case 1424:
+            return new Effect1424();
+        case 1425:
+            return new Effect1425();
+        case 1426:
+            return new Effect1426();
+        case 1427:
+            return new Effect1427();
+        case 1428:
+            return new Effect1428();
+        case 1429:
+            return new Effect1429();
         case 2001:
             return new Effect2001();
         case 2002:
@@ -10049,6 +10889,89 @@ function Effect43() {
         return 0;
     };
     this.desc = "";
+}
+
+function Effect44() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0]) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let c of troops[0].filter(e => e && e.species === "Loup-Garou"))
+                await boostStats(c, 0, 1, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 1 + t.filter(e => e.species === "Loup-Garou").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Lycanthropie :</em> Confère +0/+1 aux Loups-Garous alliés.";
+}
+
+function Effect45() {
+    this.run = async (sender, args, doAnimate) => {
+        if (!args[0]) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let c of troops[0].filter(e => e && e.species === "Loup-Garou"))
+                await boostStats(c, 1, 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 1 + t.filter(e => e.species === "Loup-Garou").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Lycanthropie :</em> Confère +1/+0 aux Loups-Garous alliés.";
+}
+
+function Effect46() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card.species === "Loup-Garou") {
+            let n = troops[0]
+                    .filter(e => e && e.species === "Loup-Garou" && e !== args[0].card)
+                    .reduce((acc, x) => {
+                        if (!acc.includes(x.name))
+                            acc.push(x.name);
+                        return acc;
+                    }, [])
+                    .length;
+            if (n > 0) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await boostStats(args[0].card, n, n, doAnimate);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(1 + (t.filter(e => e && e.species === "Loup-Garou").length > 2), 0, round), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous jouez un Loup-Garou, il gagne +1/+1 pour chaque autre Loup-Garou allié différent.";
+}
+
+function Effect47() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card.species === "Loup-Garou") {
+            let n = troops[0].filter(e => e && e.species === "Loup-Garou" && e !== args[0].card).length;
+            if (n > 0) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await boostStats(args[0].card, n, n, doAnimate);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(1 + (t.filter(e => e && e.species === "Loup-Garou").length > 2), 0, round), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous jouez un Loup-Garou, il gagne +1/+1 pour chaque autre Loup-Garou allié.";
 }
 
 function Effect101() {
@@ -15647,6 +16570,637 @@ function Effect1363() {
         return 0;
     };
     this.desc = "La créature ciblée gagne +X/+0, où X est la moitié du tour actuel.";
+}
+
+function Effect1401() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board"))
+            await boostStats(sender, 1, 0, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [1, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Lycanthropie :</em> Gagne +1/+0.";
+}
+
+function Effect1402() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            await spendCoins(-1, false);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 1, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous revendez cette carte, obtenez 1 pièce d'or supplémentaire.";
+}
+
+function Effect1403() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            players[0].day = !players[0].day;
+            await broadcastShopEvent("day-night-cycle", [players[0].day]);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 3 * (t.filter(e => e && e.species === "Loup-Garou").length > 1), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Si c'est le jour, la nuit tombe. Sinon, le jour se lève.";
+}
+
+function Effect1404() {
+    this.run = async (sender, args, doAnimate) => {
+        if (players[0].day && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            players[0].day = false;
+            await broadcastShopEvent("day-night-cycle", [players[0].day]);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 10 * (t.filter(e => e && e.species === "Loup-Garou").length > 3)];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "A la fin de chaque tour, si c'est le jour, la nuit tombe.";
+}
+
+function Effect1405() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0) {
+            let t = args[0][0].concat(args[0][1]).includes(sender) ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[1][1]);
+            let n = 0;
+            for (let c of t)
+                if (c && c.hp > 0 && c.species == "Loup-Garou")
+                    n++;
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, 0, n, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return t.filter(e => e.species === "Loup-Garou").length;
+    };
+    this.desc = "<em>Frappe préventive :</em> Gagne +0/+X, où X est le nombre de Loups-Garous alliés.";
+}
+
+function Effect1406() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            sender.shield = true;
+            await boostStats(sender, 0, 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return Math.round(c.hp / 2);
+    };
+    this.desc = "<em>Frappe préventive :</em> Gagne <em>Bouclier</em>.";
+}
+
+function Effect1407() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            let t = troops[0].filter(e => e);
+            if (t.length <= 4) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await boostStats(sender, 0, 2, doAnimate);
+            } else {
+                t = t.filter(e => e.species === "Loup-Garou" && e !== sender);
+                if (t.length > 0) {
+                    if (doAnimate)
+                        await effectProcGlow(sender);
+                    await boostStats(choice(t), 0, 2, doAnimate);
+                }
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 2, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Lycanthropie :</em> Si vous contrôlez 4 créatures ou moins, gagne +0/+2. Sinon, confère +0/+2 à un Loup-Garou allié aléatoire.";
+}
+
+function Effect1408() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            let t = troops[0].filter(e => e);
+            if (t.length <= 4) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await boostStats(sender, 3, 0, doAnimate);
+            } else {
+                t = t.filter(e => e.species === "Loup-Garou" && e !== sender);
+                if (t.length > 0) {
+                    if (doAnimate)
+                        await effectProcGlow(sender);
+                    await boostStats(choice(t), 3, 0, doAnimate);
+                }
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 3, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Lycanthropie :</em> Si vous contrôlez 4 créatures ou moins, gagne +3/+0. Sinon, confère +3/+0 à un Loup-Garou allié aléatoire.";
+}
+
+function Effect1409() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (!sender.effect1409)
+                sender.effect1409 = 0;
+            sender.effect1409++;
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "";
+}
+
+function Effect1410() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0 && sender.effect1409) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, sender.effect1409, 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        if (!c.effect1409)
+            c.effect1409 = 0;
+        c.effect1409 += 0 + (Math.random() < .5);
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return c.effect1409 ? c.effect1409 : 0;
+    };
+    this.desc = "<em>Frappe préventive :</em> Gagne +X/+0, où X est le nombre de fois où cette créature s'est transformée.";
+    this.dynamicDesc = (c) => "<em>(Actuellement " + (c.effect1409 ? c.effect1409 : 0) + ")</em>";
+}
+
+function Effect1411() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0 && sender.effect1409) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, sender.effect1409, sender.effect1409, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        if (!c.effect1409)
+            c.effect1409 = 0;
+        c.effect1409 += 0 + (Math.random() < .5);
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return c.effect1409 ? c.effect1409 : 0;
+    };
+    this.desc = "<em>Frappe préventive :</em> Gagne +X/+X, où X est le nombre de fois où cette créature s'est transformée.";
+    this.dynamicDesc = (c) => "<em>(Actuellement " + (c.effect1409 ? c.effect1409 : 0) + ")</em>";
+}
+
+function Effect1412() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+        if (t.includes(args[0]) && args[0].species == "Loup-Garou" && args[0] !== sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(args[0], 1, 1, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 2 * t.filter(e => e.species === "Loup-Garou").length;
+    };
+    this.toBack = true;
+    this.desc = "Lorsqu'un autre Loup-Garou allié est attaqué, lui confère +1/+1.";
+}
+
+function Effect1413() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+        if (t.includes(args[0]) && args[0].species == "Loup-Garou" && args[0] !== sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(args[0], 1, 1, doAnimate);
+            await dealDamage(args[1], 2, doAnimate, args.slice(2));
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 4 * t.filter(e => e.species === "Loup-Garou").length;
+    };
+    this.toBack = true;
+    this.desc = "Lorsqu'un autre Loup-Garou allié est attaqué, lui confère +1/+1 et inflige 2 dégâts à l'attaquant.";
+}
+
+function Effect1414() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let card = getCard(shopTier, "Loup-Garou");
+            card.created = true;
+            let c = drawCard(card, 176);
+            await addToHand(c);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 3 * t.filter(e => e && e.species === "Loup-Garou").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Lycanthropie :</em> Ajoute un Loup-Garou aléatoire à votre main.";
+}
+
+function Effect1415() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let d of document.getElementById("hand").children) {
+                let target = d.card;
+                if (target && target.species === "Loup-Garou")
+                    await boostStats(target, 3, 3, doAnimate);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 2 * t.filter(e => e && e.species === "Loup-Garou").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Lycanthropie :</em> Confère +3/+3 aux Loups-Garous dans votre main.";
+}
+
+function Effect1416() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            document.getElementById("refresh").style.boxShadow = "0 0 15px green";
+            discountedRefreshes += 2;
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 4];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Les deux prochaines recherches de recrues sont gratuites.";
+}
+
+function Effect1417() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let c of document.getElementById("shop").children)
+                if (c.card && c.card.species == "Loup-Garou")
+                    await boostStats(c.card, 4, 4, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 4 * (t.filter(e => e && e.species === "Loup-Garou").length > 3)];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Les Loups-Garous actuellement disponibles au recrutement gagnent +4/+4.";
+}
+
+function Effect1418() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let n = troops[0].filter(e => e && e.species === "Loup-Garou").reduce((acc, x) => {
+                if (!acc.includes(x.name))
+                    acc.push(x.name);
+                return acc;
+            }, []).length;
+            await boostStats(sender, n, 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [t.filter(e => e && e.species === "Loup-Garou").length, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Lycanthropie :</em> Gagne +X/+0, où X est le nombre de Loups-Garous alliés différents.";
+}
+
+function Effect1419() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let n = troops[0].filter(e => e && e.species === "Loup-Garou").reduce((acc, x) => {
+                if (!acc.includes(x.name))
+                    acc.push(x.name);
+                return acc;
+            }, []).length;
+            await boostStats(sender, 0, n, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [t.filter(e => e && e.species === "Loup-Garou").length, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Lycanthropie :</em> Gagne +0/+X, où X est le nombre de Loups-Garous alliés différents.";
+}
+
+function Effect1420() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let c of t.filter(e => e && e.species === "Loup-Garou"))
+                await boostStats(c, 2, 2, doAnimate, false, true);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 30 * (t.filter(e => e && e.species === "Loup-Garou").length > 3);
+    };
+    this.toFront = true;
+    this.desc = "Lorsque cette créature attaque, elle confère définitivement +2/+2 aux Loups-Garous alliés.";
+}
+
+function Effect1421() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let c of t.filter(e => e && e.species === "Loup-Garou"))
+                await boostStats(c, 3, 3, doAnimate, false, true);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 50 * (t.filter(e => e && e.species === "Loup-Garou").length > 3);
+    };
+    this.toFront = true;
+    this.desc = "Lorsque cette créature attaque, elle confère définitivement +3/+3 aux Loups-Garous alliés.";
+}
+
+function Effect1422() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            let t = troops[0].filter(e => e && e.species === "Loup-Garou" && e.name !== sender.name && e.effects.findIndex(eff => createEffect(eff.id).desc.startsWith("<em>Lycanthropie")) !== -1);
+            if (t.length > 0) {
+                let target = choice(t);
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                for (let e of target.effects) {
+                    let eff = createEffect(e.id);
+                    if (eff.desc.startsWith("<em>Lycanthropie"))
+                        await eff.run(target, args, doAnimate);
+                }
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [1.5 * t.filter(e => e && e.species === "Loup-Garou").length, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Au début de chaque tour, déclenche les <em>Lycanthropies</em> d'un Loup-Garou différent aléatoire.";
+}
+
+function Effect1423() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            let i = troops[0].indexOf(sender);
+            if (i !== -1) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                if (i % 4 > 0 && troops[0][i - 1]) {
+                    for (let e of troops[0][i - 1].effects) {
+                        let eff = createEffect(e.id);
+                        if (eff.desc.startsWith("<em>Lycanthropie"))
+                            await eff.run(troops[0][i - 1], args, doAnimate);
+                    }
+                }
+                if (troops[0][(i + 4) % 8]) {
+                    for (let e of troops[0][(i + 4) % 8].effects) {
+                        let eff = createEffect(e.id);
+                        if (eff.desc.startsWith("<em>Lycanthropie"))
+                            await eff.run(troops[0][(i + 4) % 8], args, doAnimate);
+                    }
+                }
+                if (i % 4 < 3 && troops[0][i + 1]) {
+                    for (let e of troops[0][i + 1].effects) {
+                        let eff = createEffect(e.id);
+                        if (eff.desc.startsWith("<em>Lycanthropie"))
+                            await eff.run(troops[0][i + 1], args, doAnimate);
+                    }
+                }
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [1.5 * t.filter(e => e && e.species === "Loup-Garou").length, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Au début de chaque tour, déclenche les <em>Lycanthropies</em> des Loups-Garous voisins.";
+}
+
+function Effect1424() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let n = troops[0].filter(e => e && e.species === "Loup-Garou").length;
+            await chooseTarget(async (target) => {
+                await boostStats(target, 0, n, doAnimate);
+                players[0].day = false;
+                await broadcastShopEvent("day-night-cycle", [players[0].day]);
+            }, {
+                area: "board",
+                species: "Loup-Garou",
+                notself: true
+            }, sender);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 2.5 * t.filter(e => e && e.species === "Loup-Garou").length];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Confère +0/+X à un autre Loup-Garou allié ciblé, où X est le nombre de Loups-Garous alliés. Puis, la nuit tombe.";
+}
+
+function Effect1425() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let n = troops[0].filter(e => e && e.species === "Loup-Garou").length;
+            await chooseTarget(async (target) => {
+                await boostStats(target, n, 0, doAnimate);
+                players[0].day = true;
+                await broadcastShopEvent("day-night-cycle", [players[0].day]);
+            }, {
+                area: "board",
+                species: "Loup-Garou",
+                notself: true
+            }, sender);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 2.5 * t.filter(e => e && e.species === "Loup-Garou").length];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Confère +X/+0 à un autre Loup-Garou allié ciblé, où X est le nombre de Loups-Garous alliés. Puis, le jour se lève.";
+}
+
+function Effect1426() {
+    this.run = async (sender, args, doAnimate) => {
+        let t1 = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+        if (t1.includes(args[0]) && args[0].species === "Loup-Garou") {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(args[0], 2, 3, doAnimate, false, true);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 60 * (t.filter(e => e && e.species === "Loup-Garou").length > 3);
+    };
+    this.toBack = true;
+    this.desc = "Lorsqu'un Loup-Garou allié attaque, il gagne définitivement +2/+3.";
+}
+
+function Effect1427() {
+    this.run = async (sender, args, doAnimate) => {
+        let t1 = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+        if (t1.includes(args[0]) && args[0].species === "Loup-Garou") {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(args[0], 4, 3, doAnimate, false, true);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 80 * (t.filter(e => e && e.species === "Loup-Garou").length > 3);
+    };
+    this.toBack = true;
+    this.desc = "Lorsqu'un Loup-Garou allié attaque, il gagne définitivement +4/+3.";
+}
+
+function Effect1428() {
+    this.run = async (sender, args, doAnimate) => {
+        if (players[0].day) {
+            players[0].day = false;
+            await broadcastShopEvent("day-night-cycle", [players[0].day]);
+        } else {
+            for (let c of troops[0].filter(e => e && e.species === "Loup-Garou"))
+                await boostStats(c, 1, 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Si c'est la nuit, les Loups-Garous alliés gagnent +1/+0. Sinon, la nuit tombe.";
+}
+
+function Effect1429() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card.werewolf) {
+            let c = args[0];
+            let card = c.card;
+            for (let i = 0; i < 2; i++) {
+                c.style.animation = "flip1 .15s ease forwards";
+                await sleep(150);
+                let newCard = createCard(card.werewolf);
+                let baseCard = createCard(newCard.werewolf);
+                card.werewolf = newCard.werewolf;
+                card.src = newCard.src;
+                card.effects = newCard.effects.concat(card.effects);
+                card.attack = Math.max(0, card.attack + newCard.attack - baseCard.attack);
+                card.hp = Math.max(0, card.hp + newCard.hp - baseCard.hp);
+                for (let eff of baseCard.effects) {
+                    let i = card.effects.findIndex(e => e.id === eff.id);
+                    if (i !== -1)
+                        card.effects.splice(i, 1);
+                }
+                updateCardStats(c);
+                c.style.animation = "flip2 .15s ease forwards";
+                await sleep(150);
+                c.style.animation = "none";
+                
+                await consumeEvent(card, "day-night-cycle", [i == 0 ? !players[0].day : players[0].day], doAnimate);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Le Loup-Garou ciblé se transforme, puis se transforme à nouveau.";
 }
 
 function Effect2001() {
