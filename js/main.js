@@ -17439,6 +17439,7 @@ function Effect2012() {
         return 0;
     };
     this.desc = "Confère \"<em>Dernière volonté :</em> Invoque un Squelette reconstitué.\" au Mort-Vivant allié ciblé.";
+    this.refs = ["squelette-reconstitue"];
 }
 
 function Effect2013() {
