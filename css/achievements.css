@@ -40,7 +40,7 @@
 
         #achievementsLayout > #achievements > *, .new-achievement {
             width: 460px;
-            min-height: 8vh;
+            min-height: 76px;
             background-image: url("../resources/ui/achievement.png");
             background-size: 100% 100%;
             background-repeat: no-repeat;

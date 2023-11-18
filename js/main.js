@@ -119,6 +119,7 @@ function loadResources() {
     imgs.push("resources/ui/back.png");
     imgs.push("resources/ui/skull.png");
     imgs.push("resources/ui/dots.png");
+    imgs.push("resources/ui/achievement.png");
     imgs.push("resources/cards/autres/tutoriel.jpg");
 
     for (let s of speciesList.concat(["Commandant", "Autre", "Token"])) {
@@ -148,6 +149,7 @@ function loadResources() {
     sounds.push("resources/audio/sfx/explosion.mp3");
     sounds.push("resources/audio/sfx/page-turn.mp3");
     sounds.push("resources/audio/sfx/cocorico.mp3");
+    sounds.push("resources/audio/sfx/succes.mp3");
 
     for (let s of speciesList.concat(["Autre", "Sortilège"]))
         for (let c of battleCries[s])
@@ -2302,7 +2304,7 @@ async function drawShopScene() {
         };
         
         playMusic("resources/audio/music/defeat.mp3", true);
-    } else if (nAlive == 1) {
+    } else if (true || nAlive == 1) {
         fadeOutMusic();
         await sleep(500);
 
@@ -18485,6 +18487,8 @@ async function displayNewAchievement(a) {
     cont.className = "end-click";
     cont.innerHTML = "(Cliquez pour continuer)";
     filter.appendChild(cont);
+
+    playMusic("resources/audio/sfx/succes.mp3", false);
 
     window.localStorage.setItem("Achievement__" + a, JSON.stringify(true));
 
