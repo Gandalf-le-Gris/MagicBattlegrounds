@@ -16999,7 +16999,7 @@ function Effect1418() {
         }
     };
     this.scaling = (c, t) => {
-        return [t.filter(e => e && e.species === "Loup-Garou").length, 0, 0, 0];
+        return [t.filter(e => e && e.species === "Loup-Garou").length / 2, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -17021,7 +17021,7 @@ function Effect1419() {
         }
     };
     this.scaling = (c, t) => {
-        return [t.filter(e => e && e.species === "Loup-Garou").length, 0, 0, 0];
+        return [t.filter(e => e && e.species === "Loup-Garou").length / 2, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -17086,7 +17086,7 @@ function Effect1422() {
         }
     };
     this.scaling = (c, t) => {
-        return [1.5 * t.filter(e => e && e.species === "Loup-Garou").length, 0, 0, 0];
+        return [0, 1.5 * t.filter(e => e && e.species === "Loup-Garou").length, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -17126,7 +17126,7 @@ function Effect1423() {
         }
     };
     this.scaling = (c, t) => {
-        return [1.5 * t.filter(e => e && e.species === "Loup-Garou").length, 0, 0, 0];
+        return [0, 1.5 * t.filter(e => e && e.species === "Loup-Garou").length, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
