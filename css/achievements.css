@@ -1,0 +1,105 @@
+#achievementsLayout {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: calc(100% - 200px);
+    overflow-y: auto;
+    display: grid;
+    grid-auto-flow: row;
+    row-gap: 120px;
+    padding: 100px 150px;
+}
+
+    #achievementsLayout > #title {
+        display: flex;
+        transform: scale(1.2);
+    }
+
+        #achievementsLayout > #title > * {
+            font-size: var(--font-very-large);
+            font-family: var(--global-font);
+            font-weight: bold;
+            padding: 10px 60px 30px 60px;
+            background-image: url("../resources/ui/parchment.png");
+            background-size: 100% 100%;
+            margin: auto;
+        }
+
+    #achievementsLayout > #achievements {
+        display: grid;
+        grid-template-columns: repeat(2, 520px);
+        width: fit-content;
+        row-gap: 30px;
+        column-gap: 100px;
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+        #achievementsLayout > #achievements > *, .new-achievement {
+            width: 460px;
+            min-height: 8vh;
+            background-image: url("../resources/ui/achievement.png");
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            display: flex;
+            padding: 30px;
+        }
+
+        #achievementsLayout > #achievements > .missing {
+            filter: grayscale() brightness(.6);
+        }
+
+            #achievementsLayout > #achievements > * > *, .new-achievement > * {
+                margin: auto;
+            }
+
+                #achievementsLayout > #achievements > * > * > *:first-child, .new-achievement > * > *:first-child {
+                    text-align: center;
+                    font-family: Augusta;
+                    font-weight: bold;
+                    font-size: var(--font-large);
+                }
+
+                #achievementsLayout > #achievements > * > * > *:last-child, .new-achievement > * > *:last-child {
+                    text-align: center;
+                    font-family: var(--global-font);
+                    font-weight: bold;
+                    font-size: var(--font-medium);
+                }
+
+#achievement-counter {
+    position: absolute;
+    top: 10px;
+    right: 30px;
+    color: white;
+    font-size: calc(1.3 * var(--font-large));
+    font-family: Augusta;
+}
+
+.new-achievement {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+::-webkit-scrollbar {
+    width: 16px;
+}
+    
+::-webkit-scrollbar-track {
+    background: #0008;
+}
+    
+::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    transition: .2s;
+    border-radius: 8px;
+}
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #aaa;
+    }

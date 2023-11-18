@@ -243,6 +243,14 @@ function drawHomeScreen() {
     };
     homeMenu.appendChild(bestiary);
 
+    let achievements = document.createElement('li');
+    achievements.innerHTML = "Succès";
+    achievements.onclick = () => {
+        playMusic("resources/audio/sfx/page-turn.mp3", false);
+        openAchievements();
+    };
+    homeMenu.appendChild(achievements);
+
     let options = document.createElement('li');
     options.innerHTML = "Options";
     options.onclick = () => {
@@ -535,6 +543,9 @@ let discountedRefreshes = 0;
 let currentScene;
 let enemyFamilies = [];
 let isTuto = false;
+let achievementsWaiting = [];
+let unPeuSpecial = true;
+let cardsPerTurn;
 
 async function startGame() {
     await fadeTransition(() => {
@@ -543,6 +554,9 @@ async function startGame() {
         round = 1;
         coins = 3; //!!!
         players = [];
+        achievementsWaiting = [];
+        unPeuSpecial = true;
+        cardsPerTurn = 0;
         for (let i = 0; i < 8; i++) {
             lastFights.push([]);
             for (let j = 0; j < 8; j++)
@@ -1089,6 +1103,10 @@ async function placeCard(spot, c) {
 
     playMusic(choice(battleCries[c.card.species]), false);
 
+    cardsPerTurn++;
+    if (cardsPerTurn === 20 && !JSON.parse(window.localStorage.getItem("Achievement__Une carte après l'autre")))
+        achievementsWaiting.push("Une carte après l'autre");
+
     updateTroops();
 
     await broadcastShopEvent("card-place", [c]);
@@ -1154,6 +1172,8 @@ async function spendCoins(n, auto) {
             }
         }
     }
+    if (coins >= 25 && !JSON.parse(window.localStorage.getItem("Achievement__Toucher de Midas")))
+        achievementsWaiting.push("Toucher de Midas");
     if (!auto)
         await broadcastShopEvent("coin-change", [n]);
 }
@@ -1167,6 +1187,10 @@ async function updateTroops() {
             troops[0][i] = undefined;
         }
     }
+    if (unPeuSpecial)
+        for (let c of troops[0].filter(e => e))
+            if (troops[0].findIndex(e => e && e.name === c.name && e !== c) !== -1)
+                unPeuSpecial = false;
 }
 
 async function increaseShopTier() {
@@ -1294,6 +1318,9 @@ async function playSpell(c, t) {
     if (c.parentElement)
         c.parentElement.removeChild(c);
     playMusic(choice(battleCries["Sortilège"]), false);
+    cardsPerTurn++;
+    if (cardsPerTurn === 20 && !JSON.parse(window.localStorage.getItem("Achievement__Une carte après l'autre")))
+        achievementsWaiting.push("Une carte après l'autre");
     for (let e of c.card.effects)
         await createEffect(e.id).run(c.card, [t], true);
 
@@ -1383,6 +1410,9 @@ async function startBattle() {
     if (animating == 0) {
         playMusic("resources/audio/sfx/battle.mp3", false);
         document.getElementById("fight").style.setProperty("pointer-events", "none");
+
+        if (troops[0].findIndex(e => e && e.attack >= 120 && e.hp >= 120) !== -1)
+            achievementsWaiting.push("Hybris");
 
         await sleep(800);
 
@@ -1646,6 +1676,9 @@ function toBack(c) {
     return false;
 }
 
+let beforeBattle;
+let koBeforeBattle;
+let battleSummonCount;
 async function runBattle(p1, p2, doAnimate) {
     if (p2 == 0) {
         p2 = p1;
@@ -1681,7 +1714,11 @@ async function runBattle(p1, p2, doAnimate) {
             await boostStats(c, 0, 0, doAnimate);
         }
 
+    beforeBattle = true;
+    koBeforeBattle = 0;
+    battleSummonCount = 0;
     await broadcastEvent("battle-start", t1, t2, p1, p2, turn, doAnimate, [t1, t2, p1, p2, turn]);
+    beforeBattle = false;
 
     await repositionTroops(t1, t2, doAnimate);
 
@@ -1715,6 +1752,8 @@ async function runBattle(p1, p2, doAnimate) {
 
     if (p1 == 0)
         lastResult = finish;
+    if (p1 === 0 && finish === 1 && t1[0].concat(t1[1]).filter(e => e && e.hp > 0).length === 8 && !JSON.parse(window.localStorage.getItem("Achievement__Domination")))
+        achievementsWaiting.push("Domination");
 
     if (doAnimate)
         drawShopScene();
@@ -2100,6 +2139,11 @@ async function checkKO(c, d, t1, t2, p1, p2, turn, doAnimate) {
             await consumeEvent(c, "ko", [c, owner, t1, t2, (owner ? p1 : p2), [t1, t2, p1, p2, turn]], doAnimate);
         }
 
+        if ((owner ? p2 : p1) === 0 && beforeBattle) {
+            koBeforeBattle++;
+            if (koBeforeBattle >= 3 && !JSON.parse(window.localStorage.getItem("Achievement__Tu ne le sais pas encore, mais tu es déjà mort !")))
+                achievementsWaiting.push("Tu ne le sais pas encore, mais tu es déjà mort !");
+        }
         await broadcastEvent("ko", t1, t2, p1, p2, turn, doAnimate, [c, owner, t1, t2, (owner ? p1 : p2), [t1, t2, p1, p2, turn]]);
 
         await repositionTroops(t1, t2, doAnimate, [t1, t2, p1, p2, turn]);
@@ -2247,7 +2291,13 @@ async function drawShopScene() {
         cont.innerHTML = "(Cliquez pour continuer)";
         filter.appendChild(cont);
 
-        filter.onclick = () => {
+        let newAchievements = [...new Set(achievementsWaiting)];
+        if (!JSON.parse(window.localStorage.getItem("Achievement__Une prochaine fois, peut-être")))
+            newAchievements.push("Une prochaine fois, peut-être");
+
+        filter.onclick = async () => {
+            for (let a of newAchievements)
+                await displayNewAchievement(a);
             fadeTransition(drawHomeScreen);
         };
         
@@ -2275,7 +2325,31 @@ async function drawShopScene() {
         cont.innerHTML = "(Cliquez pour continuer)";
         filter.appendChild(cont);
 
-        filter.onclick = () => {
+        let newAchievements = [...new Set(achievementsWaiting)];
+        if (!JSON.parse(window.localStorage.getItem("Achievement__Champion de l'arène")))
+            newAchievements.push("Champion de l'arène");
+        for (let s of species)
+            if (!JSON.parse(window.localStorage.getItem("Achievement__" + s)) && troops[0].filter(e => e && e.species === s).length >= 6)
+                newAchievements.push(s);
+        if (!JSON.parse(window.localStorage.getItem("Achievement__" + players[0].name)))
+            newAchievements.push(players[0].name);
+        if (!JSON.parse(window.localStorage.getItem("Achievement__Un peu spécial ?")) && unPeuSpecial)
+            newAchievements.push("Un peu spécial ?");
+        if (!JSON.parse(window.localStorage.getItem("Achievement__Aux portes de la mort")) && players[0].hp === 1)
+            newAchievements.push("Aux portes de la mort");
+        if (!JSON.parse(window.localStorage.getItem("Achievement__Trop facile")) && players[0].hp >= 25)
+            newAchievements.push("Trop facile");
+        let diversity = troops[0].reduce((acc, x) => {
+            if (x && !acc.includes(x.species) && species.includes(x.species))
+                acc.push(x.species);
+            return acc;
+        }, []).length === 5;
+        if (!JSON.parse(window.localStorage.getItem("Achievement__Célébrer la diversité")) && diversity)
+            newAchievements.push("Célébrer la diversité");
+
+        filter.onclick = async () => {
+            for (let a of newAchievements)
+                await displayNewAchievement(a);
             fadeTransition(drawHomeScreen);
         };
 
@@ -2411,6 +2485,8 @@ async function drawShopScene() {
 
         if (species.includes("Loup-Garou"))
             await broadcastShopEvent("day-night-cycle", [players[0].day]);
+
+        cardsPerTurn = 0;
 
         await broadcastShopEvent("turn-start", []);
     }
@@ -18160,6 +18236,11 @@ async function battleSummon(name, t, p, doAnimate, args) {
             await sleep(500);
         }
 
+        if (p === 0) {
+            battleSummonCount++;
+            if (battleSummonCount >= 15 && !JSON.parse(window.localStorage.getItem("Achievement__Ce n'est jamais fini")))
+                achievementsWaiting.push("Ce n'est jamais fini");
+        }
         await broadcastEvent("battle-summon", args[5][0], args[5][1], args[5][2], args[5][3], args[5][4], doAnimate, [card, t].concat(args[5]));
     }
 }
@@ -18272,6 +18353,147 @@ async function openBestiary() {
 
 
 
+
+
+/* ----------------------------------------------------- */
+/* ------------------- Achievements -------------------- */
+/* ----------------------------------------------------- */
+
+const basicAchievementsList = ["Une prochaine fois, peut-être", "Champion de l'arène"];
+const speciesAchievementsList = speciesList.map(e => e).sort((a, b) => a.localeCompare(b));
+const commanderAchievementsList = cardList["Commandant"].map(e => createCard(e).name).sort((a, b) => a.localeCompare(b));
+const extraAchievementsList = ["Toucher de Midas", "Un peu spécial ?", "Aux portes de la mort", "Trop facile", "Hybris", "Célébrer la diversité", "Ce n'est jamais fini", "Tu ne le sais pas encore, mais tu es déjà mort !", "Une carte après l'autre", "Domination"]
+const achievementsList = basicAchievementsList.concat(speciesAchievementsList).concat(commanderAchievementsList).concat(extraAchievementsList);
+
+async function openAchievements() {
+    await fadeTransition(() => {
+        clearBody();
+        document.body.style.backgroundImage = 'url("resources/ui/bestiary-bg.jpg")';
+
+        let settings = document.createElement('div');
+        settings.className ="settings-button";
+        settings.onclick = toggleSettings;
+        document.body.appendChild(settings);
+
+        let back = document.createElement('div');
+        back.className = "back-button";
+        back.onclick = () => fadeTransition(drawHomeScreen);
+        document.body.appendChild(back);
+        let backImage = document.createElement('img');
+        backImage.src = "resources/ui/back.png";
+        back.appendChild(backImage);
+
+        let layout = document.createElement('div');
+        layout.id = "achievementsLayout";
+        document.body.appendChild(layout);
+
+        let title = document.createElement('div');
+        title.id = "title";
+        layout.appendChild(title);
+        let titleText = document.createElement('div');
+        titleText.innerHTML = "Succès";
+        title.appendChild(titleText);
+
+        let achievements = document.createElement('div');
+        achievements.id = "achievements";
+        layout.appendChild(achievements);
+
+        for (let a of basicAchievementsList)
+            achievements.appendChild(getAchievementDiv(a, getAchievementDesc(a)));
+        for (let a of speciesAchievementsList)
+            achievements.appendChild(getAchievementDiv(a, "Gagner une partie avec au moins 6 créatures de la famille " + a + " en jeu."));
+        for (let a of commanderAchievementsList)
+            achievements.appendChild(getAchievementDiv(a, "Gagner une partie avec le commandant " + a + "."));
+        for (let a of extraAchievementsList)
+            achievements.appendChild(getAchievementDiv(a, getAchievementDesc(a)));
+
+        let counter = document.createElement('div');
+        counter.id = "achievement-counter";
+        counter.innerHTML = (achievementsList.length - document.getElementsByClassName("missing").length) + "<b> / </b>" + achievementsList.length;
+        document.body.appendChild(counter);
+
+        playMusic("resources/audio/music/bestiary.mp3", true);
+    });
+}
+
+function getAchievementDiv(title, desc) {
+    let achievement = document.createElement('div');
+    let wrapper = document.createElement('div');
+    achievement.appendChild(wrapper);
+    let titleDiv = document.createElement('div');
+    titleDiv.innerHTML = title;
+    wrapper.appendChild(titleDiv);
+    let descDiv = document.createElement('div');
+    descDiv.innerHTML = desc;
+    wrapper.appendChild(descDiv);
+    if (!JSON.parse(window.localStorage.getItem("Achievement__" + title)))
+        achievement.classList.add("missing");
+    return achievement;
+}
+
+function getAchievementDesc(a) {
+    switch (a) {
+        case "Une prochaine fois, peut-être":
+            return "Perdre une partie.";
+        case "Champion de l'arène":
+            return "Gagner une partie.";
+        case "Toucher de Midas":
+            return "Posséder 25 pièces en même temps.";
+        case "Un peu spécial ?":
+            return "Gagner une partie sans jamais avoir deux créatures identiques en jeu en même temps (hors invocations en combat)."
+        case "Aux portes de la mort":
+            return "Gagner une partie avec 1PV restant.";
+        case "Trop facile":
+            return "Gagner une partie avec au moins 25PV restants.";
+        case "Hybris":
+            return "Posséder une créature de statistiques supérieures à 120/120.";
+        case "Célébrer la diversité":
+            return "Gagner une partie avec au moins une créature de chaque famille en jeu.";
+        case "Ce n'est jamais fini":
+            return "Invoquer au moins 15 créatures en un seul combat.";
+        case "Tu ne le sais pas encore, mais tu es déjà mort !":
+            return "Tuer 3 créatures ennemies avant le début d'un seul combat.";
+        case "Une carte après l'autre":
+            return "Jouer 20 cartes en un seul tour.";
+        case "Domination":
+            return "Gagner un combat avec 8 créatures encore en vie.";
+        default:
+            return "";
+    }
+}
+
+async function displayNewAchievement(a) {
+    let filter = document.createElement('div');
+    filter.className = "semi-black-filter";
+    filter.style.animation = "none";
+    filter.style.opacity = "1";
+    document.body.appendChild(filter);
+
+    let banner = document.createElement('div');
+    banner.className = "end-banner";
+    banner.innerHTML = "Succès obtenu !";
+    filter.appendChild(banner);
+
+    let desc = getAchievementDesc(a);
+    if (desc === "")
+        desc = speciesList.includes(a) ? "Gagner une partie avec au moins 6 créatures de la famille " + a + " en jeu." : "Gagner une partie avec le commandant " + a + ".";
+    let achievement = getAchievementDiv(a, desc);
+    achievement.className = "new-achievement";
+    filter.appendChild(achievement);
+
+    let cont = document.createElement('div');
+    cont.className = "end-click";
+    cont.innerHTML = "(Cliquez pour continuer)";
+    filter.appendChild(cont);
+
+    window.localStorage.setItem("Achievement__" + a, JSON.stringify(true));
+
+    filter.onclick = () => {
+        nextTargetSelection = true;
+    }
+    await waitForTargetSelection();
+    document.body.removeChild(filter);
+}
 
 
 
