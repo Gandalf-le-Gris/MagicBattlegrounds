@@ -2304,7 +2304,7 @@ async function drawShopScene() {
         };
         
         playMusic("resources/audio/music/defeat.mp3", true);
-    } else if (true || nAlive == 1) {
+    } else if (nAlive == 1) {
         fadeOutMusic();
         await sleep(500);
 
