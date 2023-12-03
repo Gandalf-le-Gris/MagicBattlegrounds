@@ -8211,7 +8211,7 @@ function GenieDeLaLampe() {
 }
 
 function OracleDesMysteres() {
-    this.name = "Oracle des mysteres";
+    this.name = "Oracle des mystères";
     this.species = "Génie";
     this.attack = 2;
     this.hp = 4;
