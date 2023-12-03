@@ -432,6 +432,7 @@ let battleCries = {
     "Elémentaire": ["resources/audio/sfx/elementaire1.mp3", "resources/audio/sfx/elementaire2.mp3", "resources/audio/sfx/elementaire3.mp3"],
     "Nain": ["resources/audio/sfx/nain1.mp3", "resources/audio/sfx/nain2.mp3", "resources/audio/sfx/nain3.mp3", "resources/audio/sfx/nain4.mp3", "resources/audio/sfx/nain5.mp3"],
     "Loup-Garou": ["resources/audio/sfx/loup-garou1.mp3", "resources/audio/sfx/loup-garou2.mp3", "resources/audio/sfx/loup-garou3.mp3", "resources/audio/sfx/loup-garou4.mp3"],
+    "Génie": ["resources/audio/sfx/genie1.mp3", "resources/audio/sfx/genie2.mp3", "resources/audio/sfx/genie3.mp3"],
     "Autre": ["resources/audio/sfx/autre1.mp3"],
     "Sortilège": ["resources/audio/sfx/sortilege1.mp3"]
 }
@@ -1158,6 +1159,18 @@ async function moveCard(spot, c) {
     spot.appendChild(c);
 
     updateTroops();
+}
+
+async function returnToHand(card) {
+    let c = findDOMCard(card);
+    if (c.parentElement.parentElement.classList.contains("board")) {
+        c.style.removeProperty("animation");
+        let source = c.parentNode;
+        source.removeChild(c);
+        addToHand(drawCard(card, 176));
+
+        updateTroops();
+    }
 }
 
 async function spendCoins(n, auto) {
@@ -2520,11 +2533,11 @@ async function drawShopScene() {
 /* ------------------ Card management ------------------ */
 /* ----------------------------------------------------- */
 
-const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant", "Sylvain", "Horde", "Démon", "Elémentaire", "Nain", "Loup-Garou"];
+const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant", "Sylvain", "Horde", "Démon", "Elémentaire", "Nain", "Loup-Garou", "Génie"];
 
 const cardList = {
-    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde", "contremaitre-de-l-abysse", "avatar-de-la-creation", "champion-de-forgeterre", "ancetre-des-dragons", "roi-mercenaire", "concepteur-du-planetarium", "bretteuse-temeraire", "contrebandier-prospere", "androide-surcharge", "ravageur-de-villes", "pretre-de-la-crypte-noire", "forgeron-arcaniste", "druide-ne-des-arbres", "berserker-braisehache", "juggernaut-infernal", "devoreur-d-elements", "apparition-angelique", "chef-des-traqueurs", "naturaliste-de-wulfwald"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces", "masse-de-la-brutalite", "summum-de-la-gloire", "pacte-demoniaque", "liberer-le-mal", "transcendance-elementaire", "confluence-elementaire", "benediction-de-la-forge", "splendeur-des-mines", "assaut-sauvage", "transformation-lupine"],
+    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde", "contremaitre-de-l-abysse", "avatar-de-la-creation", "champion-de-forgeterre", "ancetre-des-dragons", "roi-mercenaire", "concepteur-du-planetarium", "bretteuse-temeraire", "contrebandier-prospere", "androide-surcharge", "ravageur-de-villes", "pretre-de-la-crypte-noire", "forgeron-arcaniste", "druide-ne-des-arbres", "berserker-braisehache", "juggernaut-infernal", "devoreur-d-elements", "apparition-angelique", "chef-des-traqueurs", "naturaliste-de-wulfwald", "plieuse-de-realite", "le-grand-arbitre"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces", "masse-de-la-brutalite", "summum-de-la-gloire", "pacte-demoniaque", "liberer-le-mal", "transcendance-elementaire", "confluence-elementaire", "benediction-de-la-forge", "splendeur-des-mines", "assaut-sauvage", "transformation-lupine", "retour-dans-la-lampe", "jugement-du-sphinx"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
@@ -2539,8 +2552,9 @@ const cardList = {
     "Elémentaire": ["familier-chatfeu", "golem-demolisseur", "esprit-des-rivieres", "faconneuse-de-nuages", "sculpteur-elementaire", "colere-de-la-nature", "esprit-des-sources-chaudes", "goliath-volcanique", "chevaucheur-de-tempetes", "manifestation-boreale", "chargeur-rocailleux", "djinn-sang-de-foudre", "phenix-flamboyant", "volonte-de-la-fournaise", "ame-de-l-orage"],
     "Nain": ["excavateur-amateur", "explorateur-de-ruines", "artisan-minutieux", "infuseur-de-lames", "maitre-forgeron", "pillard-nain", "defenseur-des-montagnes", "lanceur-de-haches", "marcheur-des-grottes", "roi-sous-la-montagne", "gardienne-des-mines", "fleau-des-orcs", "emissaire-de-forgeterre", "escouade-naine", "artisan-forgerune"],
     "Loup-Garou": ["ouvrier-du-champ-de-ruines", "fermier-paisible", "astronome-acharne", "peintre-runique", "ermite-autarcique", "purificatrice-ardente", "protectrice-des-loups", "eclaireur-nocturne", "charmeuse-de-meute", "assassin-de-wulfwald", "naturaliste-courroucee", "patrouille-de-wulfwald", "traqueur-solitaire", "ange-du-crepuscule", "surineuse-de-wulfwald"],
+    "Génie": ["augure-des-souhaits", "jeune-sphinx", "sphinge-protectrice", "djinn-aux-trois-souhaits", "vigie-de-l-espoir", "sphinx-insaisissable", "genie-de-la-lampe", "oracle-des-mysteres", "genie-des-lames", "porteur-de-secrets", "gardienne-des-archives", "djinn-de-la-fontaine", "sphinge-omnisciente", "exauceuse-de-souhaits", "maitre-des-enigmes"],
     "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"],
-    "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble", "jeune-fongus", "coeur-de-l-abysse", "le-banni", "marteau-d-artisan", "marteau-demesure", "pioche-renforcee", "armure-de-plaques", "epee-du-roi-sous-la-montagne", "grappin-d-acier", "masse-arcanique", "bouclier-du-protecteur", "couronne-ornementale", "hache-a-deux-mains", "rituel-de-sang", "rituel-de-divination", "rituel-de-puissance", "rituel-de-vie-eternelle", "pulverisateur-arcanique", "gants-de-passe-partout", "lunettes-d-artificier", "epee-energisee"]
+    "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble", "jeune-fongus", "coeur-de-l-abysse", "le-banni", "marteau-d-artisan", "marteau-demesure", "pioche-renforcee", "armure-de-plaques", "epee-du-roi-sous-la-montagne", "grappin-d-acier", "masse-arcanique", "bouclier-du-protecteur", "couronne-ornementale", "hache-a-deux-mains", "rituel-de-sang", "rituel-de-divination", "rituel-de-puissance", "rituel-de-vie-eternelle", "pulverisateur-arcanique", "gants-de-passe-partout", "lunettes-d-artificier", "epee-energisee", "djinn-aux-souhaits-exauces"]
 };
 
 const elements = ["Eau", "Feu", "Air", "Terre"];
@@ -2561,9 +2575,9 @@ function initCards() {
             species.push(s);
     }
 
-    //species = ["Loup-Garou"]; //!!!
-    /*if (!species.includes("Loup-Garou")) //!!!
-        species[0] = "Loup-Garou";*/
+    //species = ["Génie"]; //!!!
+    if (!species.includes("Génie")) //!!!
+        species[0] = "Génie";
 
     //for (let s of speciesList)
     //    cardList[s] = [cardList[s][0]]; //!!!
@@ -2588,7 +2602,7 @@ function initCards() {
 
     shuffle(cards);
     shuffle(commanders);
-    /*while (commanders.findIndex(e => e.name.startsWith("Naturaliste ")) > 2 && species.includes("Loup-Garou")) //!!!
+    /*while (commanders.findIndex(e => e.name.startsWith("Le ")) > 2 && species.includes("Génie")) //!!!
         shuffle(commanders);*/
 }
 
@@ -2685,6 +2699,10 @@ function createCard(card) {
             return new NaturalisteDeWulfwald();
         case "naturaliste-de-wulfwald-t":
             return new NaturalisteDeWulfwaldT();
+        case "plieuse-de-realite":
+            return new PlieuseDeRealite();
+        case "le-grand-arbitre":
+            return new LeGrandArbitre();
 
         case "dragonnet-ardent":
             return new DragonnetArdent();
@@ -3216,6 +3234,41 @@ function createCard(card) {
         case "surineuse-de-wulfwald-t":
             return new SurineuseDeWulfWaldT();
 
+        case "augure-des-souhaits":
+            return new AugureDesSouhaits();
+        case "jeune-sphinx":
+            return new JeuneSphinx();
+        case "sphinge-protectrice":
+            return new SphingeProtectrice();
+        case "djinn-aux-trois-souhaits":
+            return new DjinnAuxTroisSouhaits();
+        case "vigie-de-l-espoir":
+            return new VigieDeLEspoir();
+        case "sphinx-insaisissable":
+            return new SphinxInsaisissable();
+        case "genie-de-la-lampe":
+            return new GenieDeLaLampe();
+        case "oracle-des-mysteres":
+            return new OracleDesMysteres();
+        case "genie-des-lames":
+            return new GenieDesLames();
+        case "porteur-de-secrets":
+            return new PorteurDeSecrets();
+        case "gardienne-des-archives":
+            return new GardienneDesArchives();
+        case "djinn-de-la-fontaine":
+            return new DjinnDeLaFontaine();
+        case "maitre-des-enigmes":
+            return new MaitreDesEnigmes();
+        case "sphinge-omnisciente":
+            return new SphingeOmnisciente();
+        case "exauceuse-de-souhaits":
+            return new ExauceuseDeSouhaits();
+        case "retour-dans-la-lampe":
+            return new RetourDansLaLampe();
+        case "jugement-du-sphinx":
+            return new JugementDuSphinx();
+
         case "changeforme-masque":
             return new ChangeformeMasque();
         case "ange-guerrier":
@@ -3286,6 +3339,8 @@ function createCard(card) {
             return new LunettesDArtificier();
         case "epee-energisee":
             return new EpeeEnergisee();
+        case "djinn-aux-souhaits-exauces":
+            return new DjinnAuxSouhaitsExauces();
 
         default:
             alert("Carte inconnue : " + card);
@@ -3899,6 +3954,36 @@ function NaturalisteDeWulfwaldT() {
         {
             trigger: "card-place",
             id: 47
+        }
+    ];
+}
+
+function PlieuseDeRealite() {
+    this.name = "Plieuse de réalité";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 29;
+    this.src = "commandants/plieuse-de-realite.jpg";
+    this.requirement = "Génie";
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 48
+        }
+    ];
+}
+
+function LeGrandArbitre() {
+    this.name = "Le Grand Arbitre";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 33;
+    this.src = "commandants/le-grand-arbitre.jpg";
+    this.requirement = "Génie";
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 49
         }
     ];
 }
@@ -8014,6 +8099,288 @@ function SurineuseDeWulfWaldT() {
 }
 
 
+// Génie
+
+function AugureDesSouhaits() {
+    this.name = "Augure des souhaits";
+    this.species = "Génie";
+    this.attack = 2;
+    this.hp = 3;
+    this.src = "genies/augure-des-souhaits.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "card-sell",
+            id: 1501
+        }
+    ];
+}
+
+function JeuneSphinx() {
+    this.name = "Jeune sphinx";
+    this.species = "Génie";
+    this.attack = 2;
+    this.hp = 3;
+    this.src = "genies/jeune-sphinx.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 1502
+        }
+    ];
+}
+
+function SphingeProtectrice() {
+    this.name = "Sphinge protectrice";
+    this.species = "Génie";
+    this.attack = 3;
+    this.hp = 4;
+    this.src = "genies/sphinge-protectrice.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1503
+        }
+    ];
+}
+
+function DjinnAuxTroisSouhaits() {
+    this.name = "Djinn aux trois souhaits";
+    this.species = "Génie";
+    this.attack = 3;
+    this.hp = 3;
+    this.src = "genies/djinn-aux-trois-souhaits.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1504
+        }
+    ];
+}
+
+function VigieDeLEspoir() {
+    this.name = "Vigie de l'espoir";
+    this.species = "Génie";
+    this.attack = 5;
+    this.hp = 2;
+    this.src = "genies/vigie-de-l-espoir.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 1519
+        }
+    ];
+}
+
+function SphinxInsaisissable() {
+    this.name = "Sphinx insaisissable";
+    this.species = "Génie";
+    this.attack = 3;
+    this.hp = 2;
+    this.src = "genies/sphinx-insaisissable.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1506
+        },
+        {
+            trigger: "turn-start",
+            id: 1507
+        }
+    ];
+}
+
+function GenieDeLaLampe() {
+    this.name = "Génie de la lampe";
+    this.species = "Génie";
+    this.attack = 3;
+    this.hp = 5;
+    this.src = "genies/genie-de-la-lampe.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1508
+        }
+    ];
+}
+
+function OracleDesMysteres() {
+    this.name = "Oracle des mysteres";
+    this.species = "Génie";
+    this.attack = 2;
+    this.hp = 4;
+    this.src = "genies/oracle-des-mysteres.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1518
+        }
+    ];
+}
+
+function RetourDansLaLampe() {
+    this.name = "Retour dans la lampe";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "genies/retour-dans-la-lampe.jpg";
+    this.requirement = "Génie";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1520
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function GenieDesLames() {
+    this.name = "Génie des lames";
+    this.species = "Génie";
+    this.attack = 5;
+    this.hp = 3;
+    this.src = "genies/genie-des-lames.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1509
+        }
+    ];
+}
+
+function PorteurDeSecrets() {
+    this.name = "Porteur de secrets";
+    this.species = "Génie";
+    this.attack = 1;
+    this.hp = 7;
+    this.src = "genies/porteur-de-secrets.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 1510
+        }
+    ];
+}
+
+function GardienneDesArchives() {
+    this.name = "Gardienne des archives";
+    this.species = "Génie";
+    this.attack = 5;
+    this.hp = 5;
+    this.src = "genies/gardienne-des-archives.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1511
+        },
+        {
+            trigger: "turn-start",
+            id: 1522
+        }
+    ];
+}
+
+function DjinnDeLaFontaine() {
+    this.name = "Djinn de la fontaine";
+    this.species = "Génie";
+    this.attack = 4;
+    this.hp = 6;
+    this.src = "genies/djinn-de-la-fontaine.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 1513
+        },
+        {
+            trigger: "wish",
+            id: 1514
+        }
+    ];
+}
+
+function JugementDuSphinx() {
+    this.name = "Jugement du sphinx";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "genies/jugement-du-sphinx.jpg";
+    this.requirement = "Génie";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "",
+            id: 1521
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function MaitreDesEnigmes() {
+    this.name = "Maître des énigmes";
+    this.species = "Génie";
+    this.attack = 5;
+    this.hp = 6;
+    this.src = "genies/maitre-des-enigmes.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 1517
+        }
+    ];
+}
+
+function SphingeOmnisciente() {
+    this.name = "Sphinge omnisciente";
+    this.species = "Génie";
+    this.attack = 7;
+    this.hp = 7;
+    this.src = "genies/sphinge-omnisciente.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1512
+        }
+    ];
+}
+
+function ExauceuseDeSouhaits() {
+    this.name = "Exauceuse de souhaits";
+    this.species = "Génie";
+    this.attack = 9;
+    this.hp = 6;
+    this.src = "genies/exauceuse-de-souhaits.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1515
+        },
+        {
+            trigger: "card-sell",
+            id: 1516
+        }
+    ];
+}
+
+
 // Autre
 
 function AngeDeLUnite() {
@@ -8721,6 +9088,32 @@ function EpeeEnergisee() {
     };
 }
 
+function DjinnAuxSouhaitsExauces() {
+    this.name = "Djinn aux souhaits exaucés";
+    this.species = "Génie";
+    this.attack = 9;
+    this.hp = 9;
+    this.src = "genies/djinn-aux-souhaits-exauces.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1505
+        }
+    ];
+}
+
+function Voeu() {
+    this.name = "Vœu exaucé";
+    this.species = "Vœu";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "autres/voeu.jpg";
+    this.effects = [
+
+    ];
+}
+
 function Tutoriel(n) {
     this.name = "Officier de la Légion";
     this.species = "Tutoriel";
@@ -9394,6 +9787,10 @@ function createEffect(id) {
             return new Effect46();
         case 47:
             return new Effect47();
+        case 48:
+            return new Effect48();
+        case 49:
+            return new Effect49();
         case 101:
             return new Effect101();
         case 102:
@@ -9992,6 +10389,66 @@ function createEffect(id) {
             return new Effect1428();
         case 1429:
             return new Effect1429();
+        case 1501:
+            return new Effect1501();
+        case 1502:
+            return new Effect1502();
+        case 1503:
+            return new Effect1503();
+        case 1504:
+            return new Effect1504();
+        case 1505:
+            return new Effect1505();
+        case 1506:
+            return new Effect1506();
+        case 1507:
+            return new Effect1507();
+        case 1508:
+            return new Effect1508();
+        case 1509:
+            return new Effect1509();
+        case 1510:
+            return new Effect1510();
+        case 1511:
+            return new Effect1511();
+        case 1512:
+            return new Effect1512();
+        case 1513:
+            return new Effect1513();
+        case 1514:
+            return new Effect1514();
+        case 1515:
+            return new Effect1515();
+        case 1516:
+            return new Effect1516();
+        case 1517:
+            return new Effect1517();
+        case 1518:
+            return new Effect1518();
+        case 1519:
+            return new Effect1519();
+        case 1520:
+            return new Effect1520();
+        case 1521:
+            return new Effect1521();
+        case 1522:
+            return new Effect1522();
+        case 1550:
+            return new Effect1550();
+        case 1551:
+            return new Effect1551();
+        case 1552:
+            return new Effect1552();
+        case 1553:
+            return new Effect1553();
+        case 1554:
+            return new Effect1554();
+        case 1555:
+            return new Effect1555();
+        case 1556:
+            return new Effect1556();
+        case 1557:
+            return new Effect1557();
         case 2001:
             return new Effect2001();
         case 2002:
@@ -10617,7 +11074,7 @@ function Effect28() {
         let spell;
         do {
             spell = getCard(shopTier + 2, "Sortilège");
-        } while (spell.validTarget.area !== "board" || spell.name === "Pacte démoniaque");
+        } while (spell.validTarget.area !== "board" || spell.name === "Pacte démoniaque" || spell.name === "Jugement du sphinx" || spell.name === "Rite de sang");
         let preview = drawCard(spell, 240);
         preview.classList.add("spell-preview");
         document.body.appendChild(preview);
@@ -11050,6 +11507,43 @@ function Effect47() {
         return 0;
     };
     this.desc = "Lorsque vous jouez un Loup-Garou, il gagne +1/+1 pour chaque autre Loup-Garou allié.";
+}
+
+function Effect48() {
+    this.run = async (sender, args, doAnimate) => {
+        if (round % 2 == 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await wish()
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(1 + (t.filter(e => e && e.species === "Génie").length > 2), 0, round), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Tous les 2 tours, faites un vœu.";
+    this.dynamicDesc = (c) => round % 2 == 0 ? "<em>(Ce tour-ci)</em>" : "<em>(Au prochain tour)</em>";
+}
+
+function Effect49() {
+    this.run = async (sender, args, doAnimate) => {
+        if (doAnimate)
+            await effectProcGlow(sender);
+        let t = Array.from(document.getElementById("hand").children).map(e => e.card).filter(e => e.species !== "Sortilège");
+        shuffle(t);
+        t = t.slice(0, 3);
+        for (let e of t)
+            await boostStats(e, 2, 2, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(1 + (t.filter(e => e && e.species === "Génie").length > 2), 0, round), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "A la fin de chaque tour, confère +2/+2 à 3 créatures aléatoires de votre main.";
 }
 
 function Effect101() {
@@ -12646,7 +13140,7 @@ function Effect415() {
         }
     };
     this.scaling = (c, t) => {
-        return [0, 0, 0, 0];
+        return [0,  3 * t.filter(e => e.species === "Soldat").length, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -17281,6 +17775,606 @@ function Effect1429() {
     this.desc = "Le Loup-Garou ciblé se transforme, puis se transforme à nouveau.";
 }
 
+function Effect1501() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                effectProcGlow(sender);
+            let t = Array.from(document.getElementById("hand").children).map(e => e.card);
+            let target = t.reduce((acc, x) => x.attack > acc.attack ? x : acc, new PieceDOr());
+            if (target && target.attack >= 0)
+                await boostStats(target, 1, 2, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 1];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous revendez cette carte, confère +1/+2 à la créature la plus forte de votre main.";
+}
+
+function Effect1502() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (document.getElementById("hand").children.length > 0)
+                await boostStats(sender, 0, 1, doAnimate);
+            else
+                await boostStats(sender, 1, 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [1, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "A la fin de chaque tour, gagne +1/+0 si vous n'avez pas de carte en main, ou +0/+1 sinon.";
+}
+
+function Effect1503() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await chooseTarget(async (target) => {
+                await returnToHand(target);
+            }, {
+                area: "board",
+                notself: true
+            }, sender);
+            sender.effects.splice(sender.effects.findIndex(e => e.id === 1503), 1);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, t.filter(e => e && e.species === "Génie").length];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Renvoyez la créature ciblée dans votre main. Puis, cette créature perd cette capacité.";
+}
+
+function Effect1504() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            let t = troops[0].filter(e => e && e.name === sender.name);
+            if (t.length >= 3) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                let card = new DjinnAuxSouhaitsExauces();
+                card.created = true;
+                let ref = new DjinnAuxTroisSouhaits();
+                let e = t[0];
+                card.attack += e.attack - ref.attack;
+                card.hp += e.hp - ref.hp;
+                for (let eff of e.effects.filter(x => x.id !== 1504))
+                    card.effects.push(eff);
+                if (e.shield)
+                    card.shield = true;
+                if (e.revive)
+                    card.revive = true;
+                if (e.range)
+                    card.range = true;
+                if (e.deathtouch)
+                    card.deathtouch = true;
+                for (let x of t.slice(0, 3)) {
+                    let c = findDOMCard(x);
+                    c.parentNode.removeChild(c);
+                }
+                await summonCard(card);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, t.filter(e => e && e.species === "Génie").length];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Si vous possédez trois créatures de ce nom, remplacez-les par un Djinn aux souhaits exaucés, et conférez-lui toutes les améliorations de la première carte ainsi retirée.";
+    this.refs = ["djinn-aux-souhaits-exauces"];
+}
+
+function Effect1505() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card.species === "Génie" && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, 1, 2, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 6 * (t.filter(e => e && e.species === "Génie").length > 2), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous jouez un Génie, gagne +1/+2.";
+}
+
+function Effect1506() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, 1, 1, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [2 + 2 * (t.filter(e => e && e.species === "Génie").length > 2), 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Gagne +1/+1.";
+}
+
+function Effect1507() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board") && document.getElementById("hand").children.length < 6) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await returnToHand(sender);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Retourne dans votre main au début de chaque tour.";
+}
+
+function Effect1508() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await wish();
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 3 + t.filter(e => e && e.species === "Génie").length];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Faites un vœu.";
+}
+
+function Effect1509() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card.species === "Génie" && findDOMCard(sender).parentElement.parentElement.classList.contains("hand")) {
+            await boostStats(sender, 1, 1, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [1.5 * t.filter(e => e && e.species === "Génie").length, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Tant que cette carte est dans votre main, elle gagne +1/+1 à chaque fois que vous jouez un Génie.";
+}
+
+function Effect1510() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let bottom = args[0][0].concat(args[0][1]).includes(sender);
+            let p = bottom ? args[2] : args[3];
+            let t = bottom ? args[0][0].concat(args[0][1]) : args[1][0].concat(args[2][1]);
+            let card;
+            if (p === 0)
+                card = copy(Array.from(document.getElementById("hand").children).map(e => e.card).reduce((acc, x) => x.attack > acc.attack ? x : acc, new PieceDOr()));
+            else {
+                card = getCard(shopTier, "Génie");
+                card.attack += Math.floor(fluctuate(t.filter(e => e && e.species === "Génie").length, round / 3, round / 2));
+                card.hp += Math.floor(fluctuate(t.filter(e => e && e.species === "Génie").length, round / 3, round / 2));
+            }
+            if (card && card.species !== "Sortilège") {
+                let d = findCardPos(sender);
+                if (d) {
+                    d.children[0].style.filter = "grayscale(1)";
+                    d.children[0].style.opacity = "0";
+                    await sleep(500);
+                    d.innerHTML = "";
+                }
+                if (args[0][0].includes(sender))
+                    args[0][0][args[0][0].findIndex(e => e === sender)] = undefined;
+                else if (args[0][1].includes(sender))
+                    args[0][1][args[0][1].findIndex(e => e === sender)] = undefined;
+                else if (args[1][0].includes(sender))
+                    args[1][0][args[1][0].findIndex(e => e === sender)] = undefined;
+                else if (args[1][1].includes(sender))
+                    args[1][1][args[1][1].findIndex(e => e === sender)] = undefined;
+                await battleSummon(card, bottom ? args[0] : args[1], p, doAnimate, args.concat([args]));
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 3 * t.filter(e => e && e.species === "Génie").length;
+    };
+    this.desc = "<em>Frappe préventive :</em> Remplacez cette créature par la créature la plus forte de votre main.";
+}
+
+function Effect1511() {
+    this.run = async (sender, args, doAnimate) => {
+        if (!sender.effect1511)
+            sender.effect1511 = 0;
+        if (args[0].card.species === "Génie" && args[0].card !== sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board") && sender.effect1511 < 2) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            sender.effect1511++;
+            let spell;
+            do {
+                spell = getCard(shopTier, "Sortilège");
+            } while (spell.validTarget.area !== "board" || spell.name === "Pacte démoniaque" || spell.name === "Jugement du sphinx" || spell.name === "Rite de sang");
+            let preview = drawCard(spell, 240);
+            preview.classList.add("spell-preview");
+            document.body.appendChild(preview);
+            fitDescription(preview);
+            await sleep(1000);
+            document.body.removeChild(preview);
+            await playSpell(drawCard(spell, 0), args[0]);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 3 * t.filter(e => e.species === "Génie").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Après avoir joué un autre Génie, joue un Sortilège aléatoire sur lui, jusqu'à 2 fois par tour.";
+    this.dynamicDesc = (c) => "<em>(Déclenché " + (c.effect1511 ?? 0) + " fois ce tour-ci)</em>";
+}
+
+function Effect1512() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card.species === "Génie" && args[0].card !== sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let e of troops[0].filter(e => e && e.species === "Génie"))
+                await boostStats(e, 1, 1, doAnimate);
+            for (let e of Array.from(document.getElementById("hand").children).map(e => e.card).filter(e => e.species === "Génie"))
+                await boostStats(e, 1, 1, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 5 * t.filter(e => e.species === "Génie").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Après avoir joué un autre Génie, confère +1/+1 à tous les Génies en jeu et dans votre main.";
+}
+
+function Effect1513() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await wish();
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 1.5 * t.filter(e => e.species === "Génie").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Au début de chaque tour, faites un vœu.";
+}
+
+function Effect1514() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let e of Array.from(document.getElementById("hand").children).map(e => e.card).filter(e => e.species === "Génie"))
+                await boostStats(e, 2, 1, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 1.5 * t.filter(e => e.species === "Génie").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous faites un vœu, confère +2/+1 aux Génies de votre main.";
+}
+
+function Effect1515() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await wish();
+            await wish();
+            await wish();
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 2 * t.filter(e => e && e.species === "Génie").length, 0, 10 + 2 * t.filter(e => e && e.species === "Génie").length];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Faites trois vœux.";
+}
+
+function Effect1516() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            await wish();
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, t.filter(e => e.species === "Génie").length];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous revendez cette carte, faites un vœu.";
+}
+
+function Effect1517() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board") && document.getElementById("hand").children.length < 6) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await chooseTarget(async (target) => {
+                await returnToHand(target);
+            }, {
+                area: "board",
+                notself: true
+            }, sender);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 2.5 * t.filter(e => e.species === "Génie").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Au début de chaque tour, renvoyez la créature alliée ciblée dans votre main.";
+}
+
+function Effect1518() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender && findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let e of troops[0].filter(e => e && e.species === "Génie"))
+                await boostStats(e, 1, 1, doAnimate);
+            for (let e of Array.from(document.getElementById("hand").children).map(e => e.card).filter(e => e.species !== "Sortilège"))
+                await boostStats(e, 2, 2, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 3 * t.filter(e => e && e.species === "Génie").length];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Confère +1/+1 aux Génies alliés et +2/+2 aux créatures de votre main.";
+}
+
+function Effect1519() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.hp <= 0 && args[6] && args[4] == 0) {
+            let target = choice(Array.from(document.getElementById("hand").children).map(e => e.card).filter(e => e.species !== "Sortilège"));
+            if (target) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                boostStats(target, 3, 3, false);
+                updateCardStats(findDOMCard(target));
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 4, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Dernière volonté :</em> Confère +3/+3 à une créature aléatoire de votre main.";
+}
+
+function Effect1520() {
+    this.run = async (sender, args, doAnimate) => {
+        await returnToHand(args[0].card);
+        if (args[0].card.species === "Génie") {
+            args[0].card.effects.push({
+                trigger: "card-place",
+                id: 1506
+            });
+            await boostStats(args[0].card, 0, 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Renvoyez la créature ciblée dans votre main. Si c'est un Génie, elle gagne \"<em>Recrue :</em> Gagne +1/+1.\"";
+}
+
+function Effect1521() {
+    this.run = async (sender, args, doAnimate) => {
+        let c = args[0];
+        c.style.transition = ".5s";
+        c.style.opacity = "0";
+        let t = Array.from(document.getElementById("hand").children).map(e => e.card);
+        let target = t.reduce((acc, x) => x.attack > acc.attack ? x : acc, new PieceDOr());
+        if (target && target.species !== "Sortilège")
+            await boostStats(target, c.card.attack, c.card.hp, doAnimate);
+        c.parentElement.removeChild(c);
+        updateTroops();
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Détruit la créature ciblée pour conférer ses statistiques à la créature la plus forte de votre main.";
+}
+
+function Effect1522() {
+    this.run = async (sender, args, doAnimate) => {
+        sender.effect1511 = 0;
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "";
+}
+
+function Effect1550() {
+    this.run = async (sender, args, doAnimate) => {
+        for (let c of troops[0].filter(e => e))
+            await boostStats(c, 1, 0, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Confère +1/+0 aux créatures alliées.";
+}
+
+function Effect1551() {
+    this.run = async (sender, args, doAnimate) => {
+        for (let c of troops[0].filter(e => e))
+            await boostStats(c, 0, 1, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Confère +0/+1 aux créatures alliées.";
+}
+
+function Effect1552() {
+    this.run = async (sender, args, doAnimate) => {
+        for (let i = 0; i < 2; i++) {
+            let card = new PieceDOr();
+            card.created = true;
+            let c = drawCard(card, 176);
+            await addToHand(c);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Ajoute 2 Pièces d'or à votre main.";
+    this.refs = ["piece-d-or"];
+}
+
+function Effect1553() {
+    this.run = async (sender, args, doAnimate) => {
+        let t = Array.from(document.getElementById("hand").children).map(e => e.card);
+        let target = t.reduce((acc, x) => x.attack > acc.attack ? x : acc, new PieceDOr());
+        if (target && target.attack >= 0)
+            await boostStats(target, t.length, t.length, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Confère +X/+X à la créature la plus forte de votre main, où X est le nombre de cartes dans votre main.";
+}
+
+function Effect1554() {
+    this.run = async (sender, args, doAnimate) => {
+        let target = choice(troops[0].filter(e => e));
+        if (target) {
+            let name = target.src.substring(target.src.indexOf("/") + 1, target.src.indexOf("."));
+            let card = createCard(name);
+            card.created = true;
+            card.attack = 1;
+            card.hp = 1;
+            let c = drawCard(card, 176);
+            await addToHand(c);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Ajoute à votre main une copie de base de statistiques 1/1 d'une créature alliée aléatoire.";
+}
+
+function Effect1555() {
+    this.run = async (sender, args, doAnimate) => {
+        let target = choice(Array.from(document.getElementById("hand").children).map(e => e.card).filter(e => e.species !== "Sortilège"));
+        if (target) {
+            target.range = true;
+            await boostStats(target, 1, 1, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Une créature aléatoire de votre main gagne <em>Portée</em> et +1/+1.";
+}
+
+function Effect1556() {
+    this.run = async (sender, args, doAnimate) => {
+        let target = choice(Array.from(document.getElementById("hand").children).map(e => e.card).filter(e => e.species !== "Sortilège"));
+        if (target) {
+            target.shield = true;
+            await boostStats(target, -2, -2, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Une créature aléatoire de votre main gagne <em>Bouclier</em> et -2/-2.";
+}
+
+function Effect1557() {
+    this.run = async (sender, args, doAnimate) => {
+        document.getElementById("refresh").style.boxShadow = "0 0 15px green";
+        discountedRefreshes += 3;
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Les trois prochaines recherches de recrues sont gratuites.";
+}
+
 function Effect2001() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0] !== sender) {
@@ -18223,7 +19317,11 @@ async function waitForTargetSelection() {
 }
 
 async function battleSummon(name, t, p, doAnimate, args) {
-    let card = createCard(name);
+    let card;
+    if (!name.name)
+        card = createCard(name);
+    else
+        card = name;
     card.created = true;
     let i = t[0].concat(t[1]).findIndex(e => e == undefined);
     if (i != -1) {
@@ -18276,14 +19374,53 @@ async function forgeEquipment() {
         grid.appendChild(c);
         fitDescription(c);
         c.onclick = async () => {
-            nextTargetSelection = true;
+            document.body.removeChild(filter);
             await addToHand(drawCard(c.card, 176));
+            nextTargetSelection = true;
         }
     }
 
     await waitForTargetSelection();
-    document.body.removeChild(filter);
     await broadcastShopEvent("forge");
+}
+
+const wishes = [...Array(8).keys()].map(e => e + 1550);
+
+async function wish() {
+    shuffle(wishes);
+
+    let filter = document.createElement('div');
+    filter.className = "filter";
+    filter.id = "filter";
+    document.body.appendChild(filter);
+    
+    let banner = document.createElement('div');
+    banner.id = "target-banner";
+    banner.className = "target-banner";
+    banner.innerHTML = "Faites un vœu";
+    filter.appendChild(banner);
+
+    let grid = document.createElement('div');
+    grid.id = "equipment-grid";
+    grid.className = "equipment-grid";
+    filter.appendChild(grid);
+
+    let n = 3 + Math.min(2, troops[0].filter(e => e && e.effects.findIndex(e => e.id === 1304) != -1).length);
+    for (let i = 0; i < n; i++) {
+        let card = new Voeu();
+        card.effects.push({ id: wishes[i] });
+        let c = drawCard(card, 250);
+        grid.appendChild(c);
+        fitDescription(c);
+        c.onclick = async () => {
+            document.body.removeChild(filter);
+            await createEffect(c.card.effects[0].id).run(players[0], [], true);
+            nextTargetSelection = true;
+        }
+    }
+
+    await waitForTargetSelection();
+    await broadcastShopEvent("wish");
 }
 
 
