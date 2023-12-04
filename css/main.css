@@ -520,6 +520,17 @@ img {
     z-index: 200;
 }
 
+    .tooltip::before {
+        position: absolute;
+        top: calc((-864px + 100%) / 2);
+        left: calc((-1536px + 100%) / 2);
+        width: 1536px;
+        height: 864px;
+        content: '';
+        background: radial-gradient(circle, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+        z-index: -1;
+    }
+
     .tooltip > *:first-child {
         display: flex;
     }

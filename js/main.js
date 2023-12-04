@@ -9434,14 +9434,7 @@ function showCardTooltip(c) {
     tooltip.appendChild(cardWrapper);
     let card = drawCard(c, 300, true, c.isShowcase);
     cardWrapper.appendChild(card);
-
-    let desc = card.children[2];
-    let maxY = desc.clientHeight;
-    let text = desc.children[0];
-    while (text.clientHeight > maxY) {
-        let size = parseInt(window.getComputedStyle(text).fontSize);
-        text.style.fontSize = (size - .5).toString() + "px";
-    }
+    fitDescription(card);
 
     let tips = document.createElement('div');
     tips.className = "tips";
@@ -9553,12 +9546,14 @@ function showCardTooltip(c) {
             fitDescription(refCard);
         }
 
-        for (let effect of c.effects.filter(e => createEffect(e.id).refs)) {
-            for (let ref of createEffect(effect.id).refs) {
-                let refCard = drawCard(createCard(ref), 150, true, true);
-                refs.appendChild(refCard);
-                fitDescription(refCard);
-            }
+        const effRefs = c.effects
+                .map(e => createEffect(e.id).refs ?? [])
+                .flat()
+                .reduce((acc, x) => acc.includes(x) ? acc : acc.concat([x]), []);
+        for (let ref of effRefs) {
+            let refCard = drawCard(createCard(ref), 150, true, true);
+            refs.appendChild(refCard);
+            fitDescription(refCard);
         }
     }
 
@@ -9630,7 +9625,7 @@ function fitDescription(card) {
     text.style.removeProperty("font-size");
     while (text.clientHeight > maxY) {
         let size = parseInt(window.getComputedStyle(text).fontSize);
-        text.style.fontSize = (size - .5).toString() + "px";
+        text.style.fontSize = (size - .2).toString() + "px";
     }
 }
 
