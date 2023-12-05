@@ -9625,7 +9625,7 @@ function fitDescription(card) {
     text.style.removeProperty("font-size");
     while (text.clientHeight > maxY) {
         let size = parseInt(window.getComputedStyle(text).fontSize);
-        text.style.fontSize = (size - .2).toString() + "px";
+        text.style.fontSize = (size - .1).toString() + "px";
     }
 }
 
