@@ -10532,7 +10532,9 @@ function Effect2() {
                 await effectProcGlow(sender);
             for (let d of document.getElementById("board").children) {
                 if (d.children[0] && d.children[0].card.shield && d.children[0].card !== args[0].card)
-                    await boostStats(d.children[0].card, 1, 1, doAnimate);
+                    boostStats(d.children[0].card, 1, 1, doAnimate);
+            if (doAnimate && troops[0].findIndex(e => e && e.shield && e !== args[0].card) !== -1)
+                await sleep(400);
             }
         }
     };
@@ -11020,8 +11022,10 @@ function Effect26() {
                 while (i > 0 && options.length > 0) {
                     i--;
                     let c = options.pop();
-                    await boostStats(c, 1, 1, doAnimate);
+                    boostStats(c, 1, 1, doAnimate);
                 }
+                if (doAnimate && i < 5)
+                    await sleep(400)
             }
         }
     };
@@ -11427,7 +11431,9 @@ function Effect44() {
             if (doAnimate)
                 await effectProcGlow(sender);
             for (let c of troops[0].filter(e => e && e.species === "Loup-Garou"))
-                await boostStats(c, 0, 1, doAnimate);
+                boostStats(c, 0, 1, doAnimate);
+            if (doAnimate && troops[0].filter(e => e && e.species === "Loup-Garou").length > 0)
+                await sleep(400)
         }
     };
     this.scaling = (c, t) => {
@@ -11445,7 +11451,9 @@ function Effect45() {
             if (doAnimate)
                 await effectProcGlow(sender);
             for (let c of troops[0].filter(e => e && e.species === "Loup-Garou"))
-                await boostStats(c, 1, 0, doAnimate);
+                boostStats(c, 1, 0, doAnimate);
+            if (doAnimate && troops[0].filter(e => e && e.species === "Loup-Garou").length > 0)
+                await sleep(400)
         }
     };
     this.scaling = (c, t) => {
@@ -11714,7 +11722,9 @@ function Effect109() {
                     options.push(d.children[0]);
             shuffle(options);
             for (let c of options.slice(0, Math.min(3, options.length)))
-                await boostStats(c.card, 0, 1, doAnimate);
+                boostStats(c.card, 0, 1, doAnimate);
+            if (doAnimate && options.length > 0)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -11810,7 +11820,9 @@ function Effect114() {
             let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
             for (let c of t)
                 if (c && c.species == "Dragon")
-                    await boostStats(c, 2, 1, doAnimate, false, true);
+                    boostStats(c, 2, 1, doAnimate, false, true);
+            if (doAnimate && t.findIndex(e => e && e.species === "Dragon") !== -1)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -11831,8 +11843,10 @@ function Effect115() {
             let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
             for (let c of t) {
                 if (c && c.species == "Dragon" && c !== sender)
-                    await boostStats(c, 0, 20, doAnimate);
+                    boostStats(c, 0, 20, doAnimate);
             }
+            if (doAnimate && t.findIndex(e => e && e.species === "Dragon" && e !== sender) !== -1)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -12109,7 +12123,9 @@ function Effect210() {
                 await effectProcGlow(sender);
             for (let d of document.getElementById("board").children)
                 if (d.children[0] && d.children[0].card.species == "Gobelin" && d.children[0].card !== sender)
-                    await boostStats(d.children[0].card, 0, 2, doAnimate);
+                    boostStats(d.children[0].card, 0, 2, doAnimate);
+            if (doAnimate && troops[0].filter(e => e && e.species === "Gobelin" && e !== sender).length > 0)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -12142,8 +12158,10 @@ function Effect212() {
             let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
             for (let c of t) {
                 if (c && c !== sender && c.species == "Gobelin")
-                    await boostStats(c, 1, 1, doAnimate, false, true);
+                    boostStats(c, 1, 1, doAnimate, false, true);
             }
+            if (doAnimate && t.findIndex(e => e && e.species === "Gobelin" && e !== sender) !== -1)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -13011,7 +13029,9 @@ function Effect410() {
                 await effectProcGlow(sender);
             for (let d of document.getElementById("board").children)
                 if (d.children[0] && d.children[0].card.species === "Soldat")
-                    await boostStats(d.children[0].card, 1, 1, doAnimate);
+                    boostStats(d.children[0].card, 1, 1, doAnimate);
+            if (doAnimate && troops[0].findIndex(e => e && e.species === "Soldat") !== -1)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -13799,7 +13819,9 @@ function Effect608() {
             let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
             for (let c of t)
                 if (c && c.species == "Machine")
-                    await boostStats(c, 2, 2, doAnimate);
+                    boostStats(c, 2, 2, doAnimate);
+            if (doAnimate && t.findIndex(e => e.species === "Machine") !== -1)
+                await sleep(400);
             await battleSummon("automate-replicateur-mod", args[1] ? args[2] : args[3], args[4], doAnimate, args);
             await battleSummon("automate-replicateur-mod", args[1] ? args[2] : args[3], args[4], doAnimate, args);
         }
@@ -13820,7 +13842,9 @@ function Effect609() {
             let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
             for (let c of t)
                 if (c && c.species == "Machine")
-                    await boostStats(c, 2, 2, doAnimate);
+                    boostStats(c, 2, 2, doAnimate);
+            if (doAnimate && t.findIndex(e => e.species === "Machine") !== -1)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -13902,12 +13926,14 @@ function Effect612() {
             if (!sender.effect612 || sender.effect612 == 0) {
                 sender.effect612 = 1;
                 for (let c of cards)
-                    await boostStats(c, n, -3, doAnimate, true);
+                    boostStats(c, n, -3, doAnimate, true);
             } else {
                 sender.effect612 = 0;
                 for (let c of cards)
-                    await boostStats(c, -3, n, doAnimate, true);
+                    boostStats(c, -3, n, doAnimate, true);
             }
+            if (doAnimate && cards.length > 0)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -14801,7 +14827,9 @@ function Effect812() {
                 await effectProcGlow(sender);
             for (let c of troops[0])
                 if (c && c.species == "Mort-Vivant" && c !== sender)
-                    await boostStats(c, 1, 2, doAnimate);
+                    boostStats(c, 1, 2, doAnimate);
+            if (doAnimate && troops[0].findIndex(e => e && e.species === "Mort-Vivant" && e !== sender) !== -1)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -15066,11 +15094,13 @@ function Effect908() {
                 d = positions[i];
                 if (d.children[0] && d.children[0].card.species === "Sylvain") {
                     if (i < 4)
-                        await boostStats(d.children[0].card, 0, 2, doAnimate);
+                        boostStats(d.children[0].card, 0, 2, doAnimate);
                     else
-                        await boostStats(d.children[0].card, 1, 0, doAnimate);
+                        boostStats(d.children[0].card, 1, 0, doAnimate);
                 }
             }
+            if (doAnimate && troops[0].findIndex(e => e && e.species === "Sylvain") !== -1)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -15221,7 +15251,9 @@ function Effect915() {
                 shuffle(options);
                 options = options.slice(0, 3);
                 for (let c of options)
-                    await boostStats(c, 1, 2, doAnimate, false, true);
+                    boostStats(c, 1, 2, doAnimate, false, true);
+                if (doAnimate && options.length > 0)
+                    await sleep(400);
             }
         }
     };
@@ -15556,7 +15588,9 @@ function Effect1012() {
             let chief = isWarchief(sender, 0);
             for (let c of troops[0])
                 if (c && c.reputation != undefined && isWarchief(c, 0))
-                    await boostStats(c, chief ? 2 : 1, chief ? 3 : 2, doAnimate);
+                    boostStats(c, chief ? 2 : 1, chief ? 3 : 2, doAnimate);
+            if (doAnimate && troops[0].findIndex(e => e && e.reputation != undefined && isWarchief(e, 0)) !== -1)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -15681,9 +15715,11 @@ function Effect1017() {
                 if (c && c.reputation != undefined) {
                     c.reputation++;
                     c.original.reputation++;
-                    await boostStats(c, 0, 0, doAnimate);
+                    boostStats(c, 0, 0, doAnimate);
                 }
             }
+            if (doAnimate && t.findIndex(e => e && e.reputation != undefined) !== -1)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -15707,9 +15743,11 @@ function Effect1018() {
                 if (c && c.reputation != undefined) {
                     c.reputation++;
                     c.original.reputation++;
-                    await boostStats(c, 0, 0, doAnimate);
+                    boostStats(c, 0, 0, doAnimate);
                 }
             }
+            if (doAnimate && t.findIndex(e => e && e.reputation != undefined) !== -1)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -16065,7 +16103,9 @@ function Effect1116() {
                 await effectProcGlow(sender);
             let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
             for (let c of t.filter(e => e && e.species === "Démon" && e.hp > 0))
-                await boostStats(c, 0, 2, doAnimate, false, true);
+                boostStats(c, 0, 2, doAnimate, false, true);
+            if (doAnimate && t.filter(e => e && e.species === "Démon" && e.hp > 0).length > 0)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -16090,7 +16130,9 @@ function Effect1117() {
                 shuffle(t2);
                 t2 = t2.slice(0, 3);
                 for (let c of t2)
-                    await boostStats(c, 1, 0, doAnimate, false, true);
+                    boostStats(c, 1, 0, doAnimate, false, true);
+                if (doAnimate && t2.length > 0)
+                    await sleep(400);
             }
         }
     };
@@ -16175,7 +16217,9 @@ function Effect1202() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0].card === sender) {
             for (let c of troops[0].filter(e => e && e.elements && (e.elements.includes("Terre") || e.elements.includes("Feu"))))
-                await boostStats(c, 0, 1, doAnimate);
+                boostStats(c, 0, 1, doAnimate);
+            if (doAnimate && troops[0].filter(e => e && e.elements && (e.elements.includes("Terre") || e.elements.includes("Feu"))).length > 0)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -16194,7 +16238,9 @@ function Effect1203() {
                 await effectProcGlow(sender);
             let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
             for (let c of t.filter(e => e && e !== sender && e.elements && (e.elements.includes("Eau") || e.elements.includes("Air"))))
-                await boostStats(c, 0, 2, doAnimate);
+                boostStats(c, 0, 2, doAnimate);
+            if (doAnimate && t.filter(e => e && e !== sender && e.elements && (e.elements.includes("Eau") || e.elements.includes("Air"))).length > 0)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -16408,7 +16454,9 @@ function Effect1213() {
             if (doAnimate)
                 await effectProcGlow(sender);
             for (let c of troops[0].filter(e => e && e !== sender && e.elements))
-                await boostStats(c, c.elements.length, c.elements.length, doAnimate);
+                boostStats(c, c.elements.length, c.elements.length, doAnimate);
+            if (doAnimate && troops[0].filter(e => e && e !== sender && e.elements).length > 0)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -16490,10 +16538,12 @@ function Effect1217() {
                 await effectProcGlow(sender);
             for (let c of troops[0].filter(e => e && e.elements)) {
                 if (c.elements.length < 3)
-                    await boostStats(c, 1, 1, doAnimate);
+                    boostStats(c, 1, 1, doAnimate);
                 else
-                    await boostStats(c, 3, 3, doAnimate);
+                    boostStats(c, 3, 3, doAnimate);
             }
+            if (doAnimate && troops[0].filter(e => e && e.elements).length > 0)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -16799,7 +16849,9 @@ function Effect1314() {
             let t = troops[0].filter(e => e && e !== sender && e.species === "Nain").slice(0, 3);
             shuffle(t);
             for (c of t)
-                await boostStats(c, 1, 2, doAnimate);
+                boostStats(c, 1, 2, doAnimate);
+            if (doAnimate && t.length > 0)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -16900,7 +16952,9 @@ function Effect1319() {
     this.run = async (sender, args, doAnimate) => {
         await forgeEquipment();
         for (let c of troops[0].filter(e => e && e.species === "Nain"))
-            await boostStats(c, 1, 0, doAnimate);
+            boostStats(c, 1, 0, doAnimate);
+        if (doAnimate && troops[0].filter(e => e && e.species === "Nain").length > 0)
+            await sleep(400);
     };
     this.scaling = (c, t) => {
         return [0, 0, 0, 0];
@@ -17525,7 +17579,9 @@ function Effect1420() {
             if (doAnimate)
                 await effectProcGlow(sender);
             for (let c of t.filter(e => e && e.species === "Loup-Garou"))
-                await boostStats(c, 2, 2, doAnimate, false, true);
+                boostStats(c, 2, 2, doAnimate, false, true);
+            if (doAnimate && t.filter(e => e && e.species === "Loup-Garou").length > 0)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -17545,7 +17601,9 @@ function Effect1421() {
             if (doAnimate)
                 await effectProcGlow(sender);
             for (let c of t.filter(e => e && e.species === "Loup-Garou"))
-                await boostStats(c, 3, 3, doAnimate, false, true);
+                boostStats(c, 3, 3, doAnimate, false, true);
+            if (doAnimate && t.filter(e => e && e.species === "Loup-Garou").length > 0)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -17720,7 +17778,9 @@ function Effect1428() {
             await broadcastShopEvent("day-night-cycle", [players[0].day]);
         } else {
             for (let c of troops[0].filter(e => e && e.species === "Loup-Garou"))
-                await boostStats(c, 1, 0, doAnimate);
+                boostStats(c, 1, 0, doAnimate);
+            if (doAnimate && troops[0].filter(e => e && e.species === "Loup-Garou").length > 0)
+                await sleep(400);
         }
     };
     this.scaling = (c, t) => {
@@ -18037,7 +18097,9 @@ function Effect1512() {
             if (doAnimate)
                 await effectProcGlow(sender);
             for (let e of troops[0].filter(e => e && e.species === "Génie"))
-                await boostStats(e, 1, 1, doAnimate);
+                boostStats(e, 1, 1, doAnimate);
+            if (doAnimate && troops[0].filter(e => e && e.species === "Génie").length > 0)
+                await sleep(400);
             for (let e of Array.from(document.getElementById("hand").children).map(e => e.card).filter(e => e.species === "Génie"))
                 await boostStats(e, 1, 1, doAnimate);
         }
@@ -18148,7 +18210,9 @@ function Effect1518() {
             if (doAnimate)
                 await effectProcGlow(sender);
             for (let e of troops[0].filter(e => e && e.species === "Génie"))
-                await boostStats(e, 1, 1, doAnimate);
+                boostStats(e, 1, 1, doAnimate);
+            if (doAnimate && troops[0].filter(e => e && e.species === "Génie").length > 0)
+                await sleep(400);
             for (let e of Array.from(document.getElementById("hand").children).map(e => e.card).filter(e => e.species !== "Sortilège"))
                 await boostStats(e, 2, 2, doAnimate);
         }
@@ -18240,7 +18304,9 @@ function Effect1522() {
 function Effect1550() {
     this.run = async (sender, args, doAnimate) => {
         for (let c of troops[0].filter(e => e))
-            await boostStats(c, 1, 0, doAnimate);
+            boostStats(c, 1, 0, doAnimate);
+        if (doAnimate && troops[0].filter(e => e).length > 0)
+            await sleep(400);
     };
     this.scaling = (c, t) => {
         return [0, 0, 0, 0];
@@ -18254,7 +18320,9 @@ function Effect1550() {
 function Effect1551() {
     this.run = async (sender, args, doAnimate) => {
         for (let c of troops[0].filter(e => e))
-            await boostStats(c, 0, 1, doAnimate);
+            boostStats(c, 0, 1, doAnimate);
+        if (doAnimate && troops[0].filter(e => e).length > 0)
+            await sleep(400);
     };
     this.scaling = (c, t) => {
         return [0, 0, 0, 0];
