@@ -172,6 +172,32 @@
             color: #f7d47a;
             padding-bottom: calc(var(--size) * .015);
         }
+
+    .card > .achievement {
+        position: relative;
+        background-image: url("../resources/ui/crest.png");
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        display: flex;
+        top: calc(var(--size) * -.87);
+        left: calc(var(--size) * .84);
+        height: calc(var(--size) * .13);
+        width: calc(var(--size) * .13);
+    }
+
+        .card > .achievement::after {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            content: '';
+            background-image: url("../resources/ui/trophy.svg");
+            background-repeat: no-repeat;
+            background-size: 60% 60%;
+            background-position: center center;
+            filter: invert(94%) sepia(51%) saturate(1745%) hue-rotate(308deg) brightness(114%) contrast(94%);
+        }
     
     .card > .reputation {
         position: relative;

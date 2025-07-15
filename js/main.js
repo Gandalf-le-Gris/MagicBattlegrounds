@@ -9203,6 +9203,12 @@ function drawCard(c, size, cancelTooltip, isShowcase) {
         tier.appendChild(tierVal);
     }
 
+    if (JSON.parse(localStorage.getItem("Achievement__" + c.name) ?? "false")) {
+        let achievement = document.createElement('div');
+        achievement.className = "achievement";
+        card.appendChild(achievement);
+    }
+
     if (c.reputation != undefined) {
         let reputation = document.createElement('div');
         reputation.className = "reputation";
