@@ -11243,7 +11243,7 @@ function Effect35() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "Une fois que 15 créatures alliées sont mortes, ajoute un Sortilège du Livre de la Crypte Noire à votre main.";
+    this.desc = "Une fois que 15 Morts-Vivants alliés sont morts, ajoute un Sortilège du Livre de la Crypte Noire à votre main.";
     this.dynamicDesc = (c) => "<em>(Encore " + (15 - (c.effect35 ? c.effect35 : 0)) + ")</em>";
     this.refs = blackCryptSpellBook;
 }
