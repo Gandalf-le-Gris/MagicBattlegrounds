@@ -2595,8 +2595,8 @@ function initCards() {
     }
 
     //species = ["Génie"]; //!!!
-    /*if (!species.includes("Génie")) //!!!
-        species[0] = "Génie";*/
+    //if (!species.includes("Génie")) //!!!
+    //    species[0] = "Génie";
 
     //for (let s of speciesList)
     //    cardList[s] = [cardList[s][0]]; //!!!
