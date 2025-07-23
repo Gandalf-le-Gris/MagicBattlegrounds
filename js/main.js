@@ -19734,6 +19734,14 @@ async function displayNewAchievement(a) {
     document.body.removeChild(filter);
 }
 
+function exportAchievements() {
+    return JSON.stringify(achievementsList.filter(a => JSON.parse(window.localStorage.getItem("Achievement__" + a) ?? "false")));
+}
+
+function importAchievements(achievementString) {
+    JSON.parse(achievementString).forEach(a => window.localStorage.setItem("Achievement__" + a, JSON.stringify(true)));
+}
+
 
 
 
