@@ -52,6 +52,7 @@ function loadResources() {
                                         toggleSettings();
                                     }
                                 });
+                                openFullscreen();
                                 fadeTransition(drawHomeScreen);
                             }
                         }
