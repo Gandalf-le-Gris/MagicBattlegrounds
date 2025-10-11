@@ -784,6 +784,38 @@ img {
         box-shadow: 0 0 10px white;
     }
 
+.bargain-grid {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: grid;
+    grid-auto-flow: column;
+    grid-column-gap: 50px;
+}
+
+    .bargain-grid > *:first-child, .bargain-grid > *:last-child {
+        padding: 10px 50px;
+        transition: .2s;
+        cursor: pointer;
+        background-color: transparent;
+        background-image: url("../resources/ui/paper-scroll.png");
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        font-size: var(--font-large);
+        font-family: var(--global-font);
+        font-weight: bold;
+        text-align: center;
+        height: fit-content;
+        margin: auto;
+        min-width: 108px;
+    }
+
+        .bargain-grid > *:first-child:hover, .bargain-grid > *:last-child:hover {
+            transform: scale(1.1);
+            filter: brightness(1.1);
+        }
+
 .tutoriel {
     position: absolute;
     top: 50%;
