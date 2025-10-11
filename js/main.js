@@ -551,6 +551,8 @@ let isTuto = false;
 let achievementsWaiting = [];
 let unPeuSpecial = true;
 let cardsPerTurn;
+let flawless = true;
+let sevenOrLess = true;
 
 async function startGame() {
     await fadeTransition(() => {
@@ -562,6 +564,8 @@ async function startGame() {
         achievementsWaiting = [];
         unPeuSpecial = true;
         cardsPerTurn = 0;
+        flawless = true;
+        sevenOrLess = true;
         for (let i = 0; i < 8; i++) {
             lastFights.push([]);
             for (let j = 0; j < 8; j++)
@@ -1208,6 +1212,8 @@ async function updateTroops() {
         for (let c of troops[0].filter(e => e))
             if (troops[0].findIndex(e => e && e.name === c.name && e !== c) !== -1)
                 unPeuSpecial = false;
+    if (sevenOrLess && troops[0].filter(e => e).length > 7)
+        sevenOrLess = false;
 }
 
 async function increaseShopTier() {
@@ -1428,12 +1434,19 @@ async function startBattle() {
         playMusic("resources/audio/sfx/battle.mp3", false);
         document.getElementById("fight").style.setProperty("pointer-events", "none");
 
-        if (troops[0].findIndex(e => e && e.attack >= 120 && e.hp >= 120) !== -1)
-            achievementsWaiting.push("Hybris");
-
         await sleep(800);
 
         await broadcastShopEvent("turn-end", []);
+
+        if (troops[0].findIndex(e => e && e.attack >= 120 && e.hp >= 120) !== -1)
+            achievementsWaiting.push("Hybris");
+        if (troops[0].every(c => c && c.shield))
+            achievementsWaiting.push("Armure lourde");
+        if (troops[0].filter(c => c && c.species === "Autre").length >= 5)
+            achievementsWaiting.push("Apatride");
+        if (troops[0].some(c => c && c.name === "Changeforme masqué" && c.attack >= 40 && c.hp >= 40))
+            achievementsWaiting.push("Polymorphie");
+
         document.getElementById("fight").style.removeProperty("pointer-events");
         matchmaking();
         updateEnemyTroops();
@@ -1771,6 +1784,8 @@ async function runBattle(p1, p2, doAnimate) {
         lastResult = finish;
     if (p1 === 0 && finish === 1 && t1[0].concat(t1[1]).filter(e => e && e.hp > 0).length === 8 && !JSON.parse(window.localStorage.getItem("Achievement__Domination")))
         achievementsWaiting.push("Domination");
+    if (p1 === 0 && finish === 2)
+        flawless = false;
 
     if (doAnimate)
         drawShopScene();
@@ -2356,6 +2371,10 @@ async function drawShopScene() {
             newAchievements.push("Aux portes de la mort");
         if (!JSON.parse(window.localStorage.getItem("Achievement__Trop facile")) && players[0].hp >= 25)
             newAchievements.push("Trop facile");
+        if (!JSON.parse(window.localStorage.getItem("Achievement__Inarrêtable")) && flawless)
+            newAchievements.push("Inarrêtable");
+        if (!JSON.parse(window.localStorage.getItem("Achievement__Infériorité numérique")) && sevenOrLess)
+            newAchievements.push("Infériorité numérique");
         let diversity = troops[0].reduce((acc, x) => {
             if (x && !acc.includes(x.species) && species.includes(x.species))
                 acc.push(x.species);
@@ -11696,7 +11715,7 @@ function Effect35() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "Une fois que 15 créatures alliées sont mortes, ajoute un Sortilège du Livre de la Crypte Noire à votre main.";
+    this.desc = "Une fois que 15 Morts-Vivants alliés sont morts, ajoute un Sortilège du Livre de la Crypte Noire à votre main.";
     this.dynamicDesc = (c) => "<em>(Encore " + (15 - (c.effect35 ? c.effect35 : 0)) + ")</em>";
     this.refs = blackCryptSpellBook;
 }
@@ -20868,7 +20887,7 @@ async function openBestiary() {
 const basicAchievementsList = ["Une prochaine fois, peut-être", "Champion de l'arène"];
 const speciesAchievementsList = speciesList.map(e => e).sort((a, b) => a.localeCompare(b));
 const commanderAchievementsList = cardList["Commandant"].map(e => createCard(e).name).sort((a, b) => a.localeCompare(b));
-const extraAchievementsList = ["Toucher de Midas", "Un peu spécial ?", "Aux portes de la mort", "Trop facile", "Hybris", "Célébrer la diversité", "Ce n'est jamais fini", "Tu ne le sais pas encore, mais tu es déjà mort !", "Une carte après l'autre", "Domination"]
+const extraAchievementsList = ["Toucher de Midas", "Un peu spécial ?", "Aux portes de la mort", "Trop facile", "Inarrêtable", "Hybris", "Célébrer la diversité", "Ce n'est jamais fini", "Tu ne le sais pas encore, mais tu es déjà mort !", "Une carte après l'autre", "Domination", "Armure lourde", "Apatride", "Infériorité numérique", "Polymorphie"];
 const achievementsList = basicAchievementsList.concat(speciesAchievementsList).concat(commanderAchievementsList).concat(extraAchievementsList);
 
 async function openAchievements() {
@@ -20963,6 +20982,16 @@ function getAchievementDesc(a) {
             return "Jouer 20 cartes en un seul tour.";
         case "Domination":
             return "Gagner un combat avec 8 créatures encore en vie.";
+        case "Inarrêtable":
+            return "Gagner une partie sans perdre un seul combat.";
+        case "Armure lourde":
+            return "Commencer un combat avec 8 créatures avec Bouclier.";
+        case "Apatride":
+            return "Commencer un combat avec 5 créatures sans famille.";
+        case "Infériorité numérique":
+            return "Gagner une partie sans jamais avoir plus de 7 créatures (hors invocations en combat).";
+        case "Polymorphie":
+            return "Posséder un Chageforme masqué de statistiques supérieures à 40/40.";
         default:
             return "";
     }
