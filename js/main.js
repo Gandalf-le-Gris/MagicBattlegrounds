@@ -554,6 +554,9 @@ let unPeuSpecial = true;
 let cardsPerTurn;
 let flawless = true;
 let sevenOrLess = true;
+let speciesBought = {};
+let noSpell = true;
+let lazy = true;
 
 async function startGame() {
     await fadeTransition(() => {
@@ -567,6 +570,9 @@ async function startGame() {
         cardsPerTurn = 0;
         flawless = true;
         sevenOrLess = true;
+        speciesBought = {};
+        noSpell = true;
+        lazy = true;
         for (let i = 0; i < 8; i++) {
             lastFights.push([]);
             for (let j = 0; j < 8; j++)
@@ -938,6 +944,9 @@ async function refreshShop(auto, requiredSpecies) {
             }
             for (let i = 0; i < parseInt(shop.style.getPropertyValue("--shop-size")) - nChildren + 2; i++) {
                 let card = getCard(shopTier, requiredSpecies);
+                if (players[0].effect59 === 10)
+                    while (card.tier < shopTier)
+                        card = getCard(shopTier, requiredSpecies);
                 if (species.includes("Loup-Garou") && !players[0].day && card.werewolf)
                     card = createCard(card.werewolf);
                 let c = drawCard(card, 176);
@@ -955,6 +964,8 @@ async function refreshShop(auto, requiredSpecies) {
                     c.style.removeProperty("animation");
                 }, 150);
             }
+            if (players[0].effect59 === 10)
+                players[0].effect59 = -1;
         }, 150);
         if (!auto)
             setTimeout(async () => {
@@ -1051,6 +1062,10 @@ async function buyCard(c, free) {
         addToHand(c);
         if (!free)
             await broadcastShopEvent("card-buy", [c]);
+        if (c.card.species !== "Sortilège")
+            speciesBought[c.card.species] = true;
+        if (round <= 2)
+            lazy = false;
 
         if (isTuto && tutoCard && tutoCard.card.effects.findIndex(e => e.id == -4) != -1) {
             tutoCard.card.effects = [{
@@ -1342,6 +1357,7 @@ async function playSpell(c, t) {
     if (c.parentElement)
         c.parentElement.removeChild(c);
     playMusic(choice(battleCries["Sortilège"]), false);
+    noSpell = false;
     cardsPerTurn++;
     if (cardsPerTurn === 20 && !JSON.parse(window.localStorage.getItem("Achievement__Une carte après l'autre")))
         achievementsWaiting.push("Une carte après l'autre");
@@ -2376,6 +2392,12 @@ async function drawShopScene() {
             newAchievements.push("Inarrêtable");
         if (!JSON.parse(window.localStorage.getItem("Achievement__Infériorité numérique")) && sevenOrLess)
             newAchievements.push("Infériorité numérique");
+        if (!JSON.parse(window.localStorage.getItem("Achievement__Hyperspécialisation")) && Object.keys(speciesBought).length <= 1)
+            newAchievements.push("Hyperspécialisation");
+        if (!JSON.parse(window.localStorage.getItem("Achievement__Honneur du guerrier")) && noSpell)
+            newAchievements.push("Honneur du guerrier");
+        if (!JSON.parse(window.localStorage.getItem("Achievement__Paresseux")) && lazy)
+            newAchievements.push("Paresseux");
         let diversity = troops[0].reduce((acc, x) => {
             if (x && !acc.includes(x.species) && species.includes(x.species))
                 acc.push(x.species);
@@ -2559,7 +2581,7 @@ async function drawShopScene() {
 const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant", "Sylvain", "Horde", "Démon", "Elémentaire", "Nain", "Loup-Garou", "Génie", "Fae"];
 
 const cardList = {
-    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde", "contremaitre-de-l-abysse", "avatar-de-la-creation", "champion-de-forgeterre", "ancetre-des-dragons", "roi-mercenaire", "concepteur-du-planetarium", "bretteuse-temeraire", "contrebandier-prospere", "androide-surcharge", "ravageur-de-villes", "pretre-de-la-crypte-noire", "forgeron-arcaniste", "druide-ne-des-arbres", "berserker-braisehache", "juggernaut-infernal", "devoreur-d-elements", "apparition-angelique", "chef-des-traqueurs", "naturaliste-de-wulfwald", "plieuse-de-realite", "le-grand-arbitre", "negociateur-malveillant", "seigneur-de-flestrefleur"],
+    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde", "contremaitre-de-l-abysse", "avatar-de-la-creation", "champion-de-forgeterre", "ancetre-des-dragons", "roi-mercenaire", "concepteur-du-planetarium", "bretteuse-temeraire", "contrebandier-prospere", "androide-surcharge", "ravageur-de-villes", "pretre-de-la-crypte-noire", "forgeron-arcaniste", "druide-ne-des-arbres", "berserker-braisehache", "juggernaut-infernal", "devoreur-d-elements", "apparition-angelique", "chef-des-traqueurs", "naturaliste-de-wulfwald", "plieuse-de-realite", "le-grand-arbitre", "negociateur-malveillant", "seigneur-de-flestrefleur", "protecmage-radiant", "commandante-charismatique", "marchand-prospere", "heros-de-guerre", "vendeur-d-artefacts", "zoologiste-curieux", "exploratrice-celeste", "mentor-bienveillant"],
     "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces", "masse-de-la-brutalite", "summum-de-la-gloire", "pacte-demoniaque", "liberer-le-mal", "transcendance-elementaire", "confluence-elementaire", "benediction-de-la-forge", "splendeur-des-mines", "assaut-sauvage", "transformation-lupine", "retour-dans-la-lampe", "jugement-du-sphinx", "bourgeonnement-feerique", "brisure-de-volonte"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
@@ -2578,7 +2600,7 @@ const cardList = {
     "Génie": ["augure-des-souhaits", "jeune-sphinx", "sphinge-protectrice", "djinn-aux-trois-souhaits", "vigie-de-l-espoir", "sphinx-insaisissable", "genie-de-la-lampe", "oracle-des-mysteres", "genie-des-lames", "porteur-de-secrets", "gardienne-des-archives", "djinn-de-la-fontaine", "sphinge-omnisciente", "exauceuse-de-souhaits", "maitre-des-enigmes"],
     "Fae": ["farceur-sournois", "brideuse-fae", "extorqueuse-cupide", "voleur-hypnotique", "faucheuse-d-archives", "fae-libere", "voyageur-facetieux", "negociatrice-genereuse", "duelliste-obstine", "porteur-de-fletrissement", "envouteuse-de-flestrefleur", "clique-malicieuse", "patron-des-pixies", "maitresse-des-contrats", "escroc-des-songes"],
     "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"],
-    "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble", "jeune-fongus", "coeur-de-l-abysse", "le-banni", "marteau-d-artisan", "marteau-demesure", "pioche-renforcee", "armure-de-plaques", "epee-du-roi-sous-la-montagne", "grappin-d-acier", "masse-arcanique", "bouclier-du-protecteur", "couronne-ornementale", "hache-a-deux-mains", "rituel-de-sang", "rituel-de-divination", "rituel-de-puissance", "rituel-de-vie-eternelle", "pulverisateur-arcanique", "gants-de-passe-partout", "lunettes-d-artificier", "epee-energisee", "djinn-aux-souhaits-exauces"]
+    "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble", "jeune-fongus", "coeur-de-l-abysse", "le-banni", "marteau-d-artisan", "marteau-demesure", "pioche-renforcee", "armure-de-plaques", "epee-du-roi-sous-la-montagne", "grappin-d-acier", "masse-arcanique", "bouclier-du-protecteur", "couronne-ornementale", "hache-a-deux-mains", "rituel-de-sang", "rituel-de-divination", "rituel-de-puissance", "rituel-de-vie-eternelle", "pulverisateur-arcanique", "gants-de-passe-partout", "lunettes-d-artificier", "epee-energisee", "djinn-aux-souhaits-exauces", "bouclier-radiant"]
 };
 
 const elements = ["Eau", "Feu", "Air", "Terre"];
@@ -2620,13 +2642,13 @@ function initCards() {
     commanders = [];
     for (let c of cardList["Commandant"]) {
         let card = createCard(c);
-        if (!card.requirement || species.includes(card.requirement)) //!!!
+        if ((!card.requirement && Math.random() < .5) || species.includes(card.requirement)) //!!!
             commanders.push(card);
     }
 
     shuffle(cards);
     shuffle(commanders);
-    // while (commanders.findIndex(e => e.name.startsWith("Négo")) > 2 && species.includes("Fae")) //!!!
+    // while (commanders.findIndex(e => e.name.startsWith("Mentor")) > 2) //!!!
     //     shuffle(commanders);
 }
 
@@ -2731,6 +2753,22 @@ function createCard(card) {
             return new NegociateurMalveillant();
         case "seigneur-de-flestrefleur":
             return new SeigneurDeFlestrefleur();
+        case "protecmage-radiant":
+            return new ProtecmageRadiant();
+        case "commandante-charismatique":
+            return new CommandanteCharismatique();
+        case "marchand-prospere":
+            return new MarchandProspere();
+        case "heros-de-guerre":
+            return new HerosDeGuerre();
+        case "vendeur-d-artefacts":
+            return new VendeurDArtefacts();
+        case "zoologiste-curieux":
+            return new ZoologisteCurieux();
+        case "exploratrice-celeste":
+            return new ExploratriceCeleste();
+        case "mentor-bienveillant":
+            return new MentorBienveillant();
 
         case "dragonnet-ardent":
             return new DragonnetArdent();
@@ -3404,6 +3442,10 @@ function createCard(card) {
             return new EpeeEnergisee();
         case "djinn-aux-souhaits-exauces":
             return new DjinnAuxSouhaitsExauces();
+        case "bouclier-radiant":
+            return new BouclierRadiant();
+        case "heros-de-guerre-t":
+            return new HerosDeGuerreT();
 
         default:
             alert("Carte inconnue : " + card);
@@ -4077,6 +4119,122 @@ function SeigneurDeFlestrefleur() {
         {
             trigger: "card-place",
             id: 51
+        }
+    ];
+}
+
+function ProtecmageRadiant() {
+    this.name = "Protecmage radiant";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 25;
+    this.src = "commandants/protecmage-radiant.jpg";
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 52
+        }
+    ];
+}
+
+function CommandanteCharismatique() {
+    this.name = "Commandante charismatique";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 29;
+    this.src = "commandants/commandante-charismatique.jpg";
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 53
+        }
+    ];
+}
+
+function MarchandProspere() {
+    this.name = "Marchand prospère";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 31;
+    this.src = "commandants/marchand-prospere.jpg";
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 54
+        }
+    ];
+}
+
+function HerosDeGuerre() {
+    this.name = "Héros de guerre";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 34;
+    this.src = "commandants/heros-de-guerre.jpg";
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 55
+        },
+        {
+            trigger: "battle-start",
+            id: 56
+        }
+    ];
+}
+
+function VendeurDArtefacts() {
+    this.name = "Vendeur d'artefacts";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 33;
+    this.src = "commandants/vendeur-d-artefacts.jpg";
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 57
+        }
+    ];
+}
+
+function ZoologisteCurieux() {
+    this.name = "Zoologiste curieux";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 34;
+    this.src = "commandants/zoologiste-curieux.jpg";
+    this.effects = [
+        {
+            trigger: "card-sell",
+            id: 58
+        }
+    ];
+}
+
+function ExploratriceCeleste() {
+    this.name = "Exploratrice céleste";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 30;
+    this.src = "commandants/exploratrice-celeste.jpg";
+    this.effects = [
+        {
+            trigger: "shop-refresh",
+            id: 59
+        }
+    ];
+}
+
+function MentorBienveillant() {
+    this.name = "Mentor bienveillant";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 28;
+    this.src = "commandants/mentor-bienveillant.jpg";
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 60
         }
     ];
 }
@@ -9475,6 +9633,36 @@ function DjinnAuxSouhaitsExauces() {
     ];
 }
 
+function BouclierRadiant() {
+    this.name = "Bouclier radiant";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "sortileges/bouclier-radiant.jpg";
+    this.tier = 7;
+    this.effects = [
+        {
+            trigger: "",
+            id: 2021
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function HerosDeGuerreT() {
+    this.name = "Héros de guerre";
+    this.species = "Autre";
+    this.attack = round;
+    this.hp = round;
+    this.src = "commandants/heros-de-guerre.jpg";
+    this.tier = 7;
+    this.effects = [
+
+    ];
+}
+
 function Voeu() {
     this.name = "Vœu exaucé";
     this.species = "Vœu";
@@ -10184,6 +10372,24 @@ function createEffect(id) {
             return new Effect50();
         case 51:
             return new Effect51();
+        case 52:
+            return new Effect52();
+        case 53:
+            return new Effect53();
+        case 54:
+            return new Effect54();
+        case 55:
+            return new Effect55();
+        case 56:
+            return new Effect56();
+        case 57:
+            return new Effect57();
+        case 58:
+            return new Effect58();
+        case 59:
+            return new Effect59();
+        case 60:
+            return new Effect60();
         case 101:
             return new Effect101();
         case 102:
@@ -10964,6 +11170,8 @@ function createEffect(id) {
             return new Effect2019();
         case 2020:
             return new Effect2020();
+        case 2021:
+            return new Effect2021();
         case 10001:
             return new Effect10001();
         case 10002:
@@ -12069,6 +12277,200 @@ function Effect51() {
     };
     this.dynamicDesc = (c) => `<em>(Encore ${3 - (c.effect51 ?? 0)})</em>`;
     this.desc = "Après avoir joué 3 Faes, passez un <em>Marché</em>.";
+}
+
+function Effect52() {
+    this.run = async (sender, args, doAnimate) => {
+        if (!sender.effect52)
+            sender.effect52 = 1;
+        if (shopTier > sender.effect52) {
+            sender.effect52 = shopTier;
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let card = new BouclierRadiant();
+            card.created = true;
+            let c = drawCard(card, 176);
+            await addToHand(c);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(2, 0, round), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque le niveau de recrutement augmente, ajoute à votre main un Bouclier radiant.";
+    this.refs = ["bouclier-radiant"];
+}
+
+function Effect53() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let t = (players[args[2]] === sender ? args[0] : args[1]);
+            for (let c of t[0].concat(t[1])) {
+                if (c) {
+                    c.shield = true;
+                    if (doAnimate)
+                        await boostStats(c, 0, 0, doAnimate);
+                    let side = args[0][0].concat(args[0][1]).includes(c);
+                    let t = (side ? args[1][0].concat(args[1][1]) : args[0][0].concat(args[0][1]));
+                    if (t.filter(e => e).length > 0)
+                        await attack(args[0], args[1], args[2], args[3], args[4], doAnimate, c, choice(t.filter(e => e)));
+                    break;
+                }
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Frappe préventive :</em> La première créature alliée acquiert <em>Bouclier</em>, puis attaque une créature ennemie aléatoire.";
+}
+
+function Effect54() {
+    this.run = async (sender, args, doAnimate) => {
+        if (coins) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            const t = shuffle([...troops[0]]).filter(e => e);
+            for (let i = 0; i < Math.min(8, coins); i++) {
+                if (t[i]) {
+                    await boostStats(t[i], 1, 1, doAnimate);
+                }
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(2, 0, round), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "A la fin de chaque tour, confère +1/+1 à une créature alliée aléatoire différente pour chaque pièce en votre possession.";
+}
+
+function Effect55() {
+    this.run = async (sender, args, doAnimate) => {
+        const t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][0]);
+        console.log(args)
+        if (!sender.effect55 && players[args[4]] === sender && !t.some(c => c && c.hp > 0)) {
+            sender.effect55 = true;
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await battleSummon("heros-de-guerre-t", args[1] ? args[2] : args[3], args[4], doAnimate, args);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque toutes les créatures alliés sont mortes, rejoint personnellement le combat.";
+}
+
+function Effect56() {
+    this.run = async (sender, args, doAnimate) => {
+        sender.effect55 = false;
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "";
+}
+
+function Effect57() {
+    this.run = async (sender, args, doAnimate) => {
+        if (!sender.effect57)
+            sender.effect57 = 1;
+        if (shopTier > sender.effect57) {
+            sender.effect57 = shopTier;
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let i = 0; i < 2; i++) {
+                let card = new PieceDOr();
+                card.created = true;
+                let c = drawCard(card, 176);
+                await addToHand(c);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(2, 0, round), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque le niveau de recrutement augmente, ajoute 2 Pièces d'or à votre main.";
+    this.refs = ["piece-d-or"];
+}
+
+function Effect58() {
+    this.run = async (sender, args, doAnimate) => {
+        const targets = troops[0].filter(c => c && c.name === args[0].card.name);
+        if (targets.length) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let card of targets)
+                boostStats(card, 2, 2, doAnimate);
+            await sleep(400);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(2, 0, round), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous revendez une créature, confère +2/+2 aux créatures alliées du même nom.";
+}
+
+function Effect59() {
+    this.run = async (sender, args, doAnimate) => {
+        if (!sender.effect59)
+            sender.effect59 = 0;
+        sender.effect59++;
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(2, 0, round), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.dynamicDesc = (c) => !c.effect59 || c.effect59 < 10 ? `<em>(Encore ${10 - (c.effect59 ?? 0)})</em>` : "<em>(Prochaine recherche)</em>";
+    this.desc = "Après avoir recherché des recrues 10 fois, la prochaine recherche donne des recrues de plus haut rang.";
+}
+
+function Effect60() {
+    this.run = async (sender, args, doAnimate) => {
+        const t = troops[0].filter(c => c && c.effects.some(e => createEffect(e.id).desc.startsWith("<em>Recrue")));
+        if (t.length) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            const target = choice(t);
+            console.log(target)
+            for (let e of target.effects) {
+                    let eff = createEffect(e.id);
+                    if (eff.desc.startsWith("<em>Recrue"))
+                        await eff.run(target, [findDOMCard(target)], true);
+                }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(2, 0, round), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Au début de chaque tour, redéclenche les <em>Recrues</em> d'une créature alliée aléatoire.";
 }
 
 function Effect101() {
@@ -20085,6 +20487,20 @@ function Effect2020() {
     this.desc = "Lorsque vous jouez un <em>Equipement</em> sur cette créature, elle gagne +2/+0.";
 }
 
+function Effect2021() {
+    this.run = async (sender, args, doAnimate) => {
+        args[0].card.shield = true;
+        await boostStats(args[0].card, -shopTier * 2, -shopTier * 2, doAnimate, true);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Confère -X/-X et <em>Bouclier</em> à la créature alliée ciblée, où X est deux fois le niveau de recrutement.";
+}
+
 function Effect10001() {
     this.run = async (sender, args, doAnimate) => { };
     this.scaling = (c, t) => {
@@ -20894,7 +21310,7 @@ async function openBestiary() {
 const basicAchievementsList = ["Une prochaine fois, peut-être", "Champion de l'arène"];
 const speciesAchievementsList = speciesList.map(e => e).sort((a, b) => a.localeCompare(b));
 const commanderAchievementsList = cardList["Commandant"].map(e => createCard(e).name).sort((a, b) => a.localeCompare(b));
-const extraAchievementsList = ["Toucher de Midas", "Un peu spécial ?", "Aux portes de la mort", "Trop facile", "Inarrêtable", "Hybris", "Célébrer la diversité", "Ce n'est jamais fini", "Tu ne le sais pas encore, mais tu es déjà mort !", "Une carte après l'autre", "Domination", "Armure lourde", "Apatride", "Infériorité numérique", "Polymorphie"];
+const extraAchievementsList = ["Toucher de Midas", "Un peu spécial ?", "Aux portes de la mort", "Trop facile", "Inarrêtable", "Hybris", "Célébrer la diversité", "Ce n'est jamais fini", "Tu ne le sais pas encore, mais tu es déjà mort !", "Une carte après l'autre", "Domination", "Armure lourde", "Apatride", "Infériorité numérique", "Polymorphie", "Hyperspécialisation", "Honneur du guerrier", "Paresseux"];
 const achievementsList = basicAchievementsList.concat(speciesAchievementsList).concat(commanderAchievementsList).concat(extraAchievementsList);
 
 async function openAchievements() {
@@ -20998,7 +21414,13 @@ function getAchievementDesc(a) {
         case "Infériorité numérique":
             return "Gagner une partie sans jamais avoir plus de 7 créatures (hors invocations en combat).";
         case "Polymorphie":
-            return "Posséder un Chageforme masqué de statistiques supérieures à 40/40.";
+            return "Posséder un Changeforme masqué de statistiques supérieures à 40/40.";
+        case "Hyperspécialisation":
+            return "Gagner une partie en n'achetant que des sortilèges et des créatures de la même famille."
+        case "Honneur du guerrier":
+            return "Gagner une partie sans jouer de sortilège."
+        case "Paresseux":
+            return "Gagner une partie sans acheter de carte dans les deux premiers tours."
         default:
             return "";
     }
