@@ -436,6 +436,7 @@ let battleCries = {
     "Loup-Garou": ["resources/audio/sfx/loup-garou1.mp3", "resources/audio/sfx/loup-garou2.mp3", "resources/audio/sfx/loup-garou3.mp3", "resources/audio/sfx/loup-garou4.mp3"],
     "Génie": ["resources/audio/sfx/genie1.mp3", "resources/audio/sfx/genie2.mp3", "resources/audio/sfx/genie3.mp3"],
     "Fae": ["resources/audio/sfx/fae1.mp3", "resources/audio/sfx/fae2.mp3", "resources/audio/sfx/fae3.mp3"],
+    "Vampire": ["resources/audio/sfx/vampire1.mp3", "resources/audio/sfx/vampire2.mp3", "resources/audio/sfx/vampire3.mp3"],
     "Autre": ["resources/audio/sfx/autre1.mp3"],
     "Sortilège": ["resources/audio/sfx/sortilege1.mp3"]
 }
@@ -557,6 +558,7 @@ let sevenOrLess = true;
 let speciesBought = {};
 let noSpell = true;
 let lazy = true;
+let selfHarm = 0;
 
 async function startGame() {
     await fadeTransition(() => {
@@ -573,6 +575,7 @@ async function startGame() {
         speciesBought = {};
         noSpell = true;
         lazy = true;
+        selfHarm = 0;
         for (let i = 0; i < 8; i++) {
             lastFights.push([]);
             for (let j = 0; j < 8; j++)
@@ -682,6 +685,16 @@ async function selectHero(n) {
                 players[0] = selected.card;
                 if (species.includes("Loup-Garou"))
                     players[0].day = true
+                players[0].effects.push(
+                    {
+                        trigger: "lifeloss",
+                        id: 1710
+                    },
+                    {
+                        trigger: "turn-end",
+                        id: 1711
+                    }
+                );
                 for (let i = 3; i < 10; i++)
                     players[i - 2] = commanders[i];
                 for (let i = 1; i < 8; i++) {
@@ -1533,6 +1546,9 @@ function updateEnemyTroops() {
                         }
                     }
                 }
+                if (c.species === "Vampire" && Math.random() < .1) {
+                    players[i].hp -= 1;
+                }
             }
         }
         for (let e of players[i].effects) {
@@ -1611,6 +1627,7 @@ function updateEnemyTroops() {
 
         arrangeEnemyTroops(t);
     }
+    drawPlayers();
 }
 
 function getLeastUseful(t, targetFamily) {
@@ -2578,11 +2595,11 @@ async function drawShopScene() {
 /* ------------------ Card management ------------------ */
 /* ----------------------------------------------------- */
 
-const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant", "Sylvain", "Horde", "Démon", "Elémentaire", "Nain", "Loup-Garou", "Génie", "Fae"];
+const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant", "Sylvain", "Horde", "Démon", "Elémentaire", "Nain", "Loup-Garou", "Génie", "Fae", "Vampire"];
 
 const cardList = {
-    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde", "contremaitre-de-l-abysse", "avatar-de-la-creation", "champion-de-forgeterre", "ancetre-des-dragons", "roi-mercenaire", "concepteur-du-planetarium", "bretteuse-temeraire", "contrebandier-prospere", "androide-surcharge", "ravageur-de-villes", "pretre-de-la-crypte-noire", "forgeron-arcaniste", "druide-ne-des-arbres", "berserker-braisehache", "juggernaut-infernal", "devoreur-d-elements", "apparition-angelique", "chef-des-traqueurs", "naturaliste-de-wulfwald", "plieuse-de-realite", "le-grand-arbitre", "negociateur-malveillant", "seigneur-de-flestrefleur", "protecmage-radiant", "commandante-charismatique", "marchand-prospere", "heros-de-guerre", "vendeur-d-artefacts", "zoologiste-curieux", "exploratrice-celeste", "mentor-bienveillant"],
-    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces", "masse-de-la-brutalite", "summum-de-la-gloire", "pacte-demoniaque", "liberer-le-mal", "transcendance-elementaire", "confluence-elementaire", "benediction-de-la-forge", "splendeur-des-mines", "assaut-sauvage", "transformation-lupine", "retour-dans-la-lampe", "jugement-du-sphinx", "bourgeonnement-feerique", "brisure-de-volonte"],
+    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde", "contremaitre-de-l-abysse", "avatar-de-la-creation", "champion-de-forgeterre", "ancetre-des-dragons", "roi-mercenaire", "concepteur-du-planetarium", "bretteuse-temeraire", "contrebandier-prospere", "androide-surcharge", "ravageur-de-villes", "pretre-de-la-crypte-noire", "forgeron-arcaniste", "druide-ne-des-arbres", "berserker-braisehache", "juggernaut-infernal", "devoreur-d-elements", "apparition-angelique", "chef-des-traqueurs", "naturaliste-de-wulfwald", "plieuse-de-realite", "le-grand-arbitre", "negociateur-malveillant", "seigneur-de-flestrefleur", "protecmage-radiant", "commandante-charismatique", "marchand-prospere", "heros-de-guerre", "vendeur-d-artefacts", "zoologiste-curieux", "exploratrice-celeste", "mentor-bienveillant", "noble-decadent", "valseuse-de-minuit"],
+    "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces", "masse-de-la-brutalite", "summum-de-la-gloire", "pacte-demoniaque", "liberer-le-mal", "transcendance-elementaire", "confluence-elementaire", "benediction-de-la-forge", "splendeur-des-mines", "assaut-sauvage", "transformation-lupine", "retour-dans-la-lampe", "jugement-du-sphinx", "bourgeonnement-feerique", "brisure-de-volonte", "sang-impie", "morsure-de-vampire"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
     "Sorcier": ["apprentie-magicienne", "mage-reflecteur", "canaliseuse-de-mana", "maitresse-des-illusions", "amasseur-de-puissance", "doyenne-des-oracles", "archimage-omnipotent", "precheur-de-l-equilibre", "arcaniste-astral", "creation-de-foudre", "pyromancienne-novice", "reservoir-de-puissance"],
@@ -2599,6 +2616,7 @@ const cardList = {
     "Loup-Garou": ["ouvrier-du-champ-de-ruines", "fermier-paisible", "astronome-acharne", "peintre-runique", "ermite-autarcique", "purificatrice-ardente", "protectrice-des-loups", "eclaireur-nocturne", "charmeuse-de-meute", "assassin-de-wulfwald", "naturaliste-courroucee", "patrouille-de-wulfwald", "traqueur-solitaire", "ange-du-crepuscule", "surineuse-de-wulfwald"],
     "Génie": ["augure-des-souhaits", "jeune-sphinx", "sphinge-protectrice", "djinn-aux-trois-souhaits", "vigie-de-l-espoir", "sphinx-insaisissable", "genie-de-la-lampe", "oracle-des-mysteres", "genie-des-lames", "porteur-de-secrets", "gardienne-des-archives", "djinn-de-la-fontaine", "sphinge-omnisciente", "exauceuse-de-souhaits", "maitre-des-enigmes"],
     "Fae": ["farceur-sournois", "brideuse-fae", "extorqueuse-cupide", "voleur-hypnotique", "faucheuse-d-archives", "fae-libere", "voyageur-facetieux", "negociatrice-genereuse", "duelliste-obstine", "porteur-de-fletrissement", "envouteuse-de-flestrefleur", "clique-malicieuse", "patron-des-pixies", "maitresse-des-contrats", "escroc-des-songes"],
+    "Vampire": ["vampire-assoiffee", "chercheuse-de-sang", "vampire-gloutonne", "assassin-repu", "guide-impie", "collecteur-de-sang", "peintresse-ecarlate", "invite-inattendu", "ecorcheuse-au-clair-de-lune", "hematomancienne", "chasseuse-vampire", "approvisionneur-de-sang", "cavalier-de-la-nuit", "baron-sanglant", "ame-assoiffee"],
     "Autre": ["changeforme-masque", "ange-guerrier", "guide-angelique", "archange-eclatant", "ange-de-l-unite", "combattant-celeste"],
     "Token": ["piece-d-or", "proie-facile", "scion-aspirame", "guerrier-gobelin", "artificier-gobelin", "connaissances-arcaniques", "catalyseur-de-puissance", "equilibre-naturel", "dephasage", "ouvrier-assemble", "jeune-fongus", "coeur-de-l-abysse", "le-banni", "marteau-d-artisan", "marteau-demesure", "pioche-renforcee", "armure-de-plaques", "epee-du-roi-sous-la-montagne", "grappin-d-acier", "masse-arcanique", "bouclier-du-protecteur", "couronne-ornementale", "hache-a-deux-mains", "rituel-de-sang", "rituel-de-divination", "rituel-de-puissance", "rituel-de-vie-eternelle", "pulverisateur-arcanique", "gants-de-passe-partout", "lunettes-d-artificier", "epee-energisee", "djinn-aux-souhaits-exauces", "bouclier-radiant"]
 };
@@ -2621,7 +2639,7 @@ function initCards() {
             species.push(s);
     }
 
-    // species = ["Fae"]; //!!!
+    // species = ["Vampire"]; //!!!
     // if (!species.includes("Fae")) //!!!
     //     species[0] = "Fae";
 
@@ -2631,7 +2649,7 @@ function initCards() {
     cards = [];
     for (let s of species.concat(["Sortilège", "Autre"])) {
         for (let c of cardList[s])
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 10; i++) {
                 let card = createCard(c);
                 if (!card.requirement || species.includes(card.requirement))
                     //if (!card.requirement) //!!!
@@ -2648,7 +2666,7 @@ function initCards() {
 
     shuffle(cards);
     shuffle(commanders);
-    // while (commanders.findIndex(e => e.name.startsWith("Mentor")) > 2) //!!!
+    // while (commanders.findIndex(e => e.name.startsWith("Valseuse")) > 2) //!!!
     //     shuffle(commanders);
 }
 
@@ -2769,6 +2787,10 @@ function createCard(card) {
             return new ExploratriceCeleste();
         case "mentor-bienveillant":
             return new MentorBienveillant();
+        case "noble-decadent":
+            return new NobleDecadent();
+        case "valseuse-de-minuit":
+            return new ValseuseDeMinuit();
 
         case "dragonnet-ardent":
             return new DragonnetArdent();
@@ -3369,6 +3391,41 @@ function createCard(card) {
             return new BourgeonnementFeerique();
         case "brisure-de-volonte":
             return new BrisureDeVolonte();
+
+        case "vampire-assoiffee":
+            return new VampireAssoiffee();
+        case "chercheuse-de-sang":
+            return new ChercheuseDeSang();
+        case "vampire-gloutonne":
+            return new VampireGloutonne();
+        case "assassin-repu":
+            return new AssassinRepu();
+        case "guide-impie":
+            return new GuideImpie();
+        case "collecteur-de-sang":
+            return new CollecteurDeSang();
+        case "peintresse-ecarlate":
+            return new PeintresseEcarlate();
+        case "invite-inattendu":
+            return new InviteInattendu();
+        case "ecorcheuse-au-clair-de-lune":
+            return new EcorcheuseAuClairDeLune();
+        case "hematomancienne":
+            return new Hematomancienne();
+        case "chasseuse-vampire":
+            return new ChasseuseVampire();
+        case "approvisionneur-de-sang":
+            return new ApprovisionneurDeSang();
+        case "baron-sanglant":
+            return new BaronSanglant();
+        case "ame-assoiffee":
+            return new AmeAssoiffee();
+        case "cavalier-de-la-nuit":
+            return new CavalierDeLaNuit();
+        case "sang-impie":
+            return new SangImpie();
+        case "morsure-de-vampire":
+            return new MorsureDeVampire();
 
         case "changeforme-masque":
             return new ChangeformeMasque();
@@ -4235,6 +4292,36 @@ function MentorBienveillant() {
         {
             trigger: "turn-start",
             id: 60
+        }
+    ];
+}
+
+function NobleDecadent() {
+    this.name = "Noble décadent";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 40;
+    this.src = "commandants/noble-decadent.jpg";
+    this.requirement = "Vampire";
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 61
+        }
+    ];
+}
+
+function ValseuseDeMinuit() {
+    this.name = "Valseuse de minuit";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 31;
+    this.src = "commandants/valseuse-de-minuit.jpg";
+    this.requirement = "Vampire";
+    this.effects = [
+        {
+            trigger: "shop-refresh",
+            id: 62
         }
     ];
 }
@@ -8911,6 +8998,278 @@ function EscrocDesSonges() {
 }
 
 
+// Vampire
+
+function VampireAssoiffee() {
+    this.name = "Vampire assoiffée";
+    this.species = "Vampire";
+    this.attack = 4;
+    this.hp = 3;
+    this.src = "vampires/vampire-assoiffee.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1701
+        }
+    ];
+}
+
+function ChercheuseDeSang() {
+    this.name = "Chercheuse de sang";
+    this.species = "Vampire";
+    this.attack = 3;
+    this.hp = 2;
+    this.src = "vampires/chercheuse-de-sang.jpg";
+    this.tier = 1;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1702
+        }
+    ];
+}
+
+function VampireGloutonne() {
+    this.name = "Vampire gloutonne";
+    this.species = "Vampire";
+    this.attack = 3;
+    this.hp = 3;
+    this.src = "vampires/vampire-gloutonne.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 1703
+        }
+    ];
+}
+
+function AssassinRepu() {
+    this.name = "Assassin repu";
+    this.species = "Vampire";
+    this.attack = 4;
+    this.hp = 3;
+    this.src = "vampires/assassin-repu.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "tookdamage",
+            id: 1704
+        }
+    ];
+}
+
+function GuideImpie() {
+    this.name = "Guide impie";
+    this.species = "Vampire";
+    this.attack = 2;
+    this.hp = 5;
+    this.src = "vampires/guide-impie.jpg";
+    this.tier = 2;
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 1718
+        }
+    ];
+}
+
+function MorsureDeVampire() {
+    this.name = "Morsure de vampire";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "vampires/morsure-de-vampire.jpg";
+    this.tier = 2;
+    this.requirement = "Vampire";
+    this.effects = [
+        {
+            trigger: "",
+            id: 1720
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function CollecteurDeSang() {
+    this.name = "Collecteur de sang";
+    this.species = "Vampire";
+    this.attack = 2;
+    this.hp = 4;
+    this.src = "vampires/collecteur-de-sang.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "lifeloss",
+            id: 1705
+        }
+    ];
+}
+
+function PeintresseEcarlate() {
+    this.name = "Peintresse écarlate";
+    this.species = "Vampire";
+    this.attack = 3;
+    this.hp = 4;
+    this.src = "vampires/peintresse-ecarlate.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1706
+        }
+    ];
+}
+
+function InviteInattendu() {
+    this.name = "Invité inattendu";
+    this.species = "Vampire";
+    this.attack = 4;
+    this.hp = 4;
+    this.src = "vampires/invite-inattendu.jpg";
+    this.tier = 3;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1716
+        }
+    ];
+}
+
+function SangImpie() {
+    this.name = "Sang impie";
+    this.species = "Sortilège";
+    this.attack = -1;
+    this.hp = -1;
+    this.src = "vampires/sang-impie.jpg";
+    this.tier = 3;
+    this.requirement = "Vampire";
+    this.effects = [
+        {
+            trigger: "",
+            id: 1719
+        }
+    ];
+    this.validTarget = {
+        area: "board"
+    };
+}
+
+function EcorcheuseAuClairDeLune() {
+    this.name = "Ecorcheuse au clair de lune";
+    this.species = "Vampire";
+    this.attack = 4;
+    this.hp = 5;
+    this.src = "vampires/ecorcheuse-au-clair-de-lune.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "lifeloss",
+            id: 1707
+        }
+    ];
+}
+
+function Hematomancienne() {
+    this.name = "Hématomancienne";
+    this.species = "Vampire";
+    this.attack = 1;
+    this.hp = 3;
+    this.src = "vampires/hematomancienne.jpg";
+    this.tier = 4;
+    this.effects = [
+        {
+            trigger: "battle-start",
+            id: 1708
+        }
+    ];
+}
+
+function ChasseuseVampire() {
+    this.name = "Chasseuse vampire";
+    this.species = "Vampire";
+    this.attack = 6;
+    this.hp = 3;
+    this.src = "vampires/chasseuse-vampire.jpg";
+    this.tier = 4;
+    this.range = true;
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 1717
+        }
+    ];
+}
+
+function ApprovisionneurDeSang() {
+    this.name = "Approvisionneur de sang";
+    this.species = "Vampire";
+    this.attack = 6;
+    this.hp = 6;
+    this.src = "vampires/approvisionneur-de-sang.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "attack",
+            id: 1712
+        }
+    ];
+}
+
+function CavalierDeLaNuit() {
+    this.name = "Cavalier de la nuit";
+    this.species = "Vampire";
+    this.attack = 4;
+    this.hp = 6;
+    this.src = "vampires/cavalier-de-la-nuit.jpg";
+    this.tier = 5;
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 1715
+        }
+    ];
+}
+
+function BaronSanglant() {
+    this.name = "Baron sanglant";
+    this.species = "Vampire";
+    this.attack = 8;
+    this.hp = 8;
+    this.src = "vampires/baron-sanglant.jpg";
+    this.tier = 6;
+    this.effects = [
+        {
+            trigger: "card-sell",
+            id: 1709
+        }
+    ];
+}
+
+function AmeAssoiffee() {
+    this.name = "Âme assoiffée";
+    this.species = "Vampire";
+    this.attack = 7;
+    this.hp = 2;
+    this.src = "vampires/ame-assoiffee.jpg";
+    this.tier = 6;
+    this.revive = true;
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 1713
+        },
+        {
+            trigger: "turn-start",
+            id: 1714
+        }
+    ];
+}
+
+
 // Autre
 
 function AngeDeLUnite() {
@@ -10390,6 +10749,10 @@ function createEffect(id) {
             return new Effect59();
         case 60:
             return new Effect60();
+        case 61:
+            return new Effect61();
+        case 62:
+            return new Effect62();
         case 101:
             return new Effect101();
         case 102:
@@ -11130,6 +11493,48 @@ function createEffect(id) {
             return new Effect1668();
         case 1669:
             return new Effect1669();
+        case 1701:
+            return new Effect1701();
+        case 1702:
+            return new Effect1702();
+        case 1703:
+            return new Effect1703();
+        case 1704:
+            return new Effect1704();
+        case 1705:
+            return new Effect1705();
+        case 1706:
+            return new Effect1706();
+        case 1707:
+            return new Effect1707();
+        case 1708:
+            return new Effect1708();
+        case 1709:
+            return new Effect1709();
+        case 1710:
+            return new Effect1710();
+        case 1711:
+            return new Effect1711();
+        case 1712:
+            return new Effect1712();
+        case 1713:
+            return new Effect1713();
+        case 1714:
+            return new Effect1714();
+        case 1715:
+            return new Effect1715();
+        case 1716:
+            return new Effect1716();
+        case 1717:
+            return new Effect1717();
+        case 1718:
+            return new Effect1718();
+        case 1719:
+            return new Effect1719();
+        case 1720:
+            return new Effect1720();
+        case 1721:
+            return new Effect1721();
         case 2001:
             return new Effect2001();
         case 2002:
@@ -12357,7 +12762,6 @@ function Effect54() {
 function Effect55() {
     this.run = async (sender, args, doAnimate) => {
         const t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][0]);
-        console.log(args)
         if (!sender.effect55 && players[args[4]] === sender && !t.some(c => c && c.hp > 0)) {
             sender.effect55 = true;
             if (doAnimate)
@@ -12456,7 +12860,6 @@ function Effect60() {
             if (doAnimate)
                 await effectProcGlow(sender);
             const target = choice(t);
-            console.log(target)
             for (let e of target.effects) {
                     let eff = createEffect(e.id);
                     if (eff.desc.startsWith("<em>Recrue"))
@@ -12471,6 +12874,44 @@ function Effect60() {
         return 0;
     };
     this.desc = "Au début de chaque tour, redéclenche les <em>Recrues</em> d'une créature alliée aléatoire.";
+}
+
+function Effect61() {
+    this.run = async (sender, args, doAnimate) => {
+        let n = Math.min(1, players[0].hp - 1);
+        await boostStats(players[0], 0, -n, doAnimate);
+        drawPlayers();
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(1 + (t.filter(e => e && e.species === "Vampire").length > 2), 0, round), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Au début de chaque tour, perd 1 PV.";
+}
+
+function Effect62() {
+    this.run = async (sender, args, doAnimate) => {
+        let shop = document.getElementById("shop");
+        for (let c of shop.children) {
+            if (c.classList.contains("card") && c.card.species !== "Sortilège" && c.card.species !== "Vampire" && Math.random() < .1) {
+                c.card.species = "Vampire";
+                c.card.effects.push({
+                    trigger: "lifeloss",
+                    id: 1721
+                });
+                await boostStats(c.card, 0, 0, doAnimate);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(1 + (t.filter(e => e && e.species === "Vampire").length > 2), 0, round), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous recherchez des recrues, vous avez une faible chance que les créatures non-Vampires deviennent des Vampires et acquièrent \"Lorsque vous perdez des PV, gagne +1/+0 ou +0/+1.\"";
 }
 
 function Effect101() {
@@ -20108,6 +20549,416 @@ function Effect1669() {
     this.desc = "Vous ne pouvez plus geler de recrues ce tour-ci. Perdez une pièce d'or.";
 }
 
+function Effect1701() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender === args[0].card) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let n = Math.min(1, players[0].hp - 1);
+            await boostStats(players[0], 0, -n, doAnimate);
+            drawPlayers();
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Perdez 1 PV.";
+}
+
+function Effect1702() {
+    this.run = async (sender, args, doAnimate) => {
+        let name = players[0].src.substring(players[0].src.indexOf("/") + 1, players[0].src.indexOf("."));
+        if (sender === args[0].card && players[0].hp < createCard(name).hp) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            await boostStats(sender, 1, 1, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> S'il vous manque des PV, gagne +1/+1.";
+}
+
+function Effect1703() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let n = Math.min(2, players[0].hp - 1);
+            await boostStats(players[0], 0, -n, doAnimate);
+            drawPlayers();
+            await boostStats(sender, 2, 2, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [3, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Au début de chaque tour, vous perdez 2 PV et cette créature gagne +2/+2.";
+}
+
+function Effect1704() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender && sender.hp <= 0) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let side = args[2][0].concat(args[2][1]).includes(sender);
+            await boostStats(players[side ? args[4] : args[5]], 0, 1, doAnimate);
+            drawPlayers();
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 3;
+    };
+    this.desc = "<em>Dernière volonté :</em> Récupérez 1 PV.";
+}
+
+function Effect1705() {
+    this.run = async (sender, args, doAnimate) => {
+
+    };
+    this.scaling = (c, t) => {
+        return [3 * (t.filter(e => e && e.species === "Vampire").length > 1), 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous perdez des PV, récupérez jusqu'à 1 PV ainsi perdu.";
+}
+
+function Effect1706() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender === args[0].card) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let n = Math.min(3, players[0].hp - 1);
+            await boostStats(players[0], 0, -n, doAnimate);
+            drawPlayers();
+            const targets = troops[0].filter(c => c && c.species === "Vampire" && c !== sender);
+            if (targets.length) {
+                targets.forEach(c => boostStats(c, 2, 2, doAnimate));
+                await sleep(400);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 3 * t.filter(e => e && e.species === "Vampire").length];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Perdez 3 PV, puis confère +2/+2 aux autres Vampires alliés.";
+}
+
+function Effect1707() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            const targets = shuffle(troops[0].filter(c => c && c.species === "Vampire")).slice(0, 3);
+            if (targets.length) {
+                targets.forEach(c => boostStats(c, 1, 1, doAnimate));
+                await sleep(400);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 8 * (t.filter(e => e && e.species === "Vampire").length > 4), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous perdez des PV, confère +1/+1 à trois Vampires alliés aléatoires.";
+}
+
+function Effect1708() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp > 0) {
+            const side = args[0][0].concat(args[0][1]).includes(sender);
+            const player = side ? args[2] : args[3];
+            const enemy = side ? args[3] : args[2];
+            const diff = players[enemy].hp - players[player].hp;
+            if (diff > 0) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                await boostStats(sender, diff, diff, doAnimate, true, true);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 15;
+    };
+    this.desc = "<em>Frappe préventive :</em> Si vous avez moins de PV que votre ennemi, gagne définitivement +X/+X, où X est la différence.";
+}
+
+function Effect1709() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card !== sender && args[0].card.species === "Vampire" && findDOMCard(sender).parentElement.parentElement.classList.contains("board") && players[0].effect1710) {
+            const targets = shuffle(troops[0].filter(c => c && c.species === "Vampire"));
+            if (targets.length) {
+                if (doAnimate)
+                    await effectProcGlow(sender);
+                for (let i = 0; i < players[0].effect1710; i++)
+                    await boostStats(choice(targets), 3, 3, doAnimate);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 7 * t.filter(e => e && e.species === "Vampire").length, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous revendez un Vampire, confère +3/+3 à un Vampire allié aléatoire pour chaque PV perdu ce tour-ci.";
+    this.dynamicDesc = (c) => `<em>(Actuellement ${players?.[0]?.effect1710 ?? 0})</em>`;
+}
+
+function Effect1710() {
+    this.run = async (sender, args, doAnimate) => {
+        if (!sender.effect1710)
+            sender.effect1710 = 0;
+        sender.effect1710 += args[0];
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "";
+}
+
+function Effect1711() {
+    this.run = async (sender, args, doAnimate) => {
+        sender.effect1710 = 0;
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "";
+}
+
+function Effect1712() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] === sender) {
+            let t = args[2][0].concat(args[2][1]).includes(sender) ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            if (doAnimate)
+                await effectProcGlow(sender);
+            for (let c of t.filter(e => e && e.species === "Vampire"))
+                boostStats(c, 1, 1, doAnimate, false, true);
+            if (doAnimate && t.filter(e => e && e.species === "Vampire").length > 0)
+                await sleep(400);
+            let side = args[2][0].concat(args[2][1]).includes(sender);
+            await boostStats(players[side ? args[4] : args[5]], 0, 1, doAnimate);
+            drawPlayers();
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 30 * (t.filter(e => e && e.species === "Vampire").length > 3);
+    };
+    this.toFront = true;
+    this.desc = "Lorsque cette créature attaque, elle confère définitivement +1/+1 aux Vampires alliés et vous récupérez 1 PV.";
+}
+
+function Effect1713() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board") && players[0].effect1710 && players[0].effect1710 >= 3) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            sender.deathtouch = true;
+            await boostStats(sender, 0, 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "A la fin de chaque tour, si vous avez perdu au moins 3 PV ce tour-ci, acquiert le <em>Contact mortel</em> jusqu'au prochain tour.";
+    this.dynamicDesc = (c) => `<em>(Actuellement ${players?.[0]?.effect1710 ?? 0})</em>`;
+}
+
+function Effect1714() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.deathtouch) {
+            delete sender.deathtouch;
+            await boostStats(sender, 0, 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "";
+}
+
+function Effect1715() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card === sender) {
+            if (doAnimate)
+                effectProcGlow(sender);
+            await chooseTarget((target) => {
+                const buff = players[0].effect1710 ?? 0;
+                boostStats(target, buff, buff, doAnimate);
+            }, {
+                area: "board"
+            }, sender);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 10 * (t.filter(e => e && e.species === "Vampire") > 3)];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Confère +X/+X à une créature alliée ciblée, où X est le nombre de PV perdus ce tour-ci.";
+    this.dynamicDesc = (c) => `<em>(Actuellement ${players?.[0]?.effect1710 ?? 0})</em>`;
+}
+
+function Effect1716() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender === args[0].card) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let n = Math.min(1, players[0].hp - 1);
+            await boostStats(players[0], 0, -n, doAnimate);
+            drawPlayers();
+            await boostStats(players[0], 0, 1, doAnimate);
+            drawPlayers();
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 4 * (t.filter(e => e && e.species === "Vampire") > 2)];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "<em>Recrue :</em> Perdez 1 PV, puis récupérez 1 PV.";
+}
+
+function Effect1717() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] !== sender) {
+            let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
+            if (!t.includes(sender))
+                await boostStats(sender, 1, 0, doAnimate, true, true);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 15;
+    };
+    this.toBack = true;
+    this.desc = "Lorsqu'une créature ennemie meurt, gagne définitivement +1/+0.";
+}
+
+function Effect1718() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            if (lastResult === 1) {
+                let n = Math.min(1, players[0].hp - 1);
+                await boostStats(players[0], 0, -n, doAnimate);
+                drawPlayers();
+            } else {
+                await boostStats(players[0], 0, 1, doAnimate);
+                drawPlayers();
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 2, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Au début de chaque tour, si vous avez gagné le dernier combat, perdez 1 PV. Sinon, récupérez 1 PV.";
+}
+
+function Effect1719() {
+    this.run = async (sender, args, doAnimate) => {
+        let n = Math.min(2, players[0].hp - 1);
+        await boostStats(players[0], 0, -n, doAnimate);
+        drawPlayers();
+        const buff = players[0].effect1710 ?? 0;
+        await boostStats(args[0].card, buff, buff, doAnimate);
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Perdez 2 PV. Confère +X/+X à la créature alliée ciblée, où X est le nombre de PV perdus ce tour-ci.";
+    this.dynamicDesc = (c) => `<em>(Actuellement ${players?.[0]?.effect1710 ?? 0})</em>`;
+}
+
+function Effect1720() {
+    this.run = async (sender, args, doAnimate) => {
+        args[0].card.effects.push({
+            trigger: "lifeloss",
+            id: 1721
+        });
+        args[0].card.species = "Vampire";
+        await boostStats(args[0].card, 0, 0, doAnimate);
+        let n = Math.min(2, players[0].hp - 1);
+        await boostStats(players[0], 0, -n, doAnimate);
+        drawPlayers();
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Confère \"Lorsque vous perdez des PV, gagne +1/+0 ou +0/+1.\" à la créature alliée ciblée. Elle devient un Vampire. Perdez 2 PV.";
+}
+
+function Effect1721() {
+    this.run = async (sender, args, doAnimate) => {
+        if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
+            if (Math.random() < .5)
+                await boostStats(sender, 1, 0, doAnimate);
+            else
+                await boostStats(sender, 0, 1, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [2, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous perdez des PV, gagne +1/+0 ou +0/+1.";
+}
+
 function Effect2001() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0] !== sender) {
@@ -20853,6 +21704,21 @@ async function boostStats(card, atk, hp, doAnimate, preserveHP, permanent) {
             c.style.removeProperty("filter");
         await sleep(200);
     }
+
+    if (currentScene === "shop" && card === players[0] && hp < 0) {
+        const nGained = troops[0]
+            .filter(c => c)
+            .map(c => c.effects)
+            .flat()
+            .filter(e => e.id === 1705)
+            .length;
+        if (nGained)
+            await boostStats(players[0], 0, Math.min(nGained, -hp), doAnimate);
+        selfHarm -= hp;
+        if (selfHarm >= 50 && !JSON.parse(window.localStorage.getItem("Achievement__Masochisme")) && !achievementsWaiting.includes("Masochisme"))
+            achievementsWaiting.push("Masochisme");
+        await broadcastShopEvent("lifeloss", [-hp]);
+    }
 }
 
 function effect606active() {
@@ -21310,7 +22176,7 @@ async function openBestiary() {
 const basicAchievementsList = ["Une prochaine fois, peut-être", "Champion de l'arène"];
 const speciesAchievementsList = speciesList.map(e => e).sort((a, b) => a.localeCompare(b));
 const commanderAchievementsList = cardList["Commandant"].map(e => createCard(e).name).sort((a, b) => a.localeCompare(b));
-const extraAchievementsList = ["Toucher de Midas", "Un peu spécial ?", "Aux portes de la mort", "Trop facile", "Inarrêtable", "Hybris", "Célébrer la diversité", "Ce n'est jamais fini", "Tu ne le sais pas encore, mais tu es déjà mort !", "Une carte après l'autre", "Domination", "Armure lourde", "Apatride", "Infériorité numérique", "Polymorphie", "Hyperspécialisation", "Honneur du guerrier", "Paresseux"];
+const extraAchievementsList = ["Toucher de Midas", "Un peu spécial ?", "Aux portes de la mort", "Trop facile", "Inarrêtable", "Hybris", "Célébrer la diversité", "Ce n'est jamais fini", "Tu ne le sais pas encore, mais tu es déjà mort !", "Une carte après l'autre", "Domination", "Armure lourde", "Apatride", "Infériorité numérique", "Polymorphie", "Hyperspécialisation", "Honneur du guerrier", "Paresseux", "Masochisme"];
 const achievementsList = basicAchievementsList.concat(speciesAchievementsList).concat(commanderAchievementsList).concat(extraAchievementsList);
 
 async function openAchievements() {
@@ -21421,6 +22287,8 @@ function getAchievementDesc(a) {
             return "Gagner une partie sans jouer de sortilège."
         case "Paresseux":
             return "Gagner une partie sans acheter de carte dans les deux premiers tours."
+        case "Masochisme":
+            return "Perdre au moins 50 PV hors des combats en une partie."
         default:
             return "";
     }

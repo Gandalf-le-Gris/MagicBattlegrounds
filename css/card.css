@@ -104,6 +104,7 @@
             background-repeat: no-repeat;
             background-size: 100% 100%;
             display: flex;
+            position: relative;
             z-index: 1;
         }
 
@@ -111,8 +112,10 @@
                 font-family: Verdana;
                 font-size: calc(var(--font-very-large) * 1.5);
                 font-weight: bold;
-                text-align: center;
-                margin: auto;
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
                 color: white;
                 text-shadow: 1px 0 black, -1px 0 black, 0 1px black, 0 -1px black;
             }
@@ -122,14 +125,17 @@
             background-repeat: no-repeat;
             background-size: 100% 100%;
             display: flex;
+            position: relative;
         }
 
             .card > .footer > .hp > div {
                 font-family: Verdana;
                 font-size: calc(var(--font-very-large) * 1.5);
                 font-weight: bold;
-                text-align: center;
-                margin: auto;
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
                 color: white;
                 text-shadow: 1px 0 black, -1px 0 black, 0 1px black, 0 -1px black;
             }
@@ -260,14 +266,17 @@
             background-repeat: no-repeat;
             background-size: 100% 100%;
             display: flex;
+            position: relative;
         }
 
             .small-card > .footer > .attack > div {
                 font-family: Verdana;
                 font-size: calc(var(--font-very-large) * 2);
                 font-weight: bold;
-                text-align: center;
-                margin: auto;
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
                 color: white;
                 text-shadow: 1px 0 black, -1px 0 black, 0 1px black, 0 -1px black;
             }
@@ -277,14 +286,17 @@
             background-repeat: no-repeat;
             background-size: 100% 100%;
             display: flex;
+            position: relative;
         }
 
             .small-card > .footer > .hp > div {
                 font-family: Verdana;
                 font-size: calc(var(--font-very-large) * 2);
                 font-weight: bold;
-                text-align: center;
-                margin: auto;
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
                 color: white;
                 text-shadow: 1px 0 black, -1px 0 black, 0 1px black, 0 -1px black;
             }
