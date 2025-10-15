@@ -12651,7 +12651,7 @@ function Effect50() {
             sender.effect50 = 0;
     };
     this.scaling = (c, t) => {
-        return [0, fluctuate(1 + (t.filter(e => e && e.species === "Fae").length > 2), 0, round), 0, 0];
+        return [0, fluctuate(Math.floor(t.filter(e => e && e.species === "Fae").length * 1.5), .5, 1.5 + round > 9), 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -12675,7 +12675,7 @@ function Effect51() {
         }
     };
     this.scaling = (c, t) => {
-        return [0, fluctuate(1 + (t.filter(e => e && e.species === "Fae").length > 2), 0, round), 0, 0];
+        return [0, fluctuate(Math.floor(t.filter(e => e && e.species === "Fae").length * 1.5), .5, 1.5 + round > 9), 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -12883,7 +12883,7 @@ function Effect61() {
         drawPlayers();
     };
     this.scaling = (c, t) => {
-        return [0, fluctuate(1 + (t.filter(e => e && e.species === "Vampire").length > 2), 0, round), 0, 0];
+        return [0, fluctuate(Math.floor(t.filter(e => e && e.species === "Vampire").length * 1.5), .5, 1.5 + round > 9), 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -12906,7 +12906,7 @@ function Effect62() {
         }
     };
     this.scaling = (c, t) => {
-        return [0, fluctuate(1 + (t.filter(e => e && e.species === "Vampire").length > 2), 0, round), 0, 0];
+        return [0, fluctuate(Math.floor(t.filter(e => e && e.species === "Vampire").length * 1.5), .5, 1.5 + round > 9), 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -19886,19 +19886,19 @@ function Effect1604() {
             if (doAnimate)
                 await effectProcGlow(sender);
             await spendCoins(1);
-            await boostStats(sender, 0, 2, doAnimate);
+            await boostStats(sender, 1, 2, doAnimate);
             if (!sender.effect1604)
                 sender.effect1604 = 0;
             sender.effect1604++;
         }
     };
     this.scaling = (c, t) => {
-        return [2, -1, 0, 0];
+        return [3, -1, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "Au début de chaque tour, vous perdez une pièce d'or et cette créature gagne +0/+2.";
+    this.desc = "Au début de chaque tour, vous perdez une pièce d'or et cette créature gagne +1/+2.";
 }
 
 function Effect1605() {
@@ -19922,7 +19922,7 @@ function Effect1606() {
         if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             if (doAnimate)
                 await effectProcGlow(sender);
-            await boostStats(sender, 2, 2, doAnimate);
+            await boostStats(sender, 3, 3, doAnimate);
             let options = [];
             for (let c of document.getElementById("shop").children)
                 if (c.classList.contains("card") && c.card.species !== "Sortilège")
@@ -19938,7 +19938,7 @@ function Effect1606() {
                 const bestHp = options.reduce((acc, x) => acc.hp > x.hp ? acc : x, { hp: -1 });
                 const hpDiff = bestHp.hp - sender.hp;
                 boostStats(sender, 0, hpDiff, doAnimate);
-                boostStats(bestAttack, 0, -hpDiff, doAnimate);
+                boostStats(bestHp, 0, -hpDiff, doAnimate);
                 if (doAnimate)
                     await sleep(400);
             }
@@ -19950,7 +19950,7 @@ function Effect1606() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "Au début de chaque tour, gagne +2/+2, puis échange son attaque et ses PV avec les créatures disponibles au recrutement avec l'attaque et les PV les plus élevés.";
+    this.desc = "Au début de chaque tour, gagne +3/+3, puis échange son attaque et ses PV avec les créatures disponibles au recrutement avec l'attaque et les PV les plus élevés.";
 }
 
 function Effect1607() {
@@ -19962,7 +19962,7 @@ function Effect1607() {
         }
     };
     this.scaling = (c, t) => {
-        return [.5 * t.filter(e => e && e.species === "Fae").length, 0, 0, 0];
+        return [.35 * t.filter(e => e && e.species === "Fae").length, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -19979,7 +19979,7 @@ function Effect1608() {
         }
     };
     this.scaling = (c, t) => {
-        return [.5 * t.filter(e => e && e.species === "Fae").length, 0, 0, 0];
+        return [.35 * t.filter(e => e && e.species === "Fae").length, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -19997,7 +19997,7 @@ function Effect1609() {
         }
     };
     this.scaling = (c, t) => {
-        return [0, t.filter(e => e && e.species === "Fae").length, 0, 0];
+        return [0, .5 * t.filter(e => e && e.species === "Fae").length, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -20010,7 +20010,7 @@ function Effect1610() {
 
     };
     this.scaling = (c, t) => {
-        return [0, 1.25 * t.filter(e => e && e.species === "Fae").length, 0, 0];
+        return [0, 1.15 * t.filter(e => e && e.species === "Fae").length, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
@@ -20093,7 +20093,7 @@ function Effect1614() {
                 let target = pickRandomTarget(t2);
                 if (c && c.species == "Fae" && c !== sender && target) {
                     boostStats(c, 2, 2, doAnimate, true, true);
-                    boostStats(target, -2, -2, doAnimate, false, true);
+                    boostStats(target, -2, -2, doAnimate, true, true);
                     if (doAnimate)
                         await sleep(400);
                 }
@@ -20177,7 +20177,7 @@ function Effect1618() {
             if (doAnimate)
                 await effectProcGlow(sender);
             boostStats(args[0], 1, 1, doAnimate, false, true);
-            boostStats(args[1], -1, -1, doAnimate, false, true);
+            boostStats(args[1], -1, -1, doAnimate, true, true);
             if (doAnimate)
                 await sleep(400);
         }
@@ -20669,7 +20669,7 @@ function Effect1707() {
                 await effectProcGlow(sender);
             const targets = shuffle(troops[0].filter(c => c && c.species === "Vampire")).slice(0, 3);
             if (targets.length) {
-                targets.forEach(c => boostStats(c, 1, 1, doAnimate));
+                targets.forEach(c => boostStats(c, 1, 2, doAnimate));
                 await sleep(400);
             }
         }
@@ -20680,7 +20680,7 @@ function Effect1707() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "Lorsque vous perdez des PV, confère +1/+1 à trois Vampires alliés aléatoires.";
+    this.desc = "Lorsque vous perdez des PV, confère +1/+2 à trois Vampires alliés aléatoires.";
 }
 
 function Effect1708() {
@@ -20763,7 +20763,7 @@ function Effect1712() {
             if (doAnimate)
                 await effectProcGlow(sender);
             for (let c of t.filter(e => e && e.species === "Vampire"))
-                boostStats(c, 1, 1, doAnimate, false, true);
+                boostStats(c, 1, 2, doAnimate, false, true);
             if (doAnimate && t.filter(e => e && e.species === "Vampire").length > 0)
                 await sleep(400);
             let side = args[2][0].concat(args[2][1]).includes(sender);
@@ -20778,7 +20778,7 @@ function Effect1712() {
         return 30 * (t.filter(e => e && e.species === "Vampire").length > 3);
     };
     this.toFront = true;
-    this.desc = "Lorsque cette créature attaque, elle confère définitivement +1/+1 aux Vampires alliés et vous récupérez 1 PV.";
+    this.desc = "Lorsque cette créature attaque, elle confère définitivement +1/+2 aux Vampires alliés et vous récupérez 1 PV.";
 }
 
 function Effect1713() {
@@ -20865,7 +20865,7 @@ function Effect1717() {
         if (args[0] !== sender) {
             let t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
             if (!t.includes(sender))
-                await boostStats(sender, 1, 0, doAnimate, true, true);
+                await boostStats(sender, 1, 0, doAnimate, false, true);
         }
     };
     this.scaling = (c, t) => {
