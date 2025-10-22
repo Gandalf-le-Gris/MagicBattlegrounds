@@ -12761,7 +12761,7 @@ function Effect54() {
 
 function Effect55() {
     this.run = async (sender, args, doAnimate) => {
-        const t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][0]);
+        const t = args[1] ? args[2][0].concat(args[2][1]) : args[3][0].concat(args[3][1]);
         if (!sender.effect55 && players[args[4]] === sender && !t.some(c => c && c.hp > 0)) {
             sender.effect55 = true;
             if (doAnimate)
@@ -12775,7 +12775,7 @@ function Effect55() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "Lorsque toutes les créatures alliés sont mortes, rejoint personnellement le combat.";
+    this.desc = "Lorsque toutes les créatures alliées sont mortes, rejoint personnellement le combat.";
 }
 
 function Effect56() {
@@ -20007,7 +20007,6 @@ function Effect1609() {
 
 function Effect1610() {
     this.run = async (sender, args, doAnimate) => {
-
     };
     this.scaling = (c, t) => {
         return [0, 1.15 * t.filter(e => e && e.species === "Fae").length, 0, 0];
