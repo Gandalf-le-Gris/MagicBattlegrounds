@@ -21340,7 +21340,7 @@ function Effect2020() {
 function Effect2021() {
     this.run = async (sender, args, doAnimate) => {
         args[0].card.shield = true;
-        await boostStats(args[0].card, -shopTier * 2, -shopTier * 2, doAnimate, true);
+        await boostStats(args[0].card, -shopTier, -shopTier, doAnimate, true);
     };
     this.scaling = (c, t) => {
         return [0, 0, 0, 0];
@@ -21348,7 +21348,7 @@ function Effect2021() {
     this.battleValue = (c, t) => {
         return 0;
     };
-    this.desc = "Confère -X/-X et <em>Bouclier</em> à la créature alliée ciblée, où X est deux fois le niveau de recrutement.";
+    this.desc = "Confère -X/-X et <em>Bouclier</em> à la créature alliée ciblée, où X est votre niveau de recrutement.";
 }
 
 function Effect10001() {
