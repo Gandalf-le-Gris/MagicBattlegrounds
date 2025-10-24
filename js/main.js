@@ -19904,7 +19904,7 @@ function Effect1604() {
 function Effect1605() {
     this.run = async (sender, args, doAnimate) => {
         if (args[0].card === sender) {
-            await spendCoins(-sender.effect1604 ?? 0);
+            await spendCoins(-(sender.effect1604 ?? 0));
         }
     };
     this.scaling = (c, t) => {
@@ -20022,7 +20022,7 @@ function Effect1611() {
 
     };
     this.scaling = (c, t) => {
-        return [.75 * t.filter(e => e && e.species === "Fae").length, 0, 0, 0];
+        return [3 * (t.filter(e => e && e.species === "Fae").length > 3), 0, 0, 0];
     };
     this.battleValue = (c, t) => {
         return 0;
