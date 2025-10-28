@@ -1546,7 +1546,7 @@ function updateEnemyTroops() {
                         }
                     }
                 }
-                if (c.species === "Vampire" && Math.random() < .1) {
+                if (c.species === "Vampire" && Math.random() < .15) {
                     players[i].hp -= 1;
                 }
             }
