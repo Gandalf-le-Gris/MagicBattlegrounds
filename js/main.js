@@ -697,7 +697,7 @@ async function selectHero(n) {
                         id: 1710
                     },
                     {
-                        trigger: "turn-end",
+                        trigger: "turn-start",
                         id: 1711
                     }
                 );
@@ -1295,10 +1295,10 @@ async function broadcastShopEvent(name, args) {
         await consumeEvent(cardSold.card, name, args, true);
     if (name == "day-night-cycle")
         await transformWerewolves(args[0]);
+    await consumeEvent(document.getElementById("commander").card, name, args, true);
     for (let d of document.getElementById("board").children)
         if (d.children[0])
             await consumeEvent(d.children[0].card, name, args, true);
-    await consumeEvent(document.getElementById("commander").card, name, args, true);
     for (let c of document.getElementById("hand").children)
         await consumeEvent(c.card, name, args, true);
     for (let c of document.getElementById("shop").children)
@@ -1371,6 +1371,10 @@ async function dragDrop() {
         this.children[0].card.attack = this.children[0].card.effects.some(e => e.id === 323) ? this.children[0].card.attack : card.card.attack;
         this.children[0].card.hp = card.card.hp;
         boostStats(this.children[0].card, 0, 0, true);
+        card.parentElement.removeChild(card);
+    } else if (document.getElementById("hand").contains(card) && this.name === "position" && this.children[0] && players[0].effects.some(e => e.id === 69) && card.card.species !== "Sortilège" && card.card.species !== this.children[0].card.species) {
+        this.children[0].card.species = card.card.species;
+        boostStats(this.children[0].card, 1, 1, true);
         card.parentElement.removeChild(card);
     }
 }
@@ -2473,7 +2477,8 @@ async function drawShopScene() {
         document.getElementById("enemy-commander").style.removeProperty("bottom");
 
         round++;
-        switch(round) {
+        const roundForLevelUp = round + players[0].effects.some(e => e.id === 68);
+        switch(roundForLevelUp) {
             case 3:
             case 5:
             case 8:
@@ -2482,7 +2487,7 @@ async function drawShopScene() {
                 increaseShopTier();
         }
         document.getElementById("refresh").style.removeProperty("pointer-events");
-        spendCoins(-Math.min(10, round + 2), true);
+        spendCoins(-Math.min(10, round + 2 - players[0].effects.some(e => e.id === 68)), true);
         if (species.includes("Loup-Garou")) {
             players[0].day = !players[0].day;
             for (let i = 1; i < 8; i++) {
@@ -2623,7 +2628,7 @@ async function drawShopScene() {
 const speciesList = ["Dragon", "Gobelin", "Sorcier", "Soldat", "Bandit", "Machine", "Bête", "Mort-Vivant", "Sylvain", "Horde", "Démon", "Elémentaire", "Nain", "Loup-Garou", "Génie", "Fae", "Vampire", "Ondin"];
 
 const cardList = {
-    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde", "contremaitre-de-l-abysse", "avatar-de-la-creation", "champion-de-forgeterre", "ancetre-des-dragons", "roi-mercenaire", "concepteur-du-planetarium", "bretteuse-temeraire", "contrebandier-prospere", "androide-surcharge", "ravageur-de-villes", "pretre-de-la-crypte-noire", "forgeron-arcaniste", "druide-ne-des-arbres", "berserker-braisehache", "juggernaut-infernal", "devoreur-d-elements", "apparition-angelique", "chef-des-traqueurs", "naturaliste-de-wulfwald", "plieuse-de-realite", "le-grand-arbitre", "negociateur-malveillant", "seigneur-de-flestrefleur", "protecmage-radiant", "commandante-charismatique", "marchand-prospere", "heros-de-guerre", "vendeur-d-artefacts", "zoologiste-curieux", "exploratrice-celeste", "mentor-bienveillant", "noble-decadent", "valseuse-de-minuit", "druidesse-des-profondeurs", "imperatrice-engloutie"],
+    "Commandant": ["commandant-de-la-legion", "roi-gobelin", "seigneur-liche", "tyran-draconique", "instructrice-de-l-academie", "l-ombre-etheree", "inventrice-prolifique", "zoomancienne-sylvestre", "monarque-inflexible", "diplomate-astucieux", "chef-du-clan-fracassecrane", "collectionneur-d-ames", "inventeur-fou", "meneuse-de-la-rebellion", "geomancien-ardent", "protecteur-de-la-foret", "chamanes-de-la-horde", "contremaitre-de-l-abysse", "avatar-de-la-creation", "champion-de-forgeterre", "ancetre-des-dragons", "roi-mercenaire", "concepteur-du-planetarium", "bretteuse-temeraire", "contrebandier-prospere", "androide-surcharge", "ravageur-de-villes", "pretre-de-la-crypte-noire", "forgeron-arcaniste", "druide-ne-des-arbres", "berserker-braisehache", "juggernaut-infernal", "devoreur-d-elements", "apparition-angelique", "chef-des-traqueurs", "naturaliste-de-wulfwald", "plieuse-de-realite", "le-grand-arbitre", "negociateur-malveillant", "seigneur-de-flestrefleur", "protecmage-radiant", "commandante-charismatique", "marchand-prospere", "heros-de-guerre", "vendeur-d-artefacts", "zoologiste-curieux", "exploratrice-celeste", "mentor-bienveillant", "noble-decadent", "valseuse-de-minuit", "druidesse-des-profondeurs", "imperatrice-engloutie", "gardien-obstine", "agent-sans-visage", "maitre-horloger", "geneticien-elfe", "adepte-du-gel-eternel", "avatar-de-la-furie"],
     "Sortilège": ["aiguisage", "tresor-du-dragon", "recit-des-legendes", "horde-infinie", "gobelin-bondissant", "invocation-mineure", "portail-d-invocation", "secrets-de-la-bibliotheque", "echo-arcanique", "javelot-de-feu", "noble-camaraderie", "protection-d-urgence", "corruption", "bon-tuyau", "replication-mecanique", "revisions-mecaniques", "chasse-benie", "traque", "regain-de-vie", "rite-de-sang", "reunion-celeste", "malediction-vegetale", "armure-de-ronces", "masse-de-la-brutalite", "summum-de-la-gloire", "pacte-demoniaque", "liberer-le-mal", "transcendance-elementaire", "confluence-elementaire", "benediction-de-la-forge", "splendeur-des-mines", "assaut-sauvage", "transformation-lupine", "retour-dans-la-lampe", "jugement-du-sphinx", "bourgeonnement-feerique", "brisure-de-volonte", "sang-impie", "morsure-de-vampire", "benediction-des-mers", "raz-de-maree"],
     "Dragon": ["dragonnet-ardent", "dragon-d-or", "dragon-d-argent", "oeuf-de-dragon", "dragon-cupide", "meneuse-de-progeniture", "dragon-enchante", "devoreur-insatiable", "gardien-du-tresor", "tyran-solitaire", "terrasseur-flammegueule", "dominante-guidaile", "protecteur-brillecaille", "dragon-foudroyant", "chasseur-ecailleux"],
     "Gobelin": ["eclaireur-gobelin", "duo-de-gobelins", "agitateur-gobelin", "batailleur-frenetique", "specialiste-en-explosions", "commandant-des-artilleurs", "artilleur-vicieux", "chef-de-guerre-gobelin", "artisan-forgemalice", "gobelin-approvisionneur", "chef-de-gang", "guide-gobelin", "mercenaires-gobelins", "champion-de-fracassecrane", "escouade-hargneuse"],
@@ -2692,7 +2697,7 @@ function initCards() {
 
     shuffle(cards);
     shuffle(commanders);
-    // while (commanders.findIndex(e => e.name.startsWith("Impératrice")) > 2) //!!!
+    // while (commanders.findIndex(e => e.name.startsWith("Avatar de la furie")) > 2) //!!!
     //     shuffle(commanders);
 }
 
@@ -2821,6 +2826,18 @@ function createCard(card) {
             return new DruidesseDesProfondeurs();
         case "imperatrice-engloutie":
             return new ImperatriceEngloutie();
+        case "gardien-obstine":
+            return new GardienObstine();
+        case "agent-sans-visage":
+            return new AgentSansVisage();
+        case "maitre-horloger":
+            return new MaitreHorloger();
+        case "geneticien-elfe":
+            return new GeneticienElfe();
+        case "adepte-du-gel-eternel":
+            return new AdepteDuGelEternel();
+        case "avatar-de-la-furie":
+            return new AvatarDeLaFurie();
 
         case "dragonnet-ardent":
             return new DragonnetArdent();
@@ -4419,6 +4436,94 @@ function ImperatriceEngloutie() {
         {
             trigger: "card-place",
             id: 64
+        }
+    ];
+}
+
+function GardienObstine() {
+    this.name = "Gardien obstiné";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 30;
+    this.src = "commandants/gardien-obstine.jpg";
+    this.effects = [
+        {
+            trigger: "ko",
+            id: 65
+        },
+        {
+            trigger: "battle-end",
+            id: 66
+        }
+    ];
+}
+
+function AgentSansVisage() {
+    this.name = "Agent sans visage";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 31;
+    this.src = "commandants/agent-sans-visage.jpg";
+    this.effects = [
+        {
+            trigger: "card-place",
+            id: 67
+        }
+    ];
+}
+
+function MaitreHorloger() {
+    this.name = "Maître horloger";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 28;
+    this.src = "commandants/maitre-horloger.jpg";
+    this.effects = [
+        {
+            trigger: "",
+            id: 68
+        }
+    ];
+}
+
+function GeneticienElfe() {
+    this.name = "Généticien elfe";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 32;
+    this.src = "commandants/geneticien-elfe.jpg";
+    this.effects = [
+        {
+            trigger: "",
+            id: 69
+        }
+    ];
+}
+
+function AdepteDuGelEternel() {
+    this.name = "Adepte du gel éternel";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 31;
+    this.src = "commandants/adepte-du-gel-eternel.jpg";
+    this.effects = [
+        {
+            trigger: "turn-end",
+            id: 70
+        }
+    ];
+}
+
+function AvatarDeLaFurie() {
+    this.name = "Avatar de la furie";
+    this.species = "Commandant";
+    this.attack = -1;
+    this.hp = 30;
+    this.src = "commandants/avatar-de-la-furie.jpg";
+    this.effects = [
+        {
+            trigger: "turn-start",
+            id: 71
         }
     ];
 }
@@ -11136,6 +11241,20 @@ function createEffect(id) {
             return new Effect63();
         case 64:
             return new Effect64();
+        case 65:
+            return new Effect65();
+        case 66:
+            return new Effect66();
+        case 67:
+            return new Effect67();
+        case 68:
+            return new Effect68();
+        case 69:
+            return new Effect69();
+        case 70:
+            return new Effect70();
+        case 71:
+            return new Effect71();
         case 101:
             return new Effect101();
         case 102:
@@ -13371,6 +13490,128 @@ function Effect64() {
     };
     this.dynamicDesc = (c) => `<em>(Encore ${3 - (c.effect64 ?? 0)})</em>`;
     this.desc = "Après avoir joué 3 Ondins, réduit de 1 le coût de la prochaine recherche de recrues.";
+}
+
+function Effect65() {
+    this.run = async (sender, args, doAnimate) => {
+        console.log(args[0].original, findDOMCard(args[0].original))
+        if (players[args[4]] === sender && args[0].original && !args[0].original.effects.some(e => e.id === 323)) {
+            args[0].original.attack++;
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        0;
+    };
+    this.desc = "Lorsqu'une créature alliée meurt, lui confère définitivement +1/+0.";
+}
+
+function Effect66() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0] == 1 && players[args[3]] === sender || args[0] == 2 && players[args[4]] === sender) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            let t = args[0] == 1 ? args[1][0].concat(args[1][1]) : args[2][0].concat(args[2][1]);
+            for (let c of t.filter(e => e && e.hp > 0)) {
+                await boostStats(c, 0, 1, doAnimate);
+            }
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, 0, 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous gagnez un combat, confère définitivement +0/+1 aux créatures alliées survivantes.";
+}
+
+function Effect67() {
+    this.run = async (sender, args, doAnimate) => {
+        if (args[0].card.species === "Autre") {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            args[0].card.species = choice(species);
+            await boostStats(args[0].card, 0, 0, doAnimate);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(t.filter(e => e.shield).length * 2, 0, 1.5), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Lorsque vous jouez une créature sans famille, elle devient d'une famille aléatoire.";
+}
+
+function Effect68() {
+    this.run = async (sender, args, doAnimate) => {
+        
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(t.filter(e => e.shield).length * 2, 0, 1.5), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Votre niveau de recrutement augmente un tour plus tôt, mais vous gagnez moins de pièces d'or.";
+}
+
+function Effect69() {
+    this.run = async (sender, args, doAnimate) => {
+        
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(t.filter(e => e.shield).length * 2, 0, 1.5), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Vos créatures peuvent être jouées comme des Sortilèges sur des créatures d'autres familles pour changer leur famille et leur conférer +1/+1.";
+}
+
+function Effect70() {
+    this.run = async (sender, args, doAnimate) => {
+        const cards = Array.from(document.getElementById("shop").children)
+            .filter(c => c.card && c.classList.contains("frozen"))
+            .map(c => c.card)
+            .filter(card => card.species !== "Sortilège");
+        if (cards.length) {
+            if (doAnimate)
+                await effectProcGlow(sender);
+            cards.forEach(card => boostStats(card, shopTier, shopTier, true));
+            await sleep(400);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(t.filter(e => e.shield).length * 2, 0, 1.5), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "A la fin de chaque tour, confère +X/+X aux créatures gelées, où X est votre niveau de recrutement.";
+}
+
+function Effect71() {
+    this.run = async (sender, args, doAnimate) => {
+        if (sender.hp <= 10) {
+            if (doAnimate)
+                await effectProcGlow(sender)
+            troops[0].filter(c => c).forEach(c => boostStats(c, 2, 0, doAnimate));
+            if (troops[0].some(c => c))
+                await sleep(400);
+            await enhanceShop(2, 0);
+        }
+    };
+    this.scaling = (c, t) => {
+        return [0, fluctuate(t.filter(e => e.shield).length * 2, 0, 1.5), 0, 0];
+    };
+    this.battleValue = (c, t) => {
+        return 0;
+    };
+    this.desc = "Au début de chaque tour, si vous avez 10 PV ou moins, confère +2/+0 aux créatures alliées et améliore le recrutement de +2/+0.";
 }
 
 function Effect101() {
