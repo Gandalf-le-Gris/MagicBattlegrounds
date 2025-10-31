@@ -1641,7 +1641,7 @@ function updateEnemyTroops() {
                             if (Math.random() < .5)
                                 boostStats(newCard, 0, 1, false);
                             else
-                            boostStats(newCard, 1, 0, false);
+                                boostStats(newCard, 1, 0, false);
                         }
                         if (choice(t)) {
                             for (let k = 0; k < scaling[3]; k++) {
@@ -1650,6 +1650,14 @@ function updateEnemyTroops() {
                                 else
                                     boostStats(choice(t.filter(e => e)), 1, 0, false);
                             }
+                        }
+                    }
+                    if (newCard.species === "Ondin") {
+                        for (let k = 0; k < round; k++) {
+                            if (Math.random() < .5)
+                                boostStats(newCard, 0, 1, false);
+                            else
+                                boostStats(newCard, 1, 0, false);
                         }
                     }
             }
@@ -4583,7 +4591,7 @@ function VendeurDeProvisions() {
     this.name = "Vendeur de provisions";
     this.species = "Commandant";
     this.attack = -1;
-    this.hp = 29;
+    this.hp = 27;
     this.src = "commandants/vendeur-de-provisions.jpg";
     this.effects = [
         {
@@ -9572,7 +9580,7 @@ function GuideFluviale() {
     this.name = "Guide fluviale";
     this.species = "Ondin";
     this.attack = 2;
-    this.hp = 2;
+    this.hp = 1;
     this.src = "ondins/guide-fluviale.jpg";
     this.tier = 1;
     this.effects = [
@@ -9587,7 +9595,7 @@ function InvocateurDesMarees() {
     this.name = "Invocateur des marées";
     this.species = "Ondin";
     this.attack = 3;
-    this.hp = 3;
+    this.hp = 1;
     this.src = "ondins/invocateur-des-marees.jpg";
     this.tier = 2;
     this.effects = [
@@ -9669,8 +9677,8 @@ function ChasseuseDeTresors() {
 function HydromancienneGenereuse() {
     this.name = "Hydromancienne généreuse";
     this.species = "Ondin";
-    this.attack = 3;
-    this.hp = 4;
+    this.attack = 2;
+    this.hp = 2;
     this.src = "ondins/hydromancienne-genereuse.jpg";
     this.tier = 3;
     this.effects = [
@@ -9684,7 +9692,7 @@ function HydromancienneGenereuse() {
 function MeneurDesFlots() {
     this.name = "Meneur des flots";
     this.species = "Ondin";
-    this.attack = 4;
+    this.attack = 1;
     this.hp = 4;
     this.src = "ondins/meneur-des-flots.jpg";
     this.tier = 3;
@@ -9699,8 +9707,8 @@ function MeneurDesFlots() {
 function AnnonciatriceDesMarees() {
     this.name = "Annonciatrice des marées";
     this.species = "Ondin";
-    this.attack = 5;
-    this.hp = 5;
+    this.attack = 3;
+    this.hp = 3;
     this.src = "ondins/annonciatrice-des-marees.jpg";
     this.tier = 4;
     this.effects = [
@@ -9714,8 +9722,8 @@ function AnnonciatriceDesMarees() {
 function DivinatriceOndine() {
     this.name = "Divinatrice ondine";
     this.species = "Ondin";
-    this.attack = 3;
-    this.hp = 5;
+    this.attack = 2;
+    this.hp = 4;
     this.src = "ondins/divinatrice-ondine.jpg";
     this.tier = 4;
     this.effects = [
@@ -9744,7 +9752,7 @@ function OndinSansVisage() {
 function ChampionDesOceans() {
     this.name = "Champion des océans";
     this.species = "Ondin";
-    this.attack = 1;
+    this.attack = 0;
     this.hp = 1;
     this.src = "ondins/champion-des-oceans.jpg";
     this.tier = 5;
@@ -9759,7 +9767,7 @@ function ChampionDesOceans() {
 function DresseuseDeKrakens() {
     this.name = "Dresseuse de krakens";
     this.species = "Ondin";
-    this.attack = 3;
+    this.attack = 1;
     this.hp = 1;
     this.src = "ondins/dresseuse-de-krakens.jpg";
     this.tier = 5;
@@ -9808,8 +9816,8 @@ function HerosDeLEcume() {
 function PourvoyeuseDEauPure() {
     this.name = "Pourvoyeuse d'eau pure";
     this.species = "Ondin";
-    this.attack = 7;
-    this.hp = 7;
+    this.attack = 1;
+    this.hp = 1;
     this.src = "ondins/pourvoyeuse-d-eau-pure.jpg";
     this.tier = 6;
     this.effects = [
@@ -21910,7 +21918,7 @@ function Effect1801() {
         return [0, 1, 0, 0];
     };
     this.battleValue = (c, t) => {
-        return 0;
+        return round;
     };
     this.desc = "<em>Recrue :</em> Améliore le recrutement de +1/+0 ou +0/+1 aléatoirement.";
 }
@@ -21932,7 +21940,7 @@ function Effect1802() {
         return [0, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
-        return 1;
+        return 1 + round;
     };
     this.desc = "Lorsque cette créature attaque, elle confère définitivement +1/+1 à la créature derrière elle.";
 }
@@ -21949,7 +21957,7 @@ function Effect1803() {
         return [0, 0, 0, 3 * (t.filter(e => e && e.species === "Ondin") > 1)];
     };
     this.battleValue = (c, t) => {
-        return 0;
+        return round;
     };
     this.desc = "<em>Recrue :</em> Améliore le recrutement d'Ondins de +1/+1.";
 }
@@ -21969,7 +21977,7 @@ function Effect1804() {
         return [0, 2 * (t.filter(e => e && e.species === "Ondin") > 2), 0, 0];
     };
     this.battleValue = (c, t) => {
-        return 0;
+        return round;
     };
     this.desc = "Lorsque vous jouez un autre Ondin, améliore le recrutement d'Ondins de +1/+0 ou +0/+1 aléatoirement.";
 }
@@ -21982,7 +21990,7 @@ function Effect1805() {
         return [t.filter(e => e && e.species === "Ondin") * round * .8, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
-        return 0;
+        return round;
     };
     this.desc = "Les statistiques de cette créatures sont doublées dans la zone de recrutement.";
 }
@@ -21995,7 +22003,7 @@ function Effect1806() {
         return [0, 2 * (t.filter(e => e && e.species === "Ondin") > 2), 0, 0];
     };
     this.battleValue = (c, t) => {
-        return 0;
+        return round;
     };
     this.desc = "Augmente légèrement les chances de trouver des Ondins au recrutement.";
 }
@@ -22005,16 +22013,16 @@ function Effect1807() {
         if (args[0] === sender && sender.hp <= 0 && troops[0].includes(sender.original)) {
             if (doAnimate)
                 await effectProcGlow(sender);
-            await enhanceShop(2, 2);
+            await enhanceShop(1, 1);
         }
     };
     this.scaling = (c, t) => {
         return [0, 3 * (t.filter(e => e && e.species === "Ondin") > 3), 0, 0];
     };
     this.battleValue = (c, t) => {
-        return 0;
+        return round;
     };
-    this.desc = "<em>Dernière volonté :</em> Améliore le recrutement de +2/+2.";
+    this.desc = "<em>Dernière volonté :</em> Améliore le recrutement de +1/+1.";
 }
 
 function Effect1808() {
@@ -22026,7 +22034,7 @@ function Effect1808() {
                 attack = shopEnhancements.all.attack + shopEnhancements.Ondin.attack;
                 hp = shopEnhancements.all.hp + shopEnhancements.Ondin.hp;
             } else {
-                const base = round * t.filter(c => c && c.species === "Ondin").length * .8;
+                const base = round * t.filter(c => c && c.species === "Ondin").length * .6;
                 attack = Math.floor(base * (.8 + .2 * Math.random()));
                 hp = Math.floor(base * (.8 + .2 * Math.random()));
             }
@@ -22037,7 +22045,7 @@ function Effect1808() {
         return [0, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
-        return t.filter(c => c && c.species === "Ondin").length * round / 2;
+        return t.filter(c => c && c.species === "Ondin").length * round / 2 + round;
     };
     this.desc = "<em>Dernière volonté :</em> Invoque un Kraken et lui confère des statistiques équivalentes à vos améliorations de recrutement.";
     this.refs = ["kraken"];
@@ -22058,7 +22066,7 @@ function Effect1809() {
                     attack = shopEnhancements.all.attack + (shopEnhancements[t[i - 4].species]?.attack ?? 0);
                     hp = shopEnhancements.all.hp + (shopEnhancements[t[i - 4].species]?.hp ?? 0);
                 } else {
-                    const base = round * t.filter(c => c && c.species === "Ondin").length * .8;
+                    const base = round * t.filter(c => c && c.species === "Ondin").length * .6;
                     attack = Math.floor(base * (.8 + .2 * Math.random()));
                     hp = Math.floor(base * (.8 + .2 * Math.random()));
                 }
@@ -22068,10 +22076,10 @@ function Effect1809() {
     };
     this.toBack = true;
     this.scaling = (c, t) => {
-        return [0, 0, 0, 0];
+        return [0, 8 * (t.filter(e => e && e.species === "Ondin") > 3), 0, 0];
     };
     this.battleValue = (c, t) => {
-        return t.filter(c => c && c.species === "Ondin").length * round / 1.5;
+        return t.filter(c => c && c.species === "Ondin").length * round / 1.5 + round;
     };
     this.desc = "<em>Frappe préventive :</em> Améliore le recrutement de +1/+1, puis confère à la créature devant celle-ci des statistiques équivalentes à vos améliorations de recrutement.";
 }
@@ -22082,9 +22090,9 @@ function Effect1810() {
             if (doAnimate)
                 effectProcGlow(sender);
             await chooseTarget((target) => {
-                boostStats(target, 1, 1, doAnimate);
+                boostStats(target, 2, 2, doAnimate);
                 if (target.species !== "Autre")
-                    enhanceShop(2, 1, target.species)
+                    enhanceShop(1, 1, target.species)
             }, {
                 area: "board",
                 notself: true
@@ -22092,12 +22100,12 @@ function Effect1810() {
         }
     };
     this.scaling = (c, t) => {
-        return [0, 3 * (t.filter(e => e && e.species === "Ondin").length > 2), 0, 2];
+        return [0, 3 * (t.filter(e => e && e.species === "Ondin").length > 2), 0, 4];
     };
     this.battleValue = (c, t) => {
-        return 0;
+        return round;
     };
-    this.desc = "<em>Recrue :</em> Confère +1/+1 à une autre créature alliée ciblée, puis améliore le recrutement de sa famille de +2/+1.";
+    this.desc = "<em>Recrue :</em> Confère +2/+2 à une autre créature alliée ciblée, puis améliore le recrutement de sa famille de +1/+1.";
 }
 
 function Effect1811() {
@@ -22114,7 +22122,7 @@ function Effect1811() {
                         troops[0][i] = undefined;
                     }
                 }
-                await enhanceShop(5, 5);
+                await enhanceShop(4, 4);
                 for (let i = 0; i < 3; i++) {
                     let card = new PieceDOr();
                     card.created = true;
@@ -22128,9 +22136,9 @@ function Effect1811() {
         return [0, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
-        return 0;
+        return round / 2;
     };
-    this.desc = "Au bout de 5 tours, détruit toutes les créatures alliées, améliore le recrutement de +5/+5 et ajoute 3 Pièces d'or à votre main.";
+    this.desc = "Au bout de 5 tours, détruit toutes les créatures alliées, améliore le recrutement de +4/+4 et ajoute 3 Pièces d'or à votre main.";
     this.dynamicDesc = (c) => !c.effect1811 || c.effect1811 < 4
         ? "<em>(Encore " + (5 - (c.effect1811 ?? 0)) + " tours)</em>"
         : "<em>(Prochain tour)</em>";
@@ -22149,7 +22157,7 @@ function Effect1812() {
         return [0, 0, 0, 3 * t.filter(e => e && e.species === "Ondin").length];
     };
     this.battleValue = (c, t) => {
-        return 0;
+        return round;
     };
     this.desc = "<em>Recrue :</em> Actualise les recrues avec uniquement des Ondins.";
 }
@@ -22172,7 +22180,7 @@ function Effect1813() {
         return [0, 0, 0, 5];
     };
     this.battleValue = (c, t) => {
-        return 0;
+        return round;
     };
     this.desc = "<em>Recrue :</em> Confère +3/+3 aux créatures disponibles au recrutement.";
 }
@@ -22183,16 +22191,16 @@ function Effect1814() {
             if (doAnimate)
                 await effectProcGlow(sender);
             document.getElementById("refresh").style.boxShadow = "0 0 15px green";
-            discountedRefreshes += 3;
+            discountedRefreshes += 2;
         }
     };
     this.scaling = (c, t) => {
         return [0, 0, 0, 4];
     };
     this.battleValue = (c, t) => {
-        return 0;
+        return round;
     };
-    this.desc = "<em>Recrue :</em> Réduit de 1 le coût des 3 prochaines recherches de recrues.";
+    this.desc = "<em>Recrue :</em> Réduit de 1 le coût des 2 prochaines recherches de recrues.";
 }
 
 function Effect1815() {
@@ -22203,7 +22211,7 @@ function Effect1815() {
         return [0, 0, 0, 0];
     };
     this.battleValue = (c, t) => {
-        return 0;
+        return round;
     };
     this.desc = "Peut être joué comme un Sortilège sur une autre créature pour remplacer ses statistiques par les siennes.";
 }
