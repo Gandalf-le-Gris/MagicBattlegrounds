@@ -12418,17 +12418,15 @@ function Effect4() {
 
 function Effect5() {
     this.run = async (sender, args, doAnimate) => {
-        if (sender.hp > 0) {
-            if (doAnimate)
-                await effectProcGlow(sender);
-            let t = (players[args[2]] === sender ? args[0] : args[1]);
-            for (let c of t[0].concat(t[1])) {
-                if (c) {
-                    c.revive = true;
-                    if (doAnimate)
-                        await boostStats(c, 0, 0, doAnimate);
-                    break;
-                }
+        if (doAnimate)
+            await effectProcGlow(sender);
+        let t = (players[args[2]] === sender ? args[0] : args[1]);
+        for (let c of t[0].concat(t[1])) {
+            if (c) {
+                c.revive = true;
+                if (doAnimate)
+                    await boostStats(c, 0, 0, doAnimate);
+                break;
             }
         }
     };
