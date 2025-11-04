@@ -22326,7 +22326,7 @@ function Effect2004() {
         if (findDOMCard(sender).parentElement.parentElement.classList.contains("board")) {
             if (doAnimate)
                 await effectProcGlow(sender);
-            let sp = copy(species);
+            let sp = copy(speciesList);
             shuffle(sp);
             for (let s of sp) {
                 let t = choice(troops[0].filter(x => x && x.species == s));
@@ -22350,7 +22350,7 @@ function Effect2005() {
             if (doAnimate)
                 await effectProcGlow(sender);
             let card = args[0].card;
-            let sp = copy(species);
+            let sp = copy(speciesList);
             shuffle(sp);
             for (let s of sp) {
                 let t = choice(troops[0].filter(x => x && x.species === s));
@@ -22373,7 +22373,7 @@ function Effect2006() {
         if (args[0].card === sender) {
             if (doAnimate)
                 await effectProcGlow(sender);
-            let sp = copy(species);
+            let sp = copy(speciesList);
             shuffle(sp);
             for (let s of sp) {
                 let t = choice(troops[0].filter(x => x && x.species === s));
