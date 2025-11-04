@@ -15362,11 +15362,11 @@ function Effect411() {
             for (let i = 0; i < 8; i++) {
                 if (t[i] && t[i].species == "Soldat") {
                     let neighbors = [];
-                    if (i % 4 > 0 && t[i - 1] && t[i - 1].species == "Soldat")
+                    if (i % 4 > 0 && t[i - 1])
                         neighbors.push(t[i - 1].name);
-                    if (t[(i + 4) % 8] && t[(i + 4) % 8].species == "Soldat" && neighbors.findIndex(e => e.name == t[(i + 4) % 8].name) == -1)
+                    if (t[(i + 4) % 8] && neighbors.findIndex(e => e.name == t[(i + 4) % 8].name) == -1)
                         neighbors.push(t[(i + 4) % 8].name);
-                    if (i % 4 < 3 && t[i + 1] && t[i + 1].species == "Soldat" && neighbors.findIndex(e => e.name == t[i + 1].name) == -1)
+                    if (i % 4 < 3 && t[i + 1] && neighbors.findIndex(e => e.name == t[i + 1].name) == -1)
                         neighbors.push(t[i + 1].name);
                     let n = neighbors.length;
                     await boostStats(t[i], n, 2 * n, doAnimate);
@@ -22774,7 +22774,7 @@ function Effect10003() {
         let f = [];
         for (let c of troops[0])
             if (c && !f.includes(c.species) && c.species != "Autre")
-                f.push(c.species);
+                f.push(c.speciesList);
         await boostStats(args[0].card, f.length, f.length, doAnimate);
     };
     this.scaling = (c, t) => {
