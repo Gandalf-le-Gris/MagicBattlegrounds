@@ -2417,6 +2417,11 @@ async function drawShopScene() {
         let newAchievements = [...new Set(achievementsWaiting)];
         if (!JSON.parse(window.localStorage.getItem("Achievement__Une prochaine fois, peut-être")))
             newAchievements.push("Une prochaine fois, peut-être");
+        if (
+            !JSON.parse(window.localStorage.getItem("Achievement__Complétionniste"))
+            && JSON.parse(exportAchievements()).length + newAchievements.length >= achievementsList.length - 1
+        )
+            newAchievements.push("Complétionniste");
 
         filter.onclick = async () => {
             for (let a of newAchievements)
@@ -2482,7 +2487,7 @@ async function drawShopScene() {
 
         if (
             !JSON.parse(window.localStorage.getItem("Achievement__Complétionniste"))
-            && JSON.parse(exportAchievements()).length + achievementsWaiting.length >= achievementsList.length - 1
+            && JSON.parse(exportAchievements()).length + newAchievements.length >= achievementsList.length - 1
         )
             newAchievements.push("Complétionniste");
 
